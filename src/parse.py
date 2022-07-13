@@ -52,7 +52,8 @@ def trace_len(trace: dict):
     :returns [number_of_frames, frame_range_len, trace_lenn]: [number of frames of the trace, [minimal, maximal frame number], length of the trace in x,y space]
 
     """
-    frames = sorted(list(map(float, trace.keys())))
+    frames = sorted(list(map(int, trace.keys())))
+    # print("frames", frames)
 
     number_of_frames = len(trace.keys())
     frame_range = (frames[0], frames[-1])
@@ -64,11 +65,18 @@ def trace_len(trace: dict):
         # print(trace[frames[index]])
         # print(trace[frames[index+1]])
         try:
-            trace_lenn = trace_lenn + math.dist(list(map(float, (trace[frames[index]]))), list(map(float, (trace[frames[index+1]]))))
-        except Exception as err:
-            print(trace)
-            print("Error:", str(err))
-            raise err
+            # print("index", index)
+            # print("frames index ", frames[index])
+            # print("traces frames index ", trace[str(frames[index])])
+            # print("map it to floats", list(map(float, (trace[str(frames[index])]))))
+            trace_lenn = trace_lenn + math.dist(list(map(float, (trace[str(frames[index])]))), list(map(float, (trace[str(frames[index+1])]))))
+        except IndexError as err:
+            if not index == len(frames) - 1:
+                # print(index)
+                # print(len(frames))
+                # print(trace)
+                # print("Error:", str(err))
+                raise err
 
     return number_of_frames, frame_range_len, trace_lenn
 
@@ -91,6 +99,6 @@ if __name__ == "__main__":
         traces = parse_traces(csvfile)
         # print()
         # print(traces[2])
-        print(trace_len(traces[1]))
+        print("number_of_frames, frame_range_len, trace_length:", trace_len(traces[1]))
 
     # print(i)
