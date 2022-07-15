@@ -136,7 +136,7 @@ if __name__ == "__main__":
         for index, trace_length in enumerate(traces_lenghts):
            print("Agent number", index, ". Number_of_frames, frame_range_len, trace_lenn, max_step_len, max_step_len_index, max_step_len_line:", trace_length)
            if trace_length[3] == 0:
-               print("This trace has length of 0. Consider deleting this agent")
+               print("This trace has length of 0. Consider deleting this agent")  ## this can be FP
            if trace_length[4] > bee_max_step_len:
                print("This agent has moved", bee_max_step_len, "in a single step, you might consider deleting it.")
 
