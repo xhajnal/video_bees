@@ -118,7 +118,7 @@ if __name__ == "__main__":
         # dummy_colision_finder(csvfile, 2)
         pass
 
-    with open('../data/Video_tracking/190822/test.csv', newline='') as csvfile:
+    with open('../test/test.csv', newline='') as csvfile:
         traces = parse_traces(csvfile)
         # print()
         print(traces[0])
