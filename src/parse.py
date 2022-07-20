@@ -30,6 +30,25 @@ def dummy_colision_finder(csvfile, size):
     return frame_numbers_of_collided_agents
 
 
+def scatter_detection(traces_lenghts):
+    """ Creates a scatter plot of detected traces of each agent.
+
+    #TODO
+    :param traces_lenghts (list): a list of lists of frame numbers where respective agent was tracked
+    """
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+
+    for index, trace in enumerate(traces_lenghts):
+        x = trace.times_tracked
+        y = [index] * len(x)
+        ax1.scatter(x, y, alpha=0.5)
+    plt.xlabel('Frame number')
+    plt.ylabel('Agent id')
+    plt.title(f'Scatter plot of detections of individual agents over time.')
+    plt.show()
+
+
 def parse_traces(csvfile):
     """ Parses a loopy csv file nn/ai and returns a dictionary of traces 'oid' -> 'frame_number' -> location [x,y]
 
@@ -88,14 +107,7 @@ if __name__ == "__main__":
             # trace.show_step_lenghts_hist()
 
         ## SCATTER PLOT OF DETECTIONS
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        for index, trace in enumerate(traces_lenghts):
-            x = trace.times_tracked
-            y = [index] * len(x)
-            ax1.scatter(x, y, alpha=0.5)
-        plt.show()
+        scatter_detection(traces_lenghts)
 
         ## CROSS-TRACE ANALYSIS
         for index, trace in enumerate(traces_lenghts):
