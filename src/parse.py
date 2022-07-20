@@ -2,6 +2,8 @@ import csv
 import math
 from termcolor import colored
 from trace import Trace
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def dummy_colision_finder(csvfile, size):
@@ -83,7 +85,17 @@ if __name__ == "__main__":
             if trace.max_step_len > bee_max_step_len:
                 print("This agent has moved", bee_max_step_len, "in a single step, you might consider deleting it.")
 
-            trace.show_step_lenghts_hist()
+            # trace.show_step_lenghts_hist()
+
+        ## SCATTER PLOT OF DETECTIONS
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+
+        for index, trace in enumerate(traces_lenghts):
+            x = trace.times_tracked
+            y = [index] * len(x)
+            ax1.scatter(x, y, alpha=0.5)
+        plt.show()
 
         ## CROSS-TRACE ANALYSIS
         for index, trace in enumerate(traces_lenghts):

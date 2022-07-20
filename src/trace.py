@@ -37,9 +37,11 @@ class Trace:
         self.max_step_len_frame_number = None
 
         self.trace_lenghts = dict()
+        self.times_tracked = []
 
         self.trace_lenn = 0
         for index, frame in enumerate(frames):
+            self.times_tracked.append(frame)
             # print(trace[frames[index]])
             # print(trace[frames[index+1]])
             try:
