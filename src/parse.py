@@ -2,13 +2,63 @@ import csv
 import math
 from termcolor import colored
 
-class Trace:
-    """ Single agent trace obtained from the loopy csv file or changed within the analysis.
 
+class Trace:
+    """ Single agent trace
+
+        Stores:
+        frame_range (tuple): a pair frame numbers, first and last
+        number_of_frames (int): number of frames
+        frame_range_len (int): length of trace in frames
+        trace_lenn (float): length of trace in x,y
+        max_step_len (float): maximal length of a single step in x,y
+        max_step_len_step_index (int): index of the longest step in x,y
+        max_step_len_line (int): line of .csv file, where the longest step occurred
+        max_step_len_frame_number (int): frame number, where the longest step occurred
     """
-    def __init__(self, name, age):
-        self.name = name
-        self.age = age
+
+    def __init__(self, trace):
+        """ Parses a single agent trace obtained from the loopy csv file.
+
+            :param trace: a single trace of traces
+        """
+        frames = sorted(list(map(int, trace.keys())))
+        # print("frames", frames)
+
+        self.number_of_frames = len(trace.keys())
+        self.frame_range = (frames[0], frames[-1])
+        # print(frame_range)
+        self.frame_range_len = float(frames[-1]) - float(frames[0])
+        self.max_step_len = 0
+        self.max_step_len_step_index = None
+        self.max_step_len_line = None
+        self.max_step_len_frame_number = None
+
+        self.trace_lenn = 0
+        for index, frame in enumerate(frames):
+            # print(trace[frames[index]])
+            # print(trace[frames[index+1]])
+            try:
+                # print("index", index)
+                # print("frames index ", frames[index])
+                # print("traces frames index ", trace[str(frames[index])])
+                # print("traces frames index, x,y part", trace[str(frames[index])][1])
+                # print("map it to floats", list(map(float, (trace[str(frames[index])][1]))))
+                step_len = math.dist(list(map(float, (trace[str(frames[index])][1]))),
+                                     list(map(float, (trace[str(frames[index + 1])][1]))))
+                if step_len > self.max_step_len:  ## Set max step len
+                    self.max_step_len = step_len
+                    self.max_step_len_step_index = index
+                    self.max_step_len_line = int(trace[str(frames[index])][0]) + 2
+                    self.max_step_len_frame_number = frame
+                self.trace_lenn = self.trace_lenn + step_len
+            except IndexError as err:
+                if not index == len(frames) - 1:
+                    # print(index)
+                    # print(len(frames))
+                    # print(trace)
+                    # print("Error:", str(err))
+                    raise err
 
 
 def dummy_colision_finder(csvfile, size):
@@ -26,7 +76,8 @@ def dummy_colision_finder(csvfile, size):
     for row in reader:
         # print(row['oid'])
         if int(row['oid']) > size - 1:
-            print("A new fake agents appears on frame number", row['frame_number'], "iteration number", i, "with oid", row['oid'])
+            print("A new fake agents appears on frame number", row['frame_number'], "iteration number", i, "with oid",
+                  row['oid'])
             frame_numbers_of_collided_agents.append(row['frame_number'])
             size = size + 1
         i = i + 1
@@ -53,106 +104,57 @@ def parse_traces(csvfile):
     return traces
 
 
-def trace_len(trace: dict):
-    """ Parses a trace - see traces in fun parse_traces. Returns number of frames of the trace, [minimal, maximal frame number], length of the trace in x,y space.
-
-    :param trace: a single trace of traces
-
-    :returns [number_of_frames, frame_range_len, trace_lenn, max_step_len]: [number of frames of the trace, [minimal, maximal frame number], length of the trace in x,y space, maximal length of a single step between the frames]
-
-    """
-    frames = sorted(list(map(int, trace.keys())))
-    # print("frames", frames)
-
-    number_of_frames = len(trace.keys())
-    frame_range = (frames[0], frames[-1])
-    # print(frame_range)
-    frame_range_len = float(frames[-1]) - float(frames[0])
-    max_step_len = 0
-    max_step_len_step_index = None
-    max_step_len_line = None
-    max_step_len_frame_number = None
-
-    trace_lenn = 0
-    for index, frame in enumerate(frames):
-        # print(trace[frames[index]])
-        # print(trace[frames[index+1]])
-        try:
-            # print("index", index)
-            # print("frames index ", frames[index])
-            # print("traces frames index ", trace[str(frames[index])])
-            # print("traces frames index, x,y part", trace[str(frames[index])][1])
-            # print("map it to floats", list(map(float, (trace[str(frames[index])][1]))))
-            step_len = math.dist(list(map(float, (trace[str(frames[index])][1]))), list(map(float, (trace[str(frames[index+1])][1]))))
-            if step_len > max_step_len:  ## Set max step len
-                max_step_len = step_len
-                max_step_len_step_index = index
-                max_step_len_line = trace[str(frames[index])][0]
-                max_step_len_frame_number = frame
-            trace_lenn = trace_lenn + step_len
-        except IndexError as err:
-            if not index == len(frames) - 1:
-                # print(index)
-                # print(len(frames))
-                # print(trace)
-                # print("Error:", str(err))
-                raise err
-
-    return frame_range, number_of_frames, frame_range_len, trace_lenn, max_step_len, max_step_len_step_index, max_step_len_line, max_step_len_frame_number
-
-
 if __name__ == "__main__":
     ## VARIABLE DECLARATION
     bee_max_step_len = 1000
 
     ## CODE
     i = 0
-    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', newline='') as csvfile:
+    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
+              newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            i = i+1
+            i = i + 1
             # print(row['date'], row['err'], row['frame_count'], row['frame_number'], row['frame_timestamp'], row['name'], row['oid'], row['type'], row['x'], row['y'])
             # print(row['oid'])
 
-    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', newline='') as csvfile:
+    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
+              newline='') as csvfile:
         # dummy_colision_finder(csvfile, 2)
         pass
 
-    with open('../test/test.csv', newline='') as csvfile:
-        traces = parse_traces(csvfile)
-        # print()
-        print(traces[0])
-        print("number_of_frames, frame_range_len, trace_length:", trace_len(traces[0]))
-        print(traces[1])
-        print("number_of_frames, frame_range_len, trace_length:", trace_len(traces[1]))
-
-    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', newline='') as csvfile:
+    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
+              newline='') as csvfile:
         traces = parse_traces(csvfile)
         traces_lenghts = []
         for index, trace in enumerate(traces.keys()):
-           traces_lenghts.append(trace_len(traces[trace]))
+            traces_lenghts.append(Trace(traces[trace]))
 
         ## INDEPENDENT TRACE-LIKE ANALYSIS
-        for index, trace_length in enumerate(traces_lenghts):
-           print("Agent number", index, ". Number_of_frames, frame_range_len, trace_lenn, max_step_len, max_step_len_index, max_step_len_line:", trace_length)
-           if trace_length[3] == 0:
-               print("This trace has length of 0. Consider deleting this agent")  ## this can be FP
-           if trace_length[4] > bee_max_step_len:
-               print("This agent has moved", bee_max_step_len, "in a single step, you might consider deleting it.")
+        for index, trace in enumerate(traces_lenghts):
+            print("Agent number", index,
+                  ". Number_of_frames, frame_range_len, trace_lenn, max_step_len, max_step_len_index, max_step_len_line:",
+                  trace)
+            if trace.trace_lenn == 0:
+                print("This trace has length of 0. Consider deleting this agent")  ## this can be FP
+            if trace.max_step_len > bee_max_step_len:
+                print("This agent has moved", bee_max_step_len, "in a single step, you might consider deleting it.")
 
         ## CROSS-TRACE ANALYSIS
         for index, trace in enumerate(traces_lenghts):
             for index2, trace2 in enumerate(traces_lenghts):
                 if index == index2:
                     continue
-                if abs(trace[0][1] - trace2[0][0]) < 100:
+                if abs(trace.frame_range[1] - trace2.frame_range[0]) < 100:
                     # print(traces[index])
                     # print(traces[index]["23325"])
                     # print()
-                    print(traces[index][str(trace[0][1])][1])
-                    print(traces[index2][str(trace2[0][0])][1])
-                    point_distance = math.dist(list(map(float, (traces[index][str(trace[0][1])][1]))), list(map(float, (traces[index2][str(trace2[0][0])][1]))))
-                    message = "The beginning of trace", index2, "is close to end of trace", index, "by", abs(trace[0][1] - trace2[0][0]), "while the x,y distance is ", point_distance, "Consider joining them."
+                    print(traces[index][str(trace.frame_range[1])][1])
+                    print(traces[index2][str(trace2.frame_range[0])][1])
+                    point_distance = math.dist(list(map(float, (traces[index][str(trace.frame_range[1])][1]))),
+                                               list(map(float, (traces[index2][str(trace2.frame_range[0])][1]))))
+                    message = "The beginning of trace", index2, "is close to end of trace", index, "by", abs(
+                        trace.frame_range[1] - trace2.frame_range[0]), "while the x,y distance is ", point_distance, "Consider joining them."
 
                     if index2 == index + 1:
                         if point_distance < 10:
