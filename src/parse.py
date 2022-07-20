@@ -49,6 +49,13 @@ def scatter_detection(traces_lenghts):
     plt.show()
 
 
+def trim_out_additional_agents_over_long_trace(traces):
+    """ Trims out additional appearance of an agent when long traces are over here """
+    # TODO
+    
+    pass
+
+
 def parse_traces(csvfile):
     """ Parses a loopy csv file nn/ai and returns a dictionary of traces 'oid' -> 'frame_number' -> location [x,y]
 
@@ -84,8 +91,32 @@ if __name__ == "__main__":
 
     with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
               newline='') as csvfile:
-        # dummy_colision_finder(csvfile, 2)
-        pass
+        print(dummy_colision_finder(csvfile, 2))
+
+
+
+    with open('../data/Video_tracking/190823/20190823_115857275_2BEES_generated_20210507_083510_nn.csv',
+              newline='') as csvfile:
+        traces = parse_traces(csvfile)
+        traces_lenghts = []
+        for index, trace in enumerate(traces.keys()):
+            traces_lenghts.append(Trace(traces[trace], index))
+
+        ## INDEPENDENT TRACE-LIKE ANALYSIS
+        for index, trace in enumerate(traces_lenghts):
+            print("Agent number", index,
+                  ". Number_of_frames, frame_range_len, trace_lenn, max_step_len, max_step_len_index, max_step_len_line:",
+                  trace)
+            if trace.trace_lenn == 0:
+                print("This trace has length of 0. Consider deleting this agent")  ## this can be FP
+            if trace.max_step_len > bee_max_step_len:
+                print("This agent has moved", bee_max_step_len, "in a single step, you might consider deleting it.")
+
+            # trace.show_step_lenghts_hist()
+
+        ## SCATTER PLOT OF DETECTIONS
+        scatter_detection(traces_lenghts)
+
 
     with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
               newline='') as csvfile:
@@ -108,6 +139,8 @@ if __name__ == "__main__":
 
         ## SCATTER PLOT OF DETECTIONS
         scatter_detection(traces_lenghts)
+
+        trim_out_additional_agents_over_long_trace(traces)
 
         ## CROSS-TRACE ANALYSIS
         for index, trace in enumerate(traces_lenghts):

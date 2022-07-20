@@ -16,13 +16,13 @@ class Trace:
         max_step_len_frame_number (int): frame number, where the longest step occurred
     """
 
-    def __init__(self, trace, id):
+    def __init__(self, trace, trace_id):
         """ Parses a single agent trace obtained from the loopy csv file.
 
             :param trace: a single trace of traces
             :param id (int): id of the trace
         """
-        self.id = id
+        self.trace_id = trace_id
 
         frames = sorted(list(map(int, trace.keys())))
         # print("frames", frames)
@@ -36,7 +36,7 @@ class Trace:
         self.max_step_len_line = None
         self.max_step_len_frame_number = None
 
-        self.trace_lenghts = dict()
+        self.trace_lengths = dict()
         self.times_tracked = []
 
         self.trace_lenn = 0
@@ -52,10 +52,10 @@ class Trace:
                 # print("map it to floats", list(map(float, (trace[str(frames[index])][1]))))
                 step_len = math.dist(list(map(float, (trace[str(frames[index])][1]))),
                                      list(map(float, (trace[str(frames[index + 1])][1]))))
-                if step_len in self.trace_lenghts.keys():  ## count the number of lenghts
-                    self.trace_lenghts[step_len] = self.trace_lenghts[step_len] + 1
+                if step_len in self.trace_lengths.keys():  ## count the number of lenghts
+                    self.trace_lengths[step_len] = self.trace_lengths[step_len] + 1
                 else:
-                    self.trace_lenghts[step_len] = 1
+                    self.trace_lengths[step_len] = 1
                 if step_len > self.max_step_len:  ## Set max step len
                     self.max_step_len = step_len
                     self.max_step_len_step_index = index
@@ -71,9 +71,10 @@ class Trace:
                     raise err
 
     def show_step_lenghts_hist(self):
-        # print(self.trace_lenghts)
-        plt.bar(list(self.trace_lenghts.keys()), self.trace_lenghts.values(), color='g', )
+        """ Histogram of lengths of a single step."""
+        # print(self.trace_lengths)
+        plt.bar(list(self.trace_lengths.keys()), self.trace_lengths.values(), color='g', )
         plt.xlabel('Count of steps')
         plt.ylabel('Step size')
-        plt.title(f'Histogram of step lengths. Trace {self.id}.')
+        plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
