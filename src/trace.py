@@ -78,3 +78,7 @@ class Trace:
         plt.ylabel('Step size')
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
+
+    def check_trace_consistency(self):
+        """ Verifies the consistency of a single trace"""
+        assert self.frame_range[0] <= self.frame_range[1]

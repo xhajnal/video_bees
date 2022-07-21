@@ -72,18 +72,23 @@ def trim_out_additional_agents_over_long_trace(traces, population_size):
     ranges = []
     for index1, trace in enumerate(traces):
         assert isinstance(trace, Trace)
+        trace.check_trace_consistency()
         ranges.append(trace.frame_range)
     ranges = sorted(ranges)
 
     at_least_two_overlaps = []
     for index1, range1 in enumerate(ranges[:-1]):
         current_overlaps = []
+        print()
         for index2, range2 in enumerate(ranges):
             if index1 == index2:
                 continue
 
-            if range2[0] > range1[1]:  ## Beginning of the further intervals is behind the end of current one
-                print("\n current interval:", range1)
+            if range2[1] <= range1[0]:
+                continue
+
+            if range2[0] >= range1[1]:  ## Beginning of the further intervals is behind the end of current one
+                print("current interval:", range1)
                 print("The set of overlapping intervals:", current_overlaps)
                 i = -1
                 min_range = 0
@@ -99,6 +104,12 @@ def trim_out_additional_agents_over_long_trace(traces, population_size):
                     at_least_two_overlaps.append(current_overlaps[i])
                 break
             else:
+                if max(range1[0], range2[0]) > min(range1[1], range2[1]):
+                    print(colored(range1, "red"))
+                    print(colored(range2, "red"))
+                    print("range1[1]", range1[1])
+                    print("range2[0]", range2[0])
+                    print(range2[0] >= range1[1])
                 # print(range1)
                 # print(range2)
                 # print(max(range1[0], range2[0]))
@@ -142,6 +153,10 @@ def trim_out_additional_agents_over_long_trace(traces, population_size):
         del traces[index]
 
     print(len(traces))
+
+    for trace in traces:
+        trace.check_trace_consistency()
+
     return traces
 
 
@@ -202,11 +217,10 @@ if __name__ == "__main__":
     #     ## SCATTER PLOT OF DETECTIONS
     #     scatter_detection(traces)
 
-
     with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
               newline='') as csvfile:
 
-        ## TODO ucomment the following line
+        # TODO uncomment the following line
         # print(dummy_colision_finder(csvfile, 2))
 
         ## PARSER
@@ -216,12 +230,12 @@ if __name__ == "__main__":
             traces.append(Trace(scraped_traces[trace], index))
 
         ## INDEPENDENT TRACE-LIKE ANALYSIS
-        ## TODO ucomment the following line
+        # TODO uncomment the following line
         # single_trace_checker(traces)
 
-        ## TODO ucomment the following line
+        # TODO uncomment the following line
         # for trace in traces:
-        #     trace.show_step_lenghts_hist()
+        #     trace.show_step_lengths_hist()
 
         ## SCATTER PLOT OF DETECTIONS
         scatter_detection(traces)
