@@ -11,8 +11,8 @@ def dummy_colision_finder(csvfile, size):
     """ Parses  a loopy csv file nn/ai. It prints the frame numbers where the additional agents. The print includes agent's id.
         Returns a list of frames where an additional agent was found
 
-    :param csvfile: input file
-    :param size: expected number of agents
+    :arg csvfile: input file
+    :arg size: expected number of agents
     :return frame_numbers_of_collided_agents: list of frames where an additional agent was found
     """
     reader = csv.DictReader(csvfile)
@@ -31,11 +31,22 @@ def dummy_colision_finder(csvfile, size):
     return frame_numbers_of_collided_agents
 
 
+def single_trace_checker(traces):
+    for index, trace in enumerate(traces):
+        print(f"Agent number {index} Number_of_frames {trace.number_of_frames}, frame_range_len "
+              f"{trace.frame_range_len}, trace_lenn {trace.trace_lenn}, "
+              f"max_step_len {trace.max_step_len}, max_step_len_index {trace.max_step_len}, "
+              f"max_step_len_line {trace.max_step_len_line}")
+        if trace.trace_lenn == 0:
+            print("This trace has length of 0. Consider deleting this agent")  ## this can be FP
+        if trace.max_step_len > bee_max_step_len:
+            print("This agent has moved", bee_max_step_len, "in a single step, you might consider deleting it.")
+
+
 def scatter_detection(traces):
     """ Creates a scatter plot of detected traces of each agent.
 
-    #TODO
-    :param traces_lenghts (list): a list of lists of frame numbers where respective agent was tracked
+    :arg traces: (list): a list of lists of frame numbers where respective agent was tracked
     """
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -53,8 +64,8 @@ def scatter_detection(traces):
 def trim_out_additional_agents_over_long_trace(traces, population_size):
     """ Trims out additional appearance of an agent when long traces are over here
 
-    :param traces (list): list of traces
-    :param population_size (int): expected number of agents
+    :arg traces (list) list of traces
+    :arg population_size (int) expected number of agents
     """
 
     ## obtain the ranges with the size of frame more than 100 where all the agents are being tracked
@@ -130,7 +141,6 @@ def trim_out_additional_agents_over_long_trace(traces, population_size):
     for index in traces_indices_to_be_deleted:
         del traces[index]
 
-
     print(len(traces))
     return traces
 
@@ -159,19 +169,15 @@ if __name__ == "__main__":
     bee_max_step_len = 1000
 
     ## CODE
-    i = 0
-    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
-              newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            i = i + 1
-            # print(row['date'], row['err'], row['frame_count'], row['frame_number'], row['frame_timestamp'], row['name'], row['oid'], row['type'], row['x'], row['y'])
-            # print(row['oid'])
 
-    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
-              newline='') as csvfile:
-        print(dummy_colision_finder(csvfile, 2))
-
+    # i = 0
+    # with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
+    #           newline='') as csvfile:
+    #     reader = csv.DictReader(csvfile)
+    #     for row in reader:
+    #         i = i + 1
+    #         print(row['date'], row['err'], row['frame_count'], row['frame_number'], row['frame_timestamp'], row['name'], row['oid'], row['type'], row['x'], row['y'])
+    #         print(row['oid'])
 
     #
     # with open('../data/Video_tracking/190823/20190823_115857275_2BEES_generated_20210507_083510_nn.csv',
@@ -199,27 +205,29 @@ if __name__ == "__main__":
 
     with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
               newline='') as csvfile:
+
+        ## TODO ucomment the following line
+        # print(dummy_colision_finder(csvfile, 2))
+
+        ## PARSER
         scraped_traces = parse_traces(csvfile)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
 
         ## INDEPENDENT TRACE-LIKE ANALYSIS
-        for index, trace in enumerate(traces):
-            print("Agent number", index,
-                  ". Number_of_frames, frame_range_len, trace_lenn, max_step_len, max_step_len_index, max_step_len_line:",
-                  trace)
-            if trace.trace_lenn == 0:
-                print("This trace has length of 0. Consider deleting this agent")  ## this can be FP
-            if trace.max_step_len > bee_max_step_len:
-                print("This agent has moved", bee_max_step_len, "in a single step, you might consider deleting it.")
+        ## TODO ucomment the following line
+        # single_trace_checker(traces)
 
-            # trace.show_step_lenghts_hist()
+        ## TODO ucomment the following line
+        # for trace in traces:
+        #     trace.show_step_lenghts_hist()
 
         ## SCATTER PLOT OF DETECTIONS
         scatter_detection(traces)
 
         traces = trim_out_additional_agents_over_long_trace(traces, 2)
+
         scatter_detection(traces)
         raise Exception()
 
