@@ -235,7 +235,7 @@ if __name__ == "__main__":
 
         # TODO uncomment the following line
         # for trace in traces:
-        #     trace.show_step_lengths_hist()
+        #     trace.show_step_lenghts_hist()
 
         ## SCATTER PLOT OF DETECTIONS
         scatter_detection(traces)
