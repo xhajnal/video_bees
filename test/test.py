@@ -1,7 +1,6 @@
 from src.parse import parse_traces, Trace
 import unittest
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 class MyTestCase(unittest.TestCase):
