@@ -61,6 +61,38 @@ def scatter_detection(traces):
     plt.show()
 
 
+def track_reappearence(traces):
+    """ Tracks the time it takes for an agent to appear when one is lost"""
+    frames_of_loss = []
+    for trace in traces:
+        frames_of_loss.append(trace.frame_range[1])
+
+    frames_of_loss = list(sorted(frames_of_loss))
+    print("frames_of_loss", frames_of_loss)
+
+    # for trace in traces:
+    #     print(trace.frame_range[0])
+
+    frames_of_reappearence = []
+    for frame in frames_of_loss:
+        for trace in traces:
+            if trace.frame_range[0] < frame:
+                continue
+            else:
+                frames_of_reappearence.append(trace.frame_range[0])
+                break
+    print("frames_of_reappearence", frames_of_reappearence)
+
+    time_to_reappeare = list(map(lambda x, y: y - x, frames_of_loss, frames_of_reappearence))
+    print("time_to_reappeare", time_to_reappeare)
+
+    plt.hist(time_to_reappeare, bins=20)
+    plt.xlabel('Step size')
+    plt.ylabel('Count of time to reappear')
+    plt.title(f'Histogram of times to reappear.')
+    plt.show()
+
+
 def trim_out_additional_agents_over_long_trace(traces, population_size):
     """ Trims out additional appearance of an agent when long traces are over here
 
@@ -235,14 +267,19 @@ if __name__ == "__main__":
 
         # TODO uncomment the following line
         # for trace in traces:
-        #     trace.show_step_lenghts_hist()
+        #     trace.show_step_lenghts_hist(bins=5000)
+
+        # TODO uncomment the following line
+        # traces[0].show_step_lenghts_hist(bins=5000)
 
         ## SCATTER PLOT OF DETECTIONS
         scatter_detection(traces)
+        track_reappearence(traces)
 
         traces = trim_out_additional_agents_over_long_trace(traces, 2)
 
         scatter_detection(traces)
+        track_reappearence(traces)
         raise Exception()
 
         ## CROSS-TRACE ANALYSIS

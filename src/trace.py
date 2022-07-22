@@ -9,11 +9,13 @@ class Trace:
         frame_range (tuple): a pair frame numbers, first and last
         number_of_frames (int): number of frames
         frame_range_len (int): length of trace in frames
-        trace_lenn (float): length of trace in x,y
-        max_step_len (float): maximal length of a single step in x,y
-        max_step_len_step_index (int): index of the longest step in x,y
+        trace_lenn (float): length of trace in x,y coordinates
+        max_step_len (float): maximal length of a single step in x,y coordinates
+        max_step_len_step_index (int): index of the longest step in x,y coordinates
         max_step_len_line (int): line of .csv file, where the longest step occurred
         max_step_len_frame_number (int): frame number, where the longest step occurred
+        trace_lengths (dic): step length -> count of the steps of such length
+        times_tracked (list): TODO
     """
 
     def __init__(self, trace, trace_id):
@@ -70,12 +72,29 @@ class Trace:
                     # print("Error:", str(err))
                     raise err
 
-    def show_step_lenghts_hist(self):
+    def show_step_lenghts_hist(self, bins=100):
         """ Histogram of lengths of a single step."""
-        # print(self.trace_lengths)
-        plt.bar(list(self.trace_lengths.keys()), self.trace_lengths.values(), color='g', )
-        plt.xlabel('Count of steps')
-        plt.ylabel('Step size')
+        # # print(self.trace_lengths)
+        # plt.bar(list(self.trace_lengths.keys()), self.trace_lengths.values(), color='g')
+        # plt.xlabel('Step size')
+        # plt.ylabel('Count of steps')
+        # plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
+        # plt.show()
+
+        spam = []
+        for length in self.trace_lengths.keys():
+            spam.extend([length]*self.trace_lengths[length])
+            # if self.trace_lengths[length] > 1:
+            #     print(self.trace_lengths[length])
+
+        # print("hello")
+        # print(len(list(self.trace_lengths.keys())))
+        # print(len(spam))
+        # print(self.trace_lengths.values())
+
+        plt.hist(spam, color='g', bins=bins)
+        plt.xlabel('Step size')
+        plt.ylabel('Count of steps')
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
 
