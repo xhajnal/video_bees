@@ -5,6 +5,7 @@ from termcolor import colored
 from trace import Trace
 import matplotlib.pyplot as plt
 import numpy as np
+from misc import merge_dictionary, is_in, has_overlap, is_before
 
 
 def dummy_colision_finder(csvfile, size):
@@ -52,7 +53,7 @@ def scatter_detection(traces):
     ax1 = fig.add_subplot(111)
 
     for index, trace in enumerate(traces):
-        x = trace.times_tracked
+        x = trace.frames_tracked
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
     plt.xlabel('Frame number')
@@ -61,8 +62,12 @@ def scatter_detection(traces):
     plt.show()
 
 
-def track_reappearence(traces):
-    """ Tracks the time it takes for an agent to appear when one is lost"""
+def track_reappearence(traces, show=True):
+    """ Tracks the time it takes for an agent to appear when one is lost
+
+    :arg traces: (list): a list of lists of frame numbers where respective agent was tracked
+    :arg show: (bool): a flag whether to show the plot
+    """
     frames_of_loss = []
     for trace in traces:
         frames_of_loss.append(trace.frame_range[1])
@@ -86,11 +91,93 @@ def track_reappearence(traces):
     time_to_reappeare = list(map(lambda x, y: y - x, frames_of_loss, frames_of_reappearence))
     print("time_to_reappeare", time_to_reappeare)
 
-    plt.hist(time_to_reappeare, bins=20)
-    plt.xlabel('Step size')
-    plt.ylabel('Count of time to reappear')
-    plt.title(f'Histogram of times to reappear.')
-    plt.show()
+    if show:
+        plt.hist(time_to_reappeare, bins=20)
+        plt.xlabel('Step size')
+        plt.ylabel('Count of time to reappear')
+        plt.title(f'Histogram of times to reappear.')
+        plt.show()
+
+    return time_to_reappeare
+
+
+def merge_two_traces(trace1: Trace, trace2: Trace):
+    """ Puts two traces together
+
+    :arg trace1 (Trace) a Trace to be merged with the following trace
+    :arg trace1 (Trace) a Trace to be merged with the following trace
+    """
+    ## CHECK
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+    if has_overlap(trace1.frame_range, trace2.frame_range):
+        raise Exception("The two traces have an overlap. We cannot merge them.")
+
+    ## MERGE
+    trace1.trace_id = min(trace1.trace_id, trace2.trace_id)
+
+    if is_before(trace1.frame_range, trace2.frame_range):
+        merge_step = math.dist(trace1.locations[-1], trace2.locations[0])
+        trace1.trace_lenn = trace1.trace_lenn + merge_step + trace2.trace_lenn
+
+        trace1.frames_tracked.extend(trace2.frames_tracked)
+
+        trace1.locations.extend(trace2.locations)
+
+    else:
+        merge_step = math.dist(trace2.locations[-1], trace1.locations[0])
+        trace1.trace_lenn = trace2.trace_lenn + merge_step + trace1.trace_lenn
+
+        spam = copy.copy(trace2.frames_tracked)
+        spam.extend(trace1.frames_tracked)
+        trace1.frames_tracked = spam
+
+        spam = copy.copy(trace2.locations)
+        spam.extend(trace1.locations)
+        trace1.locations = spam
+
+
+    trace1.frame_range = (min(trace1.frame_range[0], trace2.frame_range[0]), max(trace1.frame_range[1], trace2.frame_range[1]))
+    trace1.number_of_frames = trace1.number_of_frames + trace2.number_of_frames
+    if has_overlap(trace1.frame_range, trace2.frame_range):
+        trace1.frame_range_len = trace1.frame_range[1] - trace1.frame_range[0]
+    else:
+        trace1.frame_range_len = trace1.frame_range_len + trace2.frame_range_len
+
+    # print("trace1.max_step_len", trace1.max_step_len)
+    # print("trace2.max_step_len", trace2.max_step_len)
+
+    if trace1.max_step_len < trace2.max_step_len:
+        trace1.max_step_len_step_index = trace2.max_step_len_step_index
+        trace1.max_step_len_line = trace2.max_step_len_line
+        trace1.max_step_len_frame_number = trace2.max_step_len_frame_number
+
+    trace1.max_step_len = max(trace1.max_step_len, trace2.max_step_len)
+
+    trace1.trace_lengths = merge_dictionary(trace1.trace_lengths, trace2.trace_lengths)
+
+    # print(trace1.trace_lengths)
+    if round(merge_step, 6) in trace1.trace_lengths.keys():
+        trace1.trace_lengths[round(merge_step, 6)] = trace1.trace_lengths[round(merge_step, 6)] + 1
+    else:
+        trace1.trace_lengths[round(merge_step, 6)] = 1
+    # print(trace1.trace_lengths)
+
+    return trace1
+
+
+def put_traces_together(traces, population_size):
+    """ Puts traces together such that all the agents but one is being tracked
+
+        :arg traces (list) list of traces
+        :arg population_size (int) expected number of agents
+    """
+    reappearence = track_reappearence(traces, show=False)
+    print(len(traces))
+    print(len(reappearence))
+
+    for trace in traces:
+        pass
 
 
 def trim_out_additional_agents_over_long_trace(traces, population_size):
@@ -199,7 +286,7 @@ def parse_traces(csvfile):
         csvfile (file): input file
 
     :returns
-        traces (dic): dictionary of traces 'oid' -> 'frame_number' -> location [x,y]
+        traces (dic): dictionary of traces 'oid' -> 'frame_number' -> [line_id, location [x,y]]
     """
     traces = dict()
     reader = csv.DictReader(csvfile)
@@ -207,7 +294,7 @@ def parse_traces(csvfile):
         if int(row['oid']) not in traces.keys():
             # print("hello", row['oid'])
             traces[int(row['oid'])] = dict()
-        traces[int(row['oid'])][row['frame_number']] = [row[''], [row['x'], row['y']]]
+        traces[int(row['oid'])][int(row['frame_number'])] = [row[''], [float(row['x']), float(row['y'])]]
     return traces
 
 
@@ -259,7 +346,11 @@ if __name__ == "__main__":
         scraped_traces = parse_traces(csvfile)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
+            print(trace)
+            print(scraped_traces[trace])
+            raise Exception()
             traces.append(Trace(scraped_traces[trace], index))
+        raise Exception()
 
         ## INDEPENDENT TRACE-LIKE ANALYSIS
         # TODO uncomment the following line
@@ -280,6 +371,8 @@ if __name__ == "__main__":
 
         scatter_detection(traces)
         track_reappearence(traces)
+
+        put_traces_together(traces, 2)
         raise Exception()
 
         ## CROSS-TRACE ANALYSIS
