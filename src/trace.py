@@ -1,5 +1,8 @@
+import copy
 import math
 import matplotlib.pyplot as plt
+
+from misc import has_overlap, is_before, merge_dictionary, take
 
 
 class Trace:
@@ -19,11 +22,12 @@ class Trace:
         locations (list): list of pairs, locations in each frame
     """
 
-    def __init__(self, trace, trace_id):
+    def __init__(self, trace, trace_id, debug=False):
         """ Parses a single agent trace obtained from the loopy csv file.
 
-            :param trace (dict): 'frame_number' -> [line_id, location [x,y]]
-            :param id (int): id of the trace
+            :arg trace (dict): 'frame_number' -> [line_id, location [x,y]]
+            :arg id (int): id of the trace
+            :arg debug (bool): if True extensive output is shown
         """
         self.trace_id = trace_id
 
@@ -46,11 +50,10 @@ class Trace:
 
         self.trace_lenn = 0
 
-        print(trace)
-
         for index, frame in enumerate(frames):
             self.frames_tracked.append(frame)
-            print(trace[frame])
+            if debug:
+                print(trace[frame])
             self.locations.append(trace[frame][1])
             # print(trace[frames[index]])
             # print(trace[frames[index+1]])
@@ -116,7 +119,68 @@ class Trace:
                f" frame_range_len:{self.frame_range_len} trace_lenn:{self.trace_lenn} " \
                f"max_step_len:{self.max_step_len} max_step_len_step_index:{self.max_step_len_step_index} " \
                f"max_step_len_line:{self.max_step_len_line} max_step_len_frame_number:{self.max_step_len_frame_number} " \
-               f"trace_lengths:{self.trace_lengths} frames_tracked:{self.frames_tracked} locations:{self.locations} "
+               f"trace_lengths:{take(5, self.trace_lengths.items())}[ frames_tracked:{self.frames_tracked[:5]} locations:{self.locations[:5]} "
 
-        
 
+def merge_two_traces(trace1: Trace, trace2: Trace):
+    """ Puts two traces together
+
+    :arg trace1 (Trace) a Trace to be merged with the following trace
+    :arg trace1 (Trace) a Trace to be merged with the following trace
+    """
+    ## CHECK
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+    if has_overlap(trace1.frame_range, trace2.frame_range):
+        raise Exception("The two traces have an overlap. We cannot merge them.")
+
+    ## MERGE
+    trace1.trace_id = min(trace1.trace_id, trace2.trace_id)
+
+    if is_before(trace1.frame_range, trace2.frame_range):
+        merge_step = math.dist(trace1.locations[-1], trace2.locations[0])
+        trace1.trace_lenn = trace1.trace_lenn + merge_step + trace2.trace_lenn
+
+        trace1.frames_tracked.extend(trace2.frames_tracked)
+
+        trace1.locations.extend(trace2.locations)
+
+    else:
+        merge_step = math.dist(trace2.locations[-1], trace1.locations[0])
+        trace1.trace_lenn = trace2.trace_lenn + merge_step + trace1.trace_lenn
+
+        spam = copy.copy(trace2.frames_tracked)
+        spam.extend(trace1.frames_tracked)
+        trace1.frames_tracked = spam
+
+        spam = copy.copy(trace2.locations)
+        spam.extend(trace1.locations)
+        trace1.locations = spam
+
+    trace1.frame_range = (min(trace1.frame_range[0], trace2.frame_range[0]), max(trace1.frame_range[1], trace2.frame_range[1]))
+    trace1.number_of_frames = trace1.number_of_frames + trace2.number_of_frames
+    if has_overlap(trace1.frame_range, trace2.frame_range):
+        trace1.frame_range_len = trace1.frame_range[1] - trace1.frame_range[0]
+    else:
+        trace1.frame_range_len = trace1.frame_range_len + trace2.frame_range_len
+
+    # print("trace1.max_step_len", trace1.max_step_len)
+    # print("trace2.max_step_len", trace2.max_step_len)
+
+    if trace1.max_step_len < trace2.max_step_len:
+        trace1.max_step_len_step_index = trace2.max_step_len_step_index
+        trace1.max_step_len_line = trace2.max_step_len_line
+        trace1.max_step_len_frame_number = trace2.max_step_len_frame_number
+
+    trace1.max_step_len = max(trace1.max_step_len, trace2.max_step_len)
+
+    trace1.trace_lengths = merge_dictionary(trace1.trace_lengths, trace2.trace_lengths)
+
+    # print(trace1.trace_lengths)
+    if round(merge_step, 6) in trace1.trace_lengths.keys():
+        trace1.trace_lengths[round(merge_step, 6)] = trace1.trace_lengths[round(merge_step, 6)] + 1
+    else:
+        trace1.trace_lengths[round(merge_step, 6)] = 1
+    # print(trace1.trace_lengths)
+
+    return trace1

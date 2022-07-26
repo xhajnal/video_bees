@@ -1,4 +1,5 @@
-from src.parse import parse_traces, Trace, merge_two_traces
+from src.parse import parse_traces, Trace
+from trace import merge_two_traces
 import unittest
 import matplotlib.pyplot as plt
 from misc import *

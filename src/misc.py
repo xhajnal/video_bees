@@ -3,6 +3,12 @@ from copy import copy
 from interval import Interval
 from mpmath import mpi
 import pandas as pd
+from itertools import islice
+
+
+def take(n, iterable):
+    "Return first n items of the iterable as a list"
+    return list(islice(iterable, n))
 
 
 def is_in(range1, range2):
