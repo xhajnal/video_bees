@@ -1,4 +1,5 @@
 import csv
+import math
 import sys
 
 from termcolor import colored
@@ -208,12 +209,20 @@ def put_traces_together(traces, population_size, debug=False):
                     continue
                 if trace2.frame_range[0] - step_to <= max_trace_gap and trace2.frame_range_len >= min_trace_length:
                     print(colored(f"MERGING TRACES {traces[index_to_go].trace_id} of frame {traces[index_to_go].frame_range} of length {traces[index_to_go].frame_range_len} and trace {trace2.trace_id} of range {trace2.frame_range} of length {trace2.frame_range_len}", "yellow"))
+                    print(colored(f"the distance of traces in x,y is {math.dist(traces[index_to_go].locations[-1], trace2.locations[0])}", "yellow"))
+                    print(colored(f"which is {math.dist(traces[index_to_go].locations[-1], trace2.locations[0]) / (trace2.frame_range[0] - traces[index_to_go].frame_range[-1])} per frame", "yellow"))
+                    print(colored(f"the distance of traces in frames is {trace2.frame_range[0] - traces[index_to_go].frame_range[-1]}", "yellow"))
                     trace = merge_two_traces(traces[index_to_go], trace2)
                     traces[index_to_go] = trace
                     if debug:
                         print(trace)
                     trace_indices_to_trim.append(index2)
                     step_to = trace.frame_range[1]
+                else:
+                    print(colored(f"NOT MERGING TRACES {traces[index_to_go].trace_id} of frame {traces[index_to_go].frame_range} of length {traces[index_to_go].frame_range_len} and trace {trace2.trace_id} of range {trace2.frame_range} of length {trace2.frame_range_len}", "red"))
+                    print(colored(f"the distance of traces in x,y is {math.dist(traces[index_to_go].locations[-1], trace2.locations[0])}", "red"))
+                    print(colored(f"which is {math.dist(traces[index_to_go].locations[-1], trace2.locations[0]) / (trace2.frame_range[0] - traces[index_to_go].frame_range[-1])} per frame", "red"))
+                    print(colored(f"the distance of traces in frames is {trace2.frame_range[0] - traces[index_to_go].frame_range[-1]}", "red"))
         else:
             step_to = next_step_to
         print(colored(f"jumping to step {step_to}", "blue"))
@@ -244,83 +253,93 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, debug=F
         ranges.append(trace.frame_range)
     ranges = sorted(ranges)
 
-    at_least_two_overlaps = []
-    for index1, range1 in enumerate(ranges[:-1]):
-        current_overlaps = []
-        if debug:
-            print()
-        for index2, range2 in enumerate(ranges):
-            if index1 == index2:
-                continue
+    if population_size == 2:
+        ## CHECKING WHETHER THERE ARE TWO OVERLAPPING TRACES
+        at_least_two_overlaps = []
+        for index1, range1 in enumerate(ranges[:-1]):
+            current_overlaps = []
+            if debug:
+                print()
+            for index2, range2 in enumerate(ranges):
+                if index1 == index2:  # Skip the same index
+                    continue
 
-            if range2[1] <= range1[0]:
-                continue
+                if range2[1] <= range1[0]:  # Skip the traces which end before start of this
+                    continue
 
-            if range2[0] >= range1[1]:  ## Beginning of the further intervals is behind the end of current one
-                if debug:
-                    print("current interval:", range1)
-                    print("The set of overlapping intervals:", current_overlaps)
-                i = -1
-                min_range = 0
-                for index3, range3 in enumerate(current_overlaps):
-                    if len(range3) > min_range:
-                        i = index3
-                        min_range = len(range3)
-                if i == -1:
+                if range2[0] >= range1[1]:  # Beginning of the further intervals is behind the end of current one
+                    # We go through the set of overlapping intervals
                     if debug:
-                        print("there was no overlaping interval")
-                    at_least_two_overlaps.append([])
+                        print("current interval:", range1)
+                        print("The set of overlapping intervals:", current_overlaps)
+                    i = -1
+                    min_range = 0
+                    # We search for the longest overlapping interval
+                    for index3, range3 in enumerate(current_overlaps):
+                        if len(range3) > min_range:
+                            i = index3
+                            min_range = len(range3)
+                    if i == -1:
+                        if debug:
+                            print("there was no overlapping interval")
+                        at_least_two_overlaps.append([])
+                    else:
+                        if debug:
+                            print("picking the longest interval:", current_overlaps[i])
+                        at_least_two_overlaps.append(current_overlaps[i])
+                    # Skipping the intervals which starts further than this interval
+                    break
                 else:
+                    # Check whether the beginning of the two intervals are overlapping
+                    if max(range1[0], range2[0]) > min(range1[1], range2[1]):
+                        print(colored(range1, "red"))
+                        print(colored(range2, "red"))
+                        print("range1[1]", range1[1])
+                        print("range2[0]", range2[0])
+                        print(range2[0] >= range1[1])
+                    # Add the overlap to the list
+                    current_overlaps.append([max(range1[0], range2[0]), min(range1[1], range2[1])])
+                    continue
+        if debug:
+            print(at_least_two_overlaps)
+        # Selecting indices to be deleted
+        indices_to_be_deleted = []
+        for index1, range1 in enumerate(at_least_two_overlaps):
+            if index1 in indices_to_be_deleted:
+                continue
+            for index2, range2 in enumerate(at_least_two_overlaps):
+                if index2 in indices_to_be_deleted:
+                    continue
+                if index1 == index2:
+                    continue
+                # Start of the second interval is beyond end of first, we move on
+                if range2[0] > range1[1]:
+                    break
+                # Range2 is in Range1
+                if range2[0] >= range1[0] and range2[1] <= range1[1]:
                     if debug:
-                        print("picking the longest interval:", current_overlaps[i])
-                    at_least_two_overlaps.append(current_overlaps[i])
-                break
-            else:
-                if max(range1[0], range2[0]) > min(range1[1], range2[1]):
-                    print(colored(range1, "red"))
-                    print(colored(range2, "red"))
-                    print("range1[1]", range1[1])
-                    print("range2[0]", range2[0])
-                    print(range2[0] >= range1[1])
-                # print(range1)
-                # print(range2)
-                # print(max(range1[0], range2[0]))
-                # print(min(range1[1], range2[1]))
-                current_overlaps.append([max(range1[0], range2[0]), min(range1[1], range2[1])])
-                # ranges[index2] = (range1[1], ranges[index2][1])
-                continue
-    if debug:
-        print(at_least_two_overlaps)
-    indices_to_be_deleted = []
-    for index1, range1 in enumerate(at_least_two_overlaps):
-        if index1 in indices_to_be_deleted:
-            continue
-        for index2, range2 in enumerate(at_least_two_overlaps):
-            if index2 in indices_to_be_deleted:
-                continue
-            if index1 == index2:
-                continue
-            if range2[0] > range1[1]:
-                break
-            if range2[0] >= range1[0] and range2[1] <= range1[1]:
-                if debug:
-                    print(f"range index {index2} with value {range2} is in range index {index1} with value {range1}")
-                indices_to_be_deleted.append(index2)
+                        print(f"range index {index2} with value {range2} is in range index {index1} with value {range1}")
+                    indices_to_be_deleted.append(index2)
+    elif population_size == 1:
+        raise NotImplemented()
+    else:
+        raise NotImplemented()
 
+    # Remove duplicates in the list of overlapping traces
     if debug:
         print()
         print(indices_to_be_deleted)
-    indices_to_be_deleted = list(reversed(sorted(list(set(indices_to_be_deleted))))) ## Remove duplicates
+    indices_to_be_deleted = list(reversed(sorted(list(set(indices_to_be_deleted)))))  # Remove duplicates, reverse sort
     if debug:
         print()
         print(indices_to_be_deleted)
     for index in indices_to_be_deleted:
         del at_least_two_overlaps[index]
 
+    # Remove intervals which are redundantly overlapping
     if debug:
         print()
         print(at_least_two_overlaps)
-
     traces_indices_to_be_deleted = []
     for index, tracee in enumerate(traces):
         for range in at_least_two_overlaps:
@@ -395,9 +414,8 @@ if __name__ == "__main__":
     #     ## SCATTER PLOT OF DETECTIONS
     #     scatter_detection(traces)
 
-    with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
-              newline='') as csvfile:
-
+    # with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', newline='') as csvfile:
+    with open('../data/Video_tracking/190823/20190823_114450691_1BEE_generated_20210506_100518_nn.csv', newline='') as csvfile:
         # TODO uncomment the following line
         # print(dummy_colision_finder(csvfile, 2))
 

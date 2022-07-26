@@ -8,7 +8,7 @@ tracking of the bees
 
 ## Data documentation
  -
-''                  - tracking number
+''                  - tracking number - this is probably only up to 1000 (see data/190822/<1bee>)
 date 				- global time stamp (YYYY-MM-DD"T"HH:MM:SS.Miliseconds+??:??) (do not use this)
 err 				- error message
 frame_count 		- frame id
