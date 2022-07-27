@@ -11,8 +11,17 @@ def take(n, iterable):
     return list(islice(iterable, n))
 
 
-def is_in(range1, range2):
-    return mpi(range1) in mpi(range2)
+def is_in(range1, range2, strict=False):
+    """ Returns whether the range1 is in range2.
+
+    :arg range1 (tuple or list) first interval
+    :arg range2 (tuple or list) second interval
+    :arg strict (bool) flag whether use >,< instead of >=, <=
+    """
+    if strict:
+        return range1[0] > range2[0] and range1[1] < range2[1]
+    else:
+        return mpi(range1) in mpi(range2)
 
 
 def has_overlap(range1, range2):

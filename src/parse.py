@@ -3,6 +3,8 @@ import math
 import sys
 
 from termcolor import colored
+
+from misc import is_in
 from trace import Trace, merge_two_traces
 import matplotlib.pyplot as plt
 
@@ -320,30 +322,32 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, debug=F
                     if debug:
                         print(f"range index {index2} with value {range2} is in range index {index1} with value {range1}")
                     indices_to_be_deleted.append(index2)
+        # Remove duplicates in the list of overlapping traces
+        if debug:
+            print()
+            print(indices_to_be_deleted)
+        indices_to_be_deleted = list(
+            reversed(sorted(list(set(indices_to_be_deleted)))))  # Remove duplicates, reverse sort
+        if debug:
+            print()
+            print(indices_to_be_deleted)
+        for index in indices_to_be_deleted:
+            del at_least_two_overlaps[index]
     elif population_size == 1:
-        raise NotImplemented()
+        at_least_two_overlaps = []
+        for index1, range1 in enumerate(ranges):
+            at_least_two_overlaps.append(range1)
     else:
         raise NotImplemented()
 
-    # Remove duplicates in the list of overlapping traces
-    if debug:
-        print()
-        print(indices_to_be_deleted)
-    indices_to_be_deleted = list(reversed(sorted(list(set(indices_to_be_deleted)))))  # Remove duplicates, reverse sort
-    if debug:
-        print()
-        print(indices_to_be_deleted)
-    for index in indices_to_be_deleted:
-        del at_least_two_overlaps[index]
-
-    # Remove intervals which are redundantly overlapping
+    # Remove intervals which are redundantly overlapping - being over at_least_two_overlaps
     if debug:
         print()
         print(at_least_two_overlaps)
     traces_indices_to_be_deleted = []
     for index, tracee in enumerate(traces):
         for range in at_least_two_overlaps:
-            if tracee.frame_range[0] > range[0] and tracee.frame_range[1] < range[1]:
+            if is_in(tracee.frame_range, range, strict=True):
                 traces_indices_to_be_deleted.append(index)
     traces_indices_to_be_deleted = list(reversed(sorted(list(set(traces_indices_to_be_deleted)))))
     for index in traces_indices_to_be_deleted:
@@ -413,9 +417,32 @@ if __name__ == "__main__":
     #
     #     ## SCATTER PLOT OF DETECTIONS
     #     scatter_detection(traces)
+    with open('../data/Video_tracking/190823/20190823_114450691_1BEE_generated_20210506_100518_nn.csv', newline='') as csvfile:
+        ## PARSER
+        scraped_traces = parse_traces(csvfile)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            # print(trace)
+            # print(scraped_traces[trace])
+            traces.append(Trace(scraped_traces[trace], index))
+
+        scatter_detection(traces)
+
+        ## TRIM TRACES
+        before_number_of_traces = len(traces)
+        after_number_of_traces = 0
+        while not before_number_of_traces == after_number_of_traces:
+            before_number_of_traces = len(traces)
+            traces = trim_out_additional_agents_over_long_traces(traces, 1)
+            scatter_detection(traces)
+            traces = put_traces_together(traces, 1)
+            scatter_detection(traces)
+            after_number_of_traces = len(traces)
+
+        track_reappearence(traces)
+        raise Exception()
 
     # with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', newline='') as csvfile:
-    with open('../data/Video_tracking/190823/20190823_114450691_1BEE_generated_20210506_100518_nn.csv', newline='') as csvfile:
         # TODO uncomment the following line
         # print(dummy_colision_finder(csvfile, 2))
 
