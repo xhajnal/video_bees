@@ -6,7 +6,7 @@ from misc import has_overlap, is_before, merge_dictionary, take
 
 
 class Trace:
-    """ Single agent trace
+    """ Single agent trace.
 
         Stores:
         frame_range (tuple): a pair frame numbers, first and last
@@ -25,9 +25,9 @@ class Trace:
     def __init__(self, trace, trace_id, debug=False):
         """ Parses a single agent trace obtained from the loopy csv file.
 
-            :arg trace (dict): 'frame_number' -> [line_id, location [x,y]]
-            :arg id (int): id of the trace
-            :arg debug (bool): if True extensive output is shown
+        :arg trace (dict): 'frame_number' -> [line_id, location [x,y]]
+        :arg id (int): id of the trace
+        :arg debug (bool): if True extensive output is shown
         """
         self.trace_id = trace_id
 
@@ -85,7 +85,7 @@ class Trace:
                     raise err
 
     def show_step_lenghts_hist(self, bins=100):
-        """ Histogram of lengths of a single step."""
+        """ Histogram of lengths of a single step. """
         # # print(self.trace_lengths)
         # plt.bar(list(self.trace_lengths.keys()), self.trace_lengths.values(), color='g')
         # plt.xlabel('Step size')
@@ -111,7 +111,7 @@ class Trace:
         plt.show()
 
     def check_trace_consistency(self):
-        """ Verifies the consistency of a single trace"""
+        """ Verifies the consistency of the trace"""
         assert self.frame_range[0] <= self.frame_range[1]
 
     def __str__(self):

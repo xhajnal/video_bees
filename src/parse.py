@@ -1,9 +1,7 @@
 import csv
 import math
 import sys
-
 from termcolor import colored
-
 from misc import is_in
 from trace import Trace, merge_two_traces
 import matplotlib.pyplot as plt
@@ -35,6 +33,10 @@ def dummy_colision_finder(csvfile, size):
 
 
 def single_trace_checker(traces):
+    """ Checks a single trace.
+
+    :arg traces: (list): a list of Traces
+    """
     print(colored("SINGLE TRACE CHECKER", "blue"))
     for index, trace in enumerate(traces):
         print(colored("Single trace checker", "blue"))
@@ -48,7 +50,7 @@ def single_trace_checker(traces):
 def scatter_detection(traces):
     """ Creates a scatter plot of detected traces of each agent.
 
-    :arg traces: (list): a list of lists of frame numbers where respective agent was tracked
+    :arg traces: (list): a list of Traces
     """
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -66,7 +68,7 @@ def scatter_detection(traces):
 def track_reappearence(traces, show=True, debug=False):
     """ Tracks the time it takes for an agent to appear when one is lost
 
-    :arg traces: (list): a list of lists of frame numbers where respective agent was tracked
+    :arg traces: (list): a list of Traces
     :arg show: (bool): a flag whether to show the plot
     :arg debug (bool) if True extensive output is shown
     """
@@ -242,7 +244,7 @@ def put_traces_together(traces, population_size, debug=False):
 def trim_out_additional_agents_over_long_traces(traces, population_size, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here
 
-    :arg traces (list) list of traces
+    :arg traces (list) list of Traces
     :arg population_size (int) expected number of agents
     :arg debug (bool) if True extensive output is shown
     """

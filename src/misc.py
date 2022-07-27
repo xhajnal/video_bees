@@ -7,7 +7,7 @@ from itertools import islice
 
 
 def take(n, iterable):
-    "Return first n items of the iterable as a list"
+    """ Returns first n items of the iterable as a list. """
     return list(islice(iterable, n))
 
 
@@ -25,6 +25,11 @@ def is_in(range1, range2, strict=False):
 
 
 def has_overlap(range1, range2):
+    """ Returns whether the range1 has an overlap with range2.
+
+    :arg range1 (tuple or list) first interval
+    :arg range2 (tuple or list) second interval
+    """
     assert len(range1) == 2 or isinstance(range1, Interval)
     assert len(range2) == 2 or isinstance(range2, Interval)
     interval1 = copy(range1)
@@ -33,12 +38,22 @@ def has_overlap(range1, range2):
 
 
 def is_before(range1, range2):
+    """ Returns whether the range1 is before range2 in whole range.
+
+    :arg range1 (tuple or list) first interval
+    :arg range2 (tuple or list) second interval
+    """
     assert len(range1) == 2 or isinstance(range1, Interval)
     assert len(range2) == 2 or isinstance(range2, Interval)
     return range1[1] < range2[0]
 
 
 def merge_dictionary(dict_1, dict_2):
+    """ Merges two dictionaries, dict_1 and dict_2, while updating the common keys by summing the values.
+
+    :arg dict_1 (dict) first dictionary
+    :arg dict_2 (dict) second dictionary
+    """
     dict_3 = {**dict_1, **dict_2}
     for key, value in dict_3.items():
         if key in dict_1 and key in dict_2:
