@@ -4,11 +4,6 @@ from analyse import trim_out_additional_agents_over_long_traces, put_traces_toge
     track_reappearence
 
 if __name__ == "__main__":
-    ## VARIABLE DECLARATION
-
-
-    ## CODE
-
     # i = 0
     # with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
     #           newline='') as csvfile:
@@ -51,7 +46,9 @@ if __name__ == "__main__":
 
         scatter_detection(traces)
 
-        traces[0].show_trace_in_xy()
+        figs = traces[0].show_trace_in_xy()
+        #figs = traces[1].show_trace_in_xy()
+        figs = traces[1].show_trace_in_xy(figs)
 
         ## TRIM TRACES
         before_number_of_traces = len(traces)

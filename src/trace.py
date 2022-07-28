@@ -1,6 +1,7 @@
 import copy
 import math
 import matplotlib.pyplot as plt
+from numpy import iterable
 
 from misc import has_overlap, is_before, merge_dictionary, take
 
@@ -110,7 +111,7 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
 
-    def show_trace_in_xy(self):
+    def show_trace_in_xy(self, where=False):
         """ Plots the trace in three plots, trace in x axis and y axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
         """
@@ -120,24 +121,50 @@ class Trace:
             xs.append(locaion[0])
             ys.append(locaion[1])
 
-        plt.scatter(self.frames_tracked, xs, alpha=0.5)
-        plt.xlabel('Time')
-        plt.ylabel('x')
-        plt.title(f'Trace in x axis.')
-        plt.show()
+        ## MAKE AND SHOW PLOTS
+        if where:
+            assert isinstance(where, list)
+            fig1 = where[0][0]
+            ax1 = where[0][1]
+        else:
+            fig_size = (10, 5)
+            fig1, ax1 = plt.subplots()
 
-        plt.scatter(self.frames_tracked, ys, alpha=0.5)
-        plt.xlabel('Time')
-        plt.ylabel('y')
-        plt.title(f'Trace in y axis.')
-        plt.show()
+        ax1.scatter(self.frames_tracked, xs, alpha=0.5)
+        ax1.set_xlabel('Time')
+        ax1.set_xlabel('x')
+        ax1.set_title(f'Trace in x axis.')
+        fig1.show()
 
-        plt.scatter(xs, ys, alpha=0.5)
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title(f'Trace "phase" space.')
-        plt.show()
+        if where:
+            assert isinstance(where, list)
+            fig2 = where[1][0]
+            ax2 = where[1][1]
+        else:
+            fig_size = (10, 5)
+            fig2, ax2 = plt.subplots()
 
+        ax2.scatter(self.frames_tracked, xs, alpha=0.5)
+        ax2.set_xlabel('Time')
+        ax2.set_xlabel('x')
+        ax2.set_title(f'Trace in x axis.')
+        fig2.show()
+
+        if where:
+            assert isinstance(where, list)
+            fig3 = where[2][0]
+            ax3 = where[2][1]
+        else:
+            fig_size = (10, 5)
+            fig3, ax3 = plt.subplots()
+
+        ax3.scatter(xs, ys, alpha=0.5)
+        ax3.set_xlabel('x')
+        ax3.set_xlabel('y')
+        ax3.set_title(f'Trace "phase" space.')
+        fig3.show()
+
+        return [[fig1, ax1], [fig2, ax2], [fig3, ax3]]
 
     def check_trace_consistency(self):
         """ Verifies the consistency of the trace"""
