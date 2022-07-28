@@ -111,9 +111,12 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
 
-    def show_trace_in_xy(self, where=False):
+    def show_trace_in_xy(self, where=False, show=True):
         """ Plots the trace in three plots, trace in x axis and y axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
+
+            :arg where (list) is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
+            :arg show (bool) if True the plots are shown
         """
         xs = []
         ys = []
@@ -134,7 +137,8 @@ class Trace:
         ax1.set_xlabel('Time')
         ax1.set_xlabel('x')
         ax1.set_title(f'Trace in x axis.')
-        fig1.show()
+        if show:
+            fig1.show()
 
         if where:
             assert isinstance(where, list)
@@ -148,7 +152,8 @@ class Trace:
         ax2.set_xlabel('Time')
         ax2.set_xlabel('x')
         ax2.set_title(f'Trace in x axis.')
-        fig2.show()
+        if show:
+            fig2.show()
 
         if where:
             assert isinstance(where, list)
@@ -162,7 +167,8 @@ class Trace:
         ax3.set_xlabel('x')
         ax3.set_xlabel('y')
         ax3.set_title(f'Trace "phase" space.')
-        fig3.show()
+        if show:
+            fig3.show()
 
         return [[fig1, ax1], [fig2, ax2], [fig3, ax3]]
 

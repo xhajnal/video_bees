@@ -46,9 +46,18 @@ if __name__ == "__main__":
 
         scatter_detection(traces)
 
-        figs = traces[0].show_trace_in_xy()
-        #figs = traces[1].show_trace_in_xy()
-        figs = traces[1].show_trace_in_xy(figs)
+        ## CHOSEN TRACE SHOW - choose i, index of trace
+        i = 0
+        traces[i].show_trace_in_xy()
+
+        ## ALL TRACES SHOW
+        for index, trace in enumerate(traces):
+            if index == 0:
+                figs = trace.show_trace_in_xy(show=False)
+            elif index < len(traces):
+                figs = trace.show_trace_in_xy(figs, show=False)
+            else:
+                figs = trace.show_trace_in_xy(figs, show=True)
 
         ## TRIM TRACES
         before_number_of_traces = len(traces)
