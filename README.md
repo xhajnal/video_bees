@@ -1,6 +1,5 @@
-# video_bees
-tracking of the bees 
-
+# Dave
+Fixing video tracking of the bees made by loopy. 
 
 ## Data file types and convetions
 \<name\>\_ai.csv
