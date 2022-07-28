@@ -110,6 +110,35 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
 
+    def show_trace_in_xy(self):
+        """ Plots the trace in three plots, trace in x axis and y axis separately, time on horizontal axis in frame numbers.
+            Last plot is the trace in x,y.
+        """
+        xs = []
+        ys = []
+        for locaion in self.locations:
+            xs.append(locaion[0])
+            ys.append(locaion[1])
+
+        plt.scatter(self.frames_tracked, xs, alpha=0.5)
+        plt.xlabel('Time')
+        plt.ylabel('x')
+        plt.title(f'Trace in x axis.')
+        plt.show()
+
+        plt.scatter(self.frames_tracked, ys, alpha=0.5)
+        plt.xlabel('Time')
+        plt.ylabel('y')
+        plt.title(f'Trace in y axis.')
+        plt.show()
+
+        plt.scatter(xs, ys, alpha=0.5)
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Trace "phase" space.')
+        plt.show()
+
+
     def check_trace_consistency(self):
         """ Verifies the consistency of the trace"""
         assert self.frame_range[0] <= self.frame_range[1]
