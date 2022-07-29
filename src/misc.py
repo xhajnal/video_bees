@@ -1,5 +1,4 @@
 from copy import copy
-
 from interval import Interval
 from mpmath import mpi
 import pandas as pd

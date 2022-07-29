@@ -222,8 +222,8 @@ def put_traces_together(traces, population_size, debug=False):
 
         if len(next_steps_to) == population_size:
             step_to = next_step_to
-            ## look for a mergable trace
-            print(colored("Gonna have a look for a mergable traces", "blue"))
+            ## look for a mergeable trace
+            print(colored("Gonna have a look for a mergeable traces", "blue"))
             for index2, trace2 in enumerate(traces):
                 assert isinstance(trace2, Trace)
                 if index2 in trace_indices_to_trim:
@@ -325,15 +325,15 @@ def track_reappearence(traces, show=True, debug=False):
     if debug:
         print("frames_of_reappearence", frames_of_reappearence)
 
-    time_to_reappeare = list(map(lambda x, y: y - x, frames_of_loss, frames_of_reappearence))
+    time_to_reappear = list(map(lambda x, y: y - x, frames_of_loss, frames_of_reappearence))
     if debug:
-        print("time_to_reappeare", time_to_reappeare)
+        print("time_to_reappear", time_to_reappear)
 
     if show:
-        plt.hist(time_to_reappeare, bins=20)
+        plt.hist(time_to_reappear, bins=20)
         plt.xlabel('Step size')
         plt.ylabel('Count of time to reappear')
         plt.title(f'Histogram of times to reappear.')
         plt.show()
 
-    return time_to_reappeare
+    return time_to_reappear

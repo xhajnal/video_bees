@@ -1,8 +1,6 @@
 import copy
 import math
 import matplotlib.pyplot as plt
-from numpy import iterable
-
 from misc import has_overlap, is_before, merge_dictionary, take
 
 
@@ -65,9 +63,9 @@ class Trace:
                 # print("traces frames index, x,y part", trace[str(frames[index])][1])
                 # print("map it to floats", list(map(float, (trace[str(frames[index])][1]))))
                 step_len = math.dist(list(map(float, (trace[frames[index]][1]))),
-                                           list(map(float, (trace[frames[index + 1]][1]))))
+                                     list(map(float, (trace[frames[index + 1]][1]))))
                 approx_step_len = round(step_len, 6)
-                if approx_step_len in self.trace_lengths.keys():  ## count the number of lenghts
+                if approx_step_len in self.trace_lengths.keys():  ## count the number of lengths
                     self.trace_lengths[approx_step_len] = self.trace_lengths[approx_step_len] + 1
                 else:
                     self.trace_lengths[approx_step_len] = 1
@@ -85,7 +83,7 @@ class Trace:
                     # print("Error:", str(err))
                     raise err
 
-    def show_step_lenghts_hist(self, bins=100):
+    def show_step_lengths_hist(self, bins=100):
         """ Histogram of lengths of a single step. """
         # # print(self.trace_lengths)
         # plt.bar(list(self.trace_lengths.keys()), self.trace_lengths.values(), color='g')
@@ -120,9 +118,9 @@ class Trace:
         """
         xs = []
         ys = []
-        for locaion in self.locations:
-            xs.append(locaion[0])
-            ys.append(locaion[1])
+        for location in self.locations:
+            xs.append(location[0])
+            ys.append(location[1])
 
         ## MAKE AND SHOW PLOTS
         if where:
@@ -130,7 +128,6 @@ class Trace:
             fig1 = where[0][0]
             ax1 = where[0][1]
         else:
-            fig_size = (10, 5)
             fig1, ax1 = plt.subplots()
 
         ax1.scatter(self.frames_tracked, xs, alpha=0.5)
@@ -145,7 +142,6 @@ class Trace:
             fig2 = where[1][0]
             ax2 = where[1][1]
         else:
-            fig_size = (10, 5)
             fig2, ax2 = plt.subplots()
 
         ax2.scatter(self.frames_tracked, xs, alpha=0.5)
@@ -160,7 +156,6 @@ class Trace:
             fig3 = where[2][0]
             ax3 = where[2][1]
         else:
-            fig_size = (10, 5)
             fig3, ax3 = plt.subplots()
 
         ax3.scatter(xs, ys, alpha=0.5)

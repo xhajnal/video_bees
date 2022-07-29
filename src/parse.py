@@ -27,7 +27,7 @@ def dummy_colision_finder(csvfile, size):
     return frame_numbers_of_collided_agents
 
 
-def parse_traces(csvfile):
+def parse_traces(csv_file):
     """ Parses a loopy csv file nn/ai and returns a dictionary of traces 'oid' -> 'frame_number' -> location [x,y]
 
     :arg
@@ -38,7 +38,7 @@ def parse_traces(csvfile):
     """
     print(colored("PARSE TRACES", "blue"))
     traces = dict()
-    reader = csv.DictReader(csvfile)
+    reader = csv.DictReader(csv_file)
     for row in reader:
         if int(row['oid']) not in traces.keys():
             # print("hello", row['oid'])

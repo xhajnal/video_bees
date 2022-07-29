@@ -1,5 +1,5 @@
-from src.parse import parse_traces, Trace
-from trace import merge_two_traces
+from src.parse import parse_traces
+from trace import merge_two_traces, Trace
 import unittest
 import matplotlib.pyplot as plt
 from misc import *
@@ -10,11 +10,11 @@ class MyTestCase(unittest.TestCase):
     #     pass
     #
     # def defTestscatterPlot(self):
-    #     with open('../test/test.csv', newline='') as csvfile:
+    #     with open('../test/test.csv', newline='') as csv_file:
     #         print("hello")
-    #         traces = parse_traces(csvfile)
+    #         traces = parse_traces(csv_file)
     def test_misc(self):
-        assert has_overlap([1,7], [8,9]) is False
+        assert has_overlap([1, 7], [8, 9]) is False
         assert has_overlap([1, 7], [7, 9]) is False
         assert has_overlap([8, 9], [1, 7]) is False
         assert has_overlap([7, 9], [1, 7]) is False
@@ -24,25 +24,22 @@ class MyTestCase(unittest.TestCase):
         assert has_overlap([3, 6], [3, 9]) is True
         assert has_overlap([1, 7], [1, 7]) is True
 
-
     def testParseTraces(self):
-        with open('../test/test.csv', newline='') as csvfile:
-            traces = parse_traces(csvfile)
-            traces_lenghts = []
+        with open('../test/test.csv', newline='') as csv_file:
+            traces = parse_traces(csv_file)
+            traces_lengths = []
             for index, trace in enumerate(traces.keys()):
-                traces_lenghts.append(Trace(traces[trace], index))
+                traces_lengths.append(Trace(traces[trace], index))
 
             fig = plt.figure()
             ax1 = fig.add_subplot(111)
 
-            for index, trace in enumerate(traces_lenghts):
+            for index, trace in enumerate(traces_lengths):
                 x = trace.frames_tracked
                 y = [index] * len(x)
                 ax1.scatter(x, y, alpha=0.5)
             plt.show()
 
-
-            # print()
             print(traces[0])
             trace0 = Trace(traces[0], 0)
             print(trace0)
@@ -75,8 +72,8 @@ class MyTestCase(unittest.TestCase):
 
             # print(trace0.frames_tracked)
 
-            trace0.show_step_lenghts_hist()
-            trace1.show_step_lenghts_hist()
+            trace0.show_step_lengths_hist()
+            trace1.show_step_lengths_hist()
 
             trace3 = Trace(traces[3], 3)
             # print(trace0)
