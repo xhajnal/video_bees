@@ -2,16 +2,16 @@ import csv
 from termcolor import colored
 
 
-def dummy_colision_finder(csvfile, size):
+def dummy_collision_finder(csv_file, size):
     """ Parses  a loopy csv file nn/ai. It prints the frame numbers where the additional agents. The print includes agent's id.
         Returns a list of frames where an additional agent was found
 
-    :arg csvfile: input file
+    :arg csv_file: input file
     :arg size: expected number of agents
     :return frame_numbers_of_collided_agents: list of frames where an additional agent was found
     """
     print(colored("DUMMY COLLISION FINDER", "blue"))
-    reader = csv.DictReader(csvfile)
+    reader = csv.DictReader(csv_file)
     i = 0
     frame_numbers_of_collided_agents = []
 
@@ -31,7 +31,7 @@ def parse_traces(csv_file):
     """ Parses a loopy csv file nn/ai and returns a dictionary of traces 'oid' -> 'frame_number' -> location [x,y]
 
     :arg
-        csvfile (file): input file
+        csv_file (file): input file
 
     :returns
         traces (dic): dictionary of traces 'oid' -> 'frame_number' -> [line_id, location [x,y]]

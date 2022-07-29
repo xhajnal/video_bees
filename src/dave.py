@@ -6,8 +6,8 @@ from analyse import trim_out_additional_agents_over_long_traces, put_traces_toge
 if __name__ == "__main__":
     # i = 0
     # with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv',
-    #           newline='') as csvfile:
-    #     reader = csv.DictReader(csvfile)
+    #           newline='') as csv_file:
+    #     reader = csv.DictReader(csv_file)
     #     for row in reader:
     #         i = i + 1
     #         print(row['date'], row['err'], row['frame_count'], row['frame_number'], row['frame_timestamp'], row['name'], row['oid'], row['type'], row['x'], row['y'])
@@ -15,8 +15,8 @@ if __name__ == "__main__":
 
     #
     # with open('../data/Video_tracking/190823/20190823_115857275_2BEES_generated_20210507_083510_nn.csv',
-    #           newline='') as csvfile:
-    #     scraped_traces = parse_traces(csvfile)
+    #           newline='') as csv_file:
+    #     scraped_traces = parse_traces(csv_file)
     #     traces = []
     #     for index, trace in enumerate(scraped_traces.keys()):
     #         traces.append(Trace(scraped_traces[trace], index))
@@ -24,20 +24,20 @@ if __name__ == "__main__":
     #     ## INDEPENDENT TRACE-LIKE ANALYSIS
     #     for index, trace in enumerate(traces):
     #         print("Agent number", index,
-    #               ". Number_of_frames, frame_range_len, trace_lenn, max_step_len, max_step_len_index, max_step_len_line:",
+    #               ". Number_of_frames, frame_range_len, trace_length, max_step_len, max_step_len_index, max_step_len_line:",
     #               trace)
-    #         if trace.trace_lenn == 0:
+    #         if trace.trace_length == 0:
     #             print("This trace has length of 0. Consider deleting this agent")  ## this can be FP
     #         if trace.max_step_len > bee_max_step_len:
     #             print("This agent has moved", bee_max_step_len, "in a single step, you might consider deleting it.")
     #
-    #         # trace.show_step_lenghts_hist()
+    #         # trace.show_step_lengths_hist()
     #
     #     ## SCATTER PLOT OF DETECTIONS
     #     scatter_detection(traces)
-    with open('../data/Video_tracking/190823/20190823_114450691_1BEE_generated_20210506_100518_nn.csv', newline='') as csvfile:
+    with open('../data/Video_tracking/190823/20190823_114450691_1BEE_generated_20210506_100518_nn.csv', newline='') as csv_file:
         ## PARSER
-        scraped_traces = parse_traces(csvfile)
+        scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             # print(trace)
@@ -73,12 +73,12 @@ if __name__ == "__main__":
         track_reappearence(traces)
         raise Exception()
 
-    # with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', newline='') as csvfile:
+    # with open('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', newline='') as csv_file:
         # TODO uncomment the following line
-        # print(dummy_colision_finder(csvfile, 2))
+        # print(dummy_collision_finder(csv_file, 2))
 
         ## PARSER
-        scraped_traces = parse_traces(csvfile)
+        scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             # print(trace)
@@ -91,10 +91,10 @@ if __name__ == "__main__":
 
         # TODO uncomment the following line
         # for trace in traces:
-        #     trace.show_step_lenghts_hist(bins=5000)
+        #     trace.show_step_lengths_hist(bins=5000)
 
         # TODO uncomment the following line
-        # traces[0].show_step_lenghts_hist(bins=5000)
+        # traces[0].show_step_lengths_hist(bins=5000)
 
         ## SCATTER PLOT OF DETECTIONS
         scatter_detection(traces)

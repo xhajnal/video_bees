@@ -47,7 +47,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(trace0.frame_range, (1620, 1622))
             self.assertEqual(trace0.number_of_frames, 3)
             self.assertEqual(trace0.frame_range_len, 2)
-            self.assertAlmostEqual(trace0.trace_lenn, 4.242640687119286)
+            self.assertAlmostEqual(trace0.trace_length, 4.242640687119286)
             self.assertAlmostEqual(trace0.max_step_len, 2.8284271247461903)
             self.assertEqual(trace0.max_step_len_step_index, 1)
             self.assertEqual(trace0.max_step_len_line, 3)
@@ -61,7 +61,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(trace1.frame_range, (1620, 1622))
             self.assertEqual(trace1.number_of_frames, 3)
             self.assertEqual(trace1.frame_range_len, 2)
-            self.assertAlmostEqual(trace1.trace_lenn, 7.6212327846342935)
+            self.assertAlmostEqual(trace1.trace_length, 7.6212327846342935)
             self.assertAlmostEqual(trace1.max_step_len, 5.385164807134505)
             self.assertEqual(trace1.max_step_len_step_index, 0)
             self.assertEqual(trace1.max_step_len_line, 1)
@@ -88,7 +88,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(merged_trace.frame_range, (1620, 1625))
             self.assertEqual(merged_trace.number_of_frames, 6)
             self.assertEqual(merged_trace.frame_range_len, 5)
-            self.assertAlmostEqual(merged_trace.trace_lenn, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
+            self.assertAlmostEqual(merged_trace.trace_length, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
             self.assertAlmostEqual(merged_trace.max_step_len, 5.3851648071)
             self.assertEqual(merged_trace.max_step_len_step_index, 0)
             self.assertEqual(merged_trace.max_step_len_line, 7)
@@ -96,7 +96,7 @@ class MyTestCase(unittest.TestCase):
             # trace3.trace_lengths: {1.414214: 1, 2.828427: 1}
             # trace3.trace_lengths: {5.385165: 1, 2.236068: 1}
             # merge step: math.dist([3,3], [0,0])== 4.242640687119285
-            self.assertDictEqual(merged_trace.trace_lengths, {1.414214: 1, 2.828427: 1, 5.385165: 1, 2.236068: 1, 4.242641:1})
+            self.assertDictEqual(merged_trace.trace_lengths, {1.414214: 1, 2.828427: 1, 5.385165: 1, 2.236068: 1, 4.242641: 1})
             self.assertEqual(merged_trace.frames_tracked, [1620, 1621, 1622, 1623, 1624, 1625])
             self.assertEqual(merged_trace.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
 
@@ -109,7 +109,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(merged_trace.frame_range, (1620, 1625))
             self.assertEqual(merged_trace.number_of_frames, 6)
             self.assertEqual(merged_trace.frame_range_len, 5)
-            self.assertAlmostEqual(merged_trace.trace_lenn, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
+            self.assertAlmostEqual(merged_trace.trace_length, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
             self.assertAlmostEqual(merged_trace.max_step_len, 5.3851648071)
             self.assertEqual(merged_trace.max_step_len_step_index, 0)
             self.assertEqual(merged_trace.max_step_len_line, 7)

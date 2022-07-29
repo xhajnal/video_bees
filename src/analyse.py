@@ -116,8 +116,8 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, debug=F
         print(at_least_two_overlaps)
     traces_indices_to_be_deleted = []
     for index, tracee in enumerate(traces):
-        for range in at_least_two_overlaps:
-            if is_in(tracee.frame_range, range, strict=True):
+        for overlap_range in at_least_two_overlaps:
+            if is_in(tracee.frame_range, overlap_range, strict=True):
                 traces_indices_to_be_deleted.append(index)
     traces_indices_to_be_deleted = list(reversed(sorted(list(set(traces_indices_to_be_deleted)))))
     for index in traces_indices_to_be_deleted:
@@ -165,7 +165,7 @@ def put_traces_together(traces, population_size, debug=False):
     do_skip = False
     while step_to <= video_range[1]:
         next_steps_to = []
-        indicies_in = []
+        indices_in = []
         for index, trace in enumerate(traces):
             if index in trace_indices_to_trim:
                 continue
@@ -174,7 +174,7 @@ def put_traces_together(traces, population_size, debug=False):
                 if debug:
                     print(colored(f"adding trace {index} of {trace.frame_range} to in between", "yellow"))
                 next_steps_to.append(trace.frame_range[1])
-                indicies_in.append(index)
+                indices_in.append(index)
             else:
                 if debug:
                     print(colored(f"skipping trace {index} of {trace.frame_range}", "red"))
@@ -212,11 +212,11 @@ def put_traces_together(traces, population_size, debug=False):
                 continue
 
         spam = next_steps_to.index(next_step_to)
-        index_to_go = indicies_in[spam]
+        index_to_go = indices_in[spam]
         if debug:
             print("CHECKING")
             print("next_steps_to", next_steps_to)
-            print("indicies_in", indicies_in)
+            print("indices_in", indices_in)
             print("next_step_to", next_step_to)
             print("index_to_go", index_to_go)
 
@@ -271,7 +271,7 @@ def single_trace_checker(traces):
     for index, trace in enumerate(traces):
         print(colored("Single trace checker", "blue"))
         print(colored(f"Checking trace: {trace}", "blue"))
-        if trace.trace_lenn == 0:
+        if trace.trace_length == 0:
             print(colored("This trace has length of 0. Consider deleting this agent", "blue"))  ## this can be FP
         if trace.max_step_len > get_bee_max_step_len():
             print(colored(f"This agent has moved {get_bee_max_step_len()} in a single step, you might consider deleting it.", "blue"))

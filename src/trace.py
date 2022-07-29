@@ -11,7 +11,7 @@ class Trace:
         frame_range (tuple): a pair frame numbers, first and last
         number_of_frames (int): number of frames
         frame_range_len (int): length of trace in frames
-        trace_lenn (float): length of trace in x,y coordinates
+        trace_length (float): length of trace in x,y coordinates
         max_step_len (float): maximal length of a single step in x,y coordinates
         max_step_len_step_index (int): index of the longest step in x,y coordinates
         max_step_len_line (int): line of .csv file, where the longest step occurred
@@ -47,7 +47,7 @@ class Trace:
 
         self.locations = []
 
-        self.trace_lenn = 0
+        self.trace_length = 0
 
         for index, frame in enumerate(frames):
             self.frames_tracked.append(frame)
@@ -74,7 +74,7 @@ class Trace:
                     self.max_step_len_step_index = index
                     self.max_step_len_line = int(trace[frames[index]][0])
                     self.max_step_len_frame_number = frame
-                self.trace_lenn = self.trace_lenn + step_len
+                self.trace_length = self.trace_length + step_len
             except IndexError as err:
                 if not index == len(frames) - 1:
                     # print(index)
@@ -173,7 +173,7 @@ class Trace:
 
     def __str__(self):
         return f"trace_id:{self.trace_id} frame_range:{self.frame_range} number_of_frames:{self.number_of_frames} " \
-               f" frame_range_len:{self.frame_range_len} trace_lenn:{self.trace_lenn} " \
+               f" frame_range_len:{self.frame_range_len} trace_length:{self.trace_length} " \
                f"max_step_len:{self.max_step_len} max_step_len_step_index:{self.max_step_len_step_index} " \
                f"max_step_len_line:{self.max_step_len_line} max_step_len_frame_number:{self.max_step_len_frame_number} " \
                f"trace_lengths:{take(5, self.trace_lengths.items())}[ frames_tracked:{self.frames_tracked[:5]} locations:{self.locations[:5]} "
@@ -183,7 +183,7 @@ def merge_two_traces(trace1: Trace, trace2: Trace):
     """ Puts two traces together
 
     :arg trace1 (Trace) a Trace to be merged with the following trace
-    :arg trace1 (Trace) a Trace to be merged with the following trace
+    :arg trace2 (Trace) a Trace to be merged with the following trace
     """
     ## CHECK
     assert isinstance(trace1, Trace)
@@ -196,7 +196,7 @@ def merge_two_traces(trace1: Trace, trace2: Trace):
 
     if is_before(trace1.frame_range, trace2.frame_range):
         merge_step = math.dist(trace1.locations[-1], trace2.locations[0])
-        trace1.trace_lenn = trace1.trace_lenn + merge_step + trace2.trace_lenn
+        trace1.trace_length = trace1.trace_length + merge_step + trace2.trace_length
 
         trace1.frames_tracked.extend(trace2.frames_tracked)
 
@@ -204,7 +204,7 @@ def merge_two_traces(trace1: Trace, trace2: Trace):
 
     else:
         merge_step = math.dist(trace2.locations[-1], trace1.locations[0])
-        trace1.trace_lenn = trace2.trace_lenn + merge_step + trace1.trace_lenn
+        trace1.trace_length = trace2.trace_length + merge_step + trace1.trace_length
 
         spam = copy.copy(trace2.frames_tracked)
         spam.extend(trace1.frames_tracked)
