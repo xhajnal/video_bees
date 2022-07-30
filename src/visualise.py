@@ -1,10 +1,11 @@
 from matplotlib import pyplot as plt
 
 
-def scatter_detection(traces):
+def scatter_detection(traces, subtitle=False):
     """ Creates a scatter plot of detected traces of each agent.
 
     :arg traces: (list): a list of Traces
+    :arg subtitle: (string): subtitle of the plot
     """
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -15,5 +16,10 @@ def scatter_detection(traces):
         ax1.scatter(x, y, alpha=0.5)
     plt.xlabel('Frame number')
     plt.ylabel('Agent id')
-    plt.title(f'Scatter plot of detections of individual agents over time.')
+    title = f'Scatter plot of detections of individual agents over time.'
+    if subtitle:
+        assert isinstance(subtitle, str)
+        plt.title(title + "\n" + subtitle)
+    else:
+        plt.title(title)
     plt.show()

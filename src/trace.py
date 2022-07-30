@@ -133,8 +133,11 @@ class Trace:
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
         ax1.plot(self.frames_tracked, xs, alpha=0.5)
         ax1.set_xlabel('Time')
-        ax1.set_xlabel('x')
-        ax1.set_title(f'Trace in x-axis.')
+        ax1.set_ylabel('x')
+        if where:
+            ax1.set_title(f'Traces in x-axis.')
+        else:
+            ax1.set_title(f'Trace {self.trace_id} in x-axis.')
         if show:
             fig1.show()
 
@@ -148,8 +151,11 @@ class Trace:
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
         ax2.plot(self.frames_tracked, ys, alpha=0.5)
         ax2.set_xlabel('Time')
-        ax2.set_xlabel('y')
-        ax2.set_title(f'Trace in y-axis.')
+        ax2.set_ylabel('y')
+        if where:
+            ax2.set_title(f'Traces in y-axis.')
+        else:
+            ax2.set_title(f'Trace {self.trace_id} in y-axis.')
         if show:
             fig2.show()
 
@@ -163,8 +169,11 @@ class Trace:
         # ax3.scatter(xs, ys, alpha=0.5)
         ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5)
         ax3.set_xlabel('x')
-        ax3.set_xlabel('y')
-        ax3.set_title(f'Trace "phase" space.')
+        ax3.set_ylabel('y')
+        if where:
+            ax3.set_title(f'Traces "phase" space.')
+        else:
+            ax3.set_title(f'Trace {self.trace_id} "phase" space.')
         if show:
             fig3.show()
 

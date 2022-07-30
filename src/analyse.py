@@ -6,10 +6,11 @@ from trace import Trace
 from visualise import scatter_detection
 
 
-def analyse(file_path):
+def analyse(file_path, population_size):
     """ Runs the whole file analysis
 
     :arg file_path: (str): path to csv file
+    :arg population_size (int) expected number of agents
     """
     with open(file_path, newline='') as csv_file:
         ## PARSER
@@ -21,11 +22,12 @@ def analyse(file_path):
             traces.append(Trace(scraped_traces[trace], index))
 
         single_trace_checker(traces)
-        scatter_detection(traces)
+        scatter_detection(traces, subtitle="Initial.")
 
-        ## CHOSEN TRACE SHOW - choose i, index of trace
-        i = 0
-        traces[i].show_trace_in_xy()
+        if population_size > 1:
+            ## CHOSEN TRACE SHOW - choose i, index of trace
+            i = 0
+            traces[i].show_trace_in_xy()
 
         ## ALL TRACES SHOW
         for index, trace in enumerate(traces):
@@ -41,10 +43,10 @@ def analyse(file_path):
         after_number_of_traces = 0
         while not before_number_of_traces == after_number_of_traces:
             before_number_of_traces = len(traces)
-            traces = trim_out_additional_agents_over_long_traces(traces, 1)
-            scatter_detection(traces)
-            traces = put_traces_together(traces, 1)
-            scatter_detection(traces)
+            traces = trim_out_additional_agents_over_long_traces(traces, population_size)
+            scatter_detection(traces, subtitle="after trimming")
+            traces = put_traces_together(traces, population_size)
+            scatter_detection(traces, subtitle="after putting traces together")
             after_number_of_traces = len(traces)
 
         track_reappearence(traces)
