@@ -110,7 +110,7 @@ class Trace:
         plt.show()
 
     def show_trace_in_xy(self, where=False, show=True):
-        """ Plots the trace in three plots, trace in x axis and y axis separately, time on horizontal axis in frame numbers.
+        """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
 
             :arg where (list) is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
@@ -134,7 +134,7 @@ class Trace:
         ax1.plot(self.frames_tracked, xs, alpha=0.5)
         ax1.set_xlabel('Time')
         ax1.set_xlabel('x')
-        ax1.set_title(f'Trace in x axis.')
+        ax1.set_title(f'Trace in x-axis.')
         if show:
             fig1.show()
 
@@ -148,8 +148,8 @@ class Trace:
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
         ax2.plot(self.frames_tracked, ys, alpha=0.5)
         ax2.set_xlabel('Time')
-        ax2.set_xlabel('x')
-        ax2.set_title(f'Trace in x axis.')
+        ax2.set_xlabel('y')
+        ax2.set_title(f'Trace in y-axis.')
         if show:
             fig2.show()
 
@@ -161,7 +161,7 @@ class Trace:
             fig3, ax3 = plt.subplots()
 
         # ax3.scatter(xs, ys, alpha=0.5)
-        ax3.plot(xs, ys, alpha=0.5)
+        ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5)
         ax3.set_xlabel('x')
         ax3.set_xlabel('y')
         ax3.set_title(f'Trace "phase" space.')

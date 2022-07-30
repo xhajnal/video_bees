@@ -50,7 +50,7 @@ if __name__ == "__main__":
         print(trace.max_step_len)
         trace.show_trace_in_xy()
 
-        raise Exception()
+        # raise Exception()
 
     with open('../data/Video_tracking/190823/20190823_114450691_1BEE_generated_20210506_100518_nn.csv', newline='') as csv_file:
         ## PARSER
