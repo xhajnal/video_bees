@@ -35,6 +35,23 @@ if __name__ == "__main__":
     #
     #     ## SCATTER PLOT OF DETECTIONS
     #     scatter_detection(traces)
+    with open('../data/Video_tracking/190822/20190822_111607344_1BEE_generated_20210430_080914_nn.csv',
+              newline='') as csv_file:
+        ## PARSER
+        scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            # print(trace)
+            # print(scraped_traces[trace])
+            traces.append(Trace(scraped_traces[trace], index))
+
+        trace = traces[0]
+        assert isinstance(trace, Trace)
+        print(trace.max_step_len)
+        trace.show_trace_in_xy()
+
+        raise Exception()
+
     with open('../data/Video_tracking/190823/20190823_114450691_1BEE_generated_20210506_100518_nn.csv', newline='') as csv_file:
         ## PARSER
         scraped_traces = parse_traces(csv_file)

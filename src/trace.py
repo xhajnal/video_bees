@@ -130,7 +130,8 @@ class Trace:
         else:
             fig1, ax1 = plt.subplots()
 
-        ax1.scatter(self.frames_tracked, xs, alpha=0.5)
+        # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
+        ax1.plot(self.frames_tracked, xs, alpha=0.5)
         ax1.set_xlabel('Time')
         ax1.set_xlabel('x')
         ax1.set_title(f'Trace in x axis.')
@@ -144,7 +145,8 @@ class Trace:
         else:
             fig2, ax2 = plt.subplots()
 
-        ax2.scatter(self.frames_tracked, xs, alpha=0.5)
+        # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
+        ax2.plot(self.frames_tracked, ys, alpha=0.5)
         ax2.set_xlabel('Time')
         ax2.set_xlabel('x')
         ax2.set_title(f'Trace in x axis.')
@@ -158,7 +160,8 @@ class Trace:
         else:
             fig3, ax3 = plt.subplots()
 
-        ax3.scatter(xs, ys, alpha=0.5)
+        # ax3.scatter(xs, ys, alpha=0.5)
+        ax3.plot(xs, ys, alpha=0.5)
         ax3.set_xlabel('x')
         ax3.set_xlabel('y')
         ax3.set_title(f'Trace "phase" space.')
