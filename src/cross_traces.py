@@ -7,11 +7,12 @@ from trace import Trace, merge_two_traces
 
 
 def trim_out_additional_agents_over_long_traces(traces, population_size, debug=False):
-    """ Trims out additional appearance of an agent when long traces are over here
+    """ Trims out additional appearance of an agent when long traces are over here.
 
-    :arg traces (list) list of Traces
-    :arg population_size (int) expected number of agents
-    :arg debug (bool) if True extensive output is shown
+    :arg traces: (list): list of Traces
+    :arg population_size: (int): expected number of agents
+    :arg debug: (bool): if True extensive output is shown
+    :returns: traces: (list): list of trimmed Traces
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES", "blue"))
     ## obtain the ranges with the size of frame more than 100 where all the agents are being tracked
@@ -128,11 +129,12 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, debug=F
 
 
 def put_traces_together(traces, population_size, debug=False):
-    """ Puts traces together such that all the agents but one is being tracked
+    """ Puts traces together such that all the agents but one is being tracked.
 
-        :arg traces (list) list of traces
-        :arg population_size (int) expected number of agents
-        :arg debug (bool) if True extensive output is shown
+    :arg traces (list) list of traces
+    :arg population_size (int) expected number of agents
+    :arg debug (bool) if True extensive output is shown
+    :returns: traces: (list): list of concatenated Traces
     """
     print(colored("PUT TRACES TOGETHER", "blue"))
     ## params
@@ -260,11 +262,13 @@ def put_traces_together(traces, population_size, debug=False):
 
 
 def track_reappearence(traces, show=True, debug=False):
-    """ Tracks the time it takes for an agent to appear when one is lost
+    """ Tracks the time it takes for an agent to appear when one is lost (end of a trace)
 
     :arg traces: (list): a list of Traces
     :arg show: (bool): a flag whether to show the plot
-    :arg debug (bool) if True extensive output is shown
+    :arg debug: (bool): if True extensive output is shown
+
+    :returns: time_to_reappear (list): list of times for an agent to reappear after end of a trace
     """
     print(colored("TRACE REAPPEARENCE", "blue"))
     frames_of_loss = []
@@ -305,10 +309,10 @@ def track_reappearence(traces, show=True, debug=False):
 
 ## CROSS-TRACE ANALYSIS
 def cross_trace_analyse(traces, scraped_traces):
-    """ Checks traces against each other
+    """ Checks traces against each other.
 
-        :arg traces: (list): a list of Traces
-        :arg scraped_traces: (list) a list of scraped traces obtained by parse_traces()
+    :arg traces: list: a list of Traces
+    :arg scraped_traces: list: a list of scraped traces obtained by parse_traces()
     """
     for index, trace in enumerate(traces):
         for index2, trace2 in enumerate(traces):
@@ -320,8 +324,8 @@ def cross_trace_analyse(traces, scraped_traces):
                 # print()
                 # print(traces[index][str(trace.frame_range[1])][1])
                 # print(traces[index2][str(trace2.frame_range[0])][1])
-                point_distance = math.dist(list(map(float, (scraped_traces[index][str(trace.frame_range[1])][1]))),
-                                           list(map(float, (scraped_traces[index2][str(trace2.frame_range[0])][1]))))
+                point_distance = math.dist(list(map(float, (scraped_traces[index][trace.frame_range[1]][1]))),
+                                           list(map(float, (scraped_traces[index2][trace2.frame_range[0]][1]))))
                 message = f"The beginning of trace {index2} is close to end of trace {index} " \
                           f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} while the x,y distance is " \
                           f"{point_distance}. Consider joining them."

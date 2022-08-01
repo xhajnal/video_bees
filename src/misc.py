@@ -6,16 +6,22 @@ from itertools import islice
 
 
 def take(n, iterable):
-    """ Returns first n items of the iterable as a list. """
+    """ Returns first n items of the iterable as a list.
+
+    :arg n: (int): number of items to take
+    :arg iterable: (iterable): iterable to take the items from
+    :returns: (list): list of n first items
+    """
     return list(islice(iterable, n))
 
 
 def is_in(range1, range2, strict=False):
     """ Returns whether the range1 is in range2.
 
-    :arg range1 (tuple or list) first interval
-    :arg range2 (tuple or list) second interval
-    :arg strict (bool) flag whether use >,< instead of >=, <=
+    :param range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :arg strict: (bool): flag whether use >,< instead of >=, <=
+    :returns: (bool): whether range1 is (strictly) inside range2
     """
     if strict:
         return range1[0] > range2[0] and range1[1] < range2[1]
@@ -26,8 +32,9 @@ def is_in(range1, range2, strict=False):
 def has_overlap(range1, range2):
     """ Returns whether the range1 has an overlap with range2.
 
-    :arg range1 (tuple or list) first interval
-    :arg range2 (tuple or list) second interval
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (bool): whether range1 has overlap with range2
     """
     assert len(range1) == 2 or isinstance(range1, Interval)
     assert len(range2) == 2 or isinstance(range2, Interval)
@@ -39,8 +46,9 @@ def has_overlap(range1, range2):
 def is_before(range1, range2):
     """ Returns whether the range1 is before range2 in whole range.
 
-    :arg range1 (tuple or list) first interval
-    :arg range2 (tuple or list) second interval
+    :param range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (bool): whether range1 is before range2
     """
     assert len(range1) == 2 or isinstance(range1, Interval)
     assert len(range2) == 2 or isinstance(range2, Interval)
@@ -50,8 +58,9 @@ def is_before(range1, range2):
 def merge_dictionary(dict_1, dict_2):
     """ Merges two dictionaries, dict_1 and dict_2, while updating the common keys by summing the values.
 
-    :arg dict_1 (dict) first dictionary
-    :arg dict_2 (dict) second dictionary
+    :arg dict_1: (dict): first dictionary
+    :arg dict_2: (dict): second dictionary
+    :returns: (dict): merged dictionary
     """
     dict_3 = {**dict_1, **dict_2}
     for key, value in dict_3.items():

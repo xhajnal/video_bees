@@ -7,7 +7,7 @@ from misc import has_overlap, is_before, merge_dictionary, take
 class Trace:
     """ Single agent trace.
 
-        Stores:
+    Stores:
         frame_range (tuple): a pair frame numbers, first and last
         number_of_frames (int): number of frames
         frame_range_len (int): length of trace in frames
@@ -24,9 +24,9 @@ class Trace:
     def __init__(self, trace, trace_id, debug=False):
         """ Parses a single agent trace obtained from the loopy csv file.
 
-        :arg trace (dict): 'frame_number' -> [line_id, location [x,y]]
-        :arg id (int): id of the trace
-        :arg debug (bool): if True extensive output is shown
+        :arg trace: (dict): 'frame_number' -> [line_id, location [x,y]]
+        :arg trace_id: (int): id of the trace
+        :arg debug: (bool): if True extensive output is shown
         """
         self.trace_id = trace_id
 
@@ -113,8 +113,9 @@ class Trace:
         """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
 
-            :arg where (list) is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
-            :arg show (bool) if True the plots are shown
+            :arg where: (list): is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
+            :arg show: (bool): if True the plots are shown
+            :returns: list of pairs [figure, axis] for each of three plots
         """
         xs = []
         ys = []
@@ -192,10 +193,12 @@ class Trace:
 
 
 def merge_two_traces(trace1: Trace, trace2: Trace):
-    """ Puts two traces together
+    """ Puts two traces together.
 
-    :arg trace1 (Trace) a Trace to be merged with the following trace
-    :arg trace2 (Trace) a Trace to be merged with the following trace
+    :arg trace1: (Trace): a Trace to be merged with the following trace
+    :arg trace2: (Trace): a Trace to be merged with the following trace
+
+    :returns: trace1: (Trace): merged trace of two given
     """
     ## CHECK
     assert isinstance(trace1, Trace)

@@ -10,7 +10,7 @@ def analyse(file_path, population_size):
     """ Runs the whole file analysis
 
     :arg file_path: (str): path to csv file
-    :arg population_size (int) expected number of agents
+    :arg population_size: (int): expected number of agents
     """
     with open(file_path, newline='') as csv_file:
         ## PARSER
@@ -28,6 +28,9 @@ def analyse(file_path, population_size):
             ## CHOSEN TRACE SHOW - choose i, index of trace
             i = 0
             traces[i].show_trace_in_xy()
+
+        ## CROSS-TRACE ANALYSIS
+        cross_trace_analyse(traces, scraped_traces)
 
         ## ALL TRACES SHOW
         for index, trace in enumerate(traces):
@@ -50,6 +53,3 @@ def analyse(file_path, population_size):
             after_number_of_traces = len(traces)
 
         track_reappearence(traces)
-
-        ## CROSS-TRACE ANALYSIS
-        cross_trace_analyse(traces, scraped_traces)
