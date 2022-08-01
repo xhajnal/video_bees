@@ -21,8 +21,9 @@ def analyse(file_path, population_size):
             # print(scraped_traces[trace])
             traces.append(Trace(scraped_traces[trace], index))
 
-        single_trace_checker(traces)
         scatter_detection(traces, subtitle="Initial.")
+        single_trace_checker(traces)
+        scatter_detection(traces, subtitle="After deleting traces with zero len in xy.")
 
         if population_size > 1:
             ## CHOSEN TRACE SHOW - choose i, index of trace

@@ -2,7 +2,7 @@ import math
 import sys
 from matplotlib import pyplot as plt
 from termcolor import colored
-from misc import is_in
+from misc import is_in, delete_indices
 from trace import Trace, merge_two_traces
 
 
@@ -94,13 +94,7 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, debug=F
         if debug:
             print()
             print(indices_to_be_deleted)
-        indices_to_be_deleted = list(
-            reversed(sorted(list(set(indices_to_be_deleted)))))  # Remove duplicates, reverse sort
-        if debug:
-            print()
-            print(indices_to_be_deleted)
-        for index in indices_to_be_deleted:
-            del at_least_two_overlaps[index]
+        at_least_two_overlaps = delete_indices(indices_to_be_deleted, at_least_two_overlaps)
     elif population_size == 1:
         at_least_two_overlaps = []
         for index1, range1 in enumerate(ranges):
@@ -252,10 +246,7 @@ def put_traces_together(traces, population_size, debug=False):
         print(colored(f"jumping to step {step_to}", "blue"))
 
     print(f"Gonna delete the following traces: {trace_indices_to_trim}")
-    for index in list(reversed(sorted(trace_indices_to_trim))):
-        if debug:
-            print(f"deleting trace {index}")
-        del traces[index]
+    traces = delete_indices(trace_indices_to_trim, traces)
 
     print(colored(f"Returning traces of length {len(traces)}", "blue"))
     return traces
@@ -324,8 +315,8 @@ def cross_trace_analyse(traces, scraped_traces):
                 # print()
                 # print(traces[index][str(trace.frame_range[1])][1])
                 # print(traces[index2][str(trace2.frame_range[0])][1])
-                point_distance = math.dist(list(map(float, (scraped_traces[index][trace.frame_range[1]][1]))),
-                                           list(map(float, (scraped_traces[index2][trace2.frame_range[0]][1]))))
+                point_distance = math.dist(list(map(float, (scraped_traces[trace.trace_id][trace.frame_range[1]][1]))),
+                                           list(map(float, (scraped_traces[trace2.trace_id][trace2.frame_range[0]][1]))))
                 message = f"The beginning of trace {index2} is close to end of trace {index} " \
                           f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} while the x,y distance is " \
                           f"{point_distance}. Consider joining them."

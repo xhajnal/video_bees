@@ -3,6 +3,27 @@ from interval import Interval
 from mpmath import mpi
 import pandas as pd
 from itertools import islice
+from termcolor import colored
+
+
+def delete_indices(indices, iterable, debug=False):
+    """ Deletes given indices from given iterable
+
+    :arg indices: (int): number of items to take
+    :arg iterable: (iterable): iterable to delete the items from
+    :arg debug: (bool): if True extensive output is shown
+    :returns: (list): iterable with deleted items
+    """
+    indices = set(indices)
+    indices = list(reversed(sorted(list(indices))))
+
+    for index in indices:
+        if debug:
+            name = f'{iterable=}'.split('=')[0]
+            print(colored(f"Deleting item {index} from {name}.", "red"))
+        del iterable[index]
+
+    return iterable
 
 
 def take(n, iterable):
