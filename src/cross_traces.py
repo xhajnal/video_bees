@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from termcolor import colored
 from misc import is_in, delete_indices
 from trace import Trace, merge_two_traces
+from scipy.interpolate import InterpolatedUnivariateSpline
 
 
 def trim_out_additional_agents_over_long_traces(traces, population_size, debug=False):
@@ -118,7 +119,8 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, debug=F
     for trace in traces:
         trace.check_trace_consistency()
 
-    print(colored(f"Returning traces of length {len(traces)}", "blue"))
+    print(colored(f"Returning traces of length {len(traces)}", "green"))
+    print()
     return traces
 
 
@@ -225,22 +227,43 @@ def put_traces_together(traces, population_size, debug=False):
                     if debug:
                         print(colored(f"skipping trace {trace2.trace_id} which starts in {trace2.frame_range[0]}", "green"))
                     continue
-                if trace2.frame_range[0] - step_to <= max_trace_gap and trace2.frame_range_len >= min_trace_length:
-                    print(colored(f"MERGING TRACES {traces[index_to_go].trace_id} of frame {traces[index_to_go].frame_range} of length {traces[index_to_go].frame_range_len} and trace {trace2.trace_id} of range {trace2.frame_range} of length {trace2.frame_range_len}", "yellow"))
-                    print(colored(f"the distance of traces in x,y is {math.dist(traces[index_to_go].locations[-1], trace2.locations[0])}", "yellow"))
-                    print(colored(f"which is {math.dist(traces[index_to_go].locations[-1], trace2.locations[0]) / (trace2.frame_range[0] - traces[index_to_go].frame_range[-1])} per frame", "yellow"))
-                    print(colored(f"the distance of traces in frames is {trace2.frame_range[0] - traces[index_to_go].frame_range[-1]}", "yellow"))
-                    trace = merge_two_traces(traces[index_to_go], trace2)
-                    traces[index_to_go] = trace
+
+                trace1 = traces[index_to_go]
+                # EXTRAPOLATE TRACE
+                frames = trace1.frames_tracked[-50:]  # last 50 frames
+                x = list(map(lambda x: x[0], trace1.locations[-50:]))  # last 50 locations
+                y = list(map(lambda y: y[1], trace1.locations[-50:]))
+                splt_x = InterpolatedUnivariateSpline(frames, x, ext=0)  # extrapolator
+                splt_y = InterpolatedUnivariateSpline(frames, y, ext=0)
+
+                # COMPUTE DISTANCES AND REST
+                dist_of_traces_in_frames = trace2.frame_range[0] - trace1.frame_range[-1]
+                dist_of_traces_in_xy = math.dist(trace1.locations[-1], trace2.locations[0])
+                extrapolated_point = [splt_x(trace1.frames_tracked[-1] + dist_of_traces_in_frames), splt_y(trace1.frames_tracked[-1] + dist_of_traces_in_frames)]
+                dist_of_trace2_and_extrapolation =  math.dist(extrapolated_point, trace2.locations[0])
+
+                # COMPUTE WHETHER THE TWO TRACES ARE "ALLIGNED"
+                spam = trace2.frame_range[0] - step_to <= max_trace_gap and trace2.frame_range_len >= min_trace_length
+                msg = f"{'' if spam else 'NOT '}MERGING TRACES {trace1.trace_id} of " \
+                      f"frame {trace1.frame_range} of length {trace1.frame_range_len} and " \
+                      f"trace {trace2.trace_id} of range {trace2.frame_range} of " \
+                      f"length {trace2.frame_range_len} " \
+                      f"the distance of traces in x,y is {dist_of_traces_in_xy} which is " \
+                      f"{dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])} per frame \n" \
+                      f"the distance of traces in frames is {dist_of_traces_in_frames}\n " \
+                      f"last point position: {trace1.locations[-1]}\n " \
+                      f"the extrapolated point is {extrapolated_point} \n " \
+                      f"the distance of extrapolated point to the second trace {dist_of_trace2_and_extrapolation} \n",
+                print(colored(msg, "yellow" if spam else "red"))
+
+                if spam:
+
+                    trace = merge_two_traces(trace1, trace2)
+                    trace1 = trace
                     if debug:
                         print(trace)
                     trace_indices_to_trim.append(index2)
                     step_to = trace.frame_range[1]
-                else:
-                    print(colored(f"NOT MERGING TRACES {traces[index_to_go].trace_id} of frame {traces[index_to_go].frame_range} of length {traces[index_to_go].frame_range_len} and trace {trace2.trace_id} of range {trace2.frame_range} of length {trace2.frame_range_len}", "red"))
-                    print(colored(f"the distance of traces in x,y is {math.dist(traces[index_to_go].locations[-1], trace2.locations[0])}", "red"))
-                    print(colored(f"which is {math.dist(traces[index_to_go].locations[-1], trace2.locations[0]) / (trace2.frame_range[0] - traces[index_to_go].frame_range[-1])} per frame", "red"))
-                    print(colored(f"the distance of traces in frames is {trace2.frame_range[0] - traces[index_to_go].frame_range[-1]}", "red"))
         else:
             step_to = next_step_to
         print(colored(f"jumping to step {step_to}", "blue"))
@@ -248,7 +271,8 @@ def put_traces_together(traces, population_size, debug=False):
     print(f"Gonna delete the following traces: {trace_indices_to_trim}")
     traces = delete_indices(trace_indices_to_trim, traces)
 
-    print(colored(f"Returning traces of length {len(traces)}", "blue"))
+    print(colored(f"Returning traces of length {len(traces)}", "green"))
+    print()
     return traces
 
 
@@ -305,6 +329,7 @@ def cross_trace_analyse(traces, scraped_traces):
     :arg traces: list: a list of Traces
     :arg scraped_traces: list: a list of scraped traces obtained by parse_traces()
     """
+    print(colored("CROSS-TRACE ANALYSIS", "blue"))
     for index, trace in enumerate(traces):
         for index2, trace2 in enumerate(traces):
             if index == index2:
@@ -328,3 +353,4 @@ def cross_trace_analyse(traces, scraped_traces):
                         print(colored(message, "yellow"))
                 else:
                     print(message)
+    print()
