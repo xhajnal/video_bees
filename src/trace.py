@@ -65,11 +65,11 @@ class Trace:
                 step_len = math.dist(list(map(float, (trace[frames[index]][1]))),
                                      list(map(float, (trace[frames[index + 1]][1]))))
                 approx_step_len = round(step_len, 6)
-                if approx_step_len in self.trace_lengths.keys():  ## count the number of lengths
+                if approx_step_len in self.trace_lengths.keys():  # count the number of lengths
                     self.trace_lengths[approx_step_len] = self.trace_lengths[approx_step_len] + 1
                 else:
                     self.trace_lengths[approx_step_len] = 1
-                if step_len > self.max_step_len:  ## Set max step len
+                if step_len > self.max_step_len:  # Set max step len
                     self.max_step_len = step_len
                     self.max_step_len_step_index = index
                     self.max_step_len_line = int(trace[frames[index]][0])
@@ -122,7 +122,7 @@ class Trace:
         for location in self.locations:
             xs.append(location[0])
             ys.append(location[1])
-
+    
         ## MAKE AND SHOW PLOTS
         if where:
             assert isinstance(where, list)

@@ -1,5 +1,4 @@
 from copy import copy
-
 import numpy as np
 from interval import Interval
 from mpmath import mpi
@@ -51,6 +50,36 @@ def is_in(range1, range2, strict=False):
     else:
         return mpi(range1) in mpi(range2)
 
+#
+# def get_submatrix(matrix, indices):
+#     """ Return submatrix/item such as matrix[indices[0]][indices[1]]...
+#
+#     :arg matrix: (np.array): array to get the submatrix/item from
+#     :arg indices: (list of int): list of indices to obtain the submatrix/item
+#     """
+#     if len(indices) == 1:
+#         return matrix[indices[0]]
+#     else:
+#         matrix2 = matrix[indices[0]]
+#         indices = indices[1:]
+#         return get_submatrix(matrix2, indices)
+
+#
+# def set_submatrix(matrix, indices, value):
+#     """ Return matrix such that submatrix/value, matrix[indices[0]][indices[1]]..., is equal to value
+#
+#     :arg matrix: (np.array): array to change
+#     :arg indices: (list of int): list of indices to change submatrix/item
+#     :arg value: the value to set the submatrix/item to
+#     """
+#     if len(indices) == 1:
+#         matrix[indices[0]] = value
+#         return matrix
+#     else:
+#         matrix2 = matrix[indices[0]]
+#         indices = indices[1:]
+#         return get_submatrix(matrix2, indices)
+
 
 def m_overlaps_of_n_intervals(m, intervals):
     """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
@@ -60,16 +89,36 @@ def m_overlaps_of_n_intervals(m, intervals):
     """
     assert m <= len(intervals)
     if m == 1:
-        matrix = np.zeros([len(intervals), len(intervals)])
+        matrix = np.zeros([len(intervals), len(intervals)], dtype=object)
         for row in range(len(matrix)):
             for column in range(row, len(matrix[0])):
                 if has_overlap(intervals[row], intervals[column]):
-                    matrix[row][column] = 1
+                    matrix[row][column] = get_overlap(intervals[row], intervals[column])
     else:
-        matrix = m_overlaps_of_n_intervals(m - 1, intervals)
-        for index, x in enumerate(np.nditer(matrix)):
-            print(x, end=' ')
+        matrix2 = m_overlaps_of_n_intervals(m - 1, intervals)
+        matrix = np.zeros([len(intervals)]*m)
 
+        # for index, x in enumerate(np.nditer(matrix2)):
+        #     print(x, end=' ')
+
+        # Gonna join each overlap of m-1 intervals with mth interval by overlap of these intervals
+        for idx, x in np.ndenumerate(matrix):
+            print(idx, x)
+            spam = matrix2[idx[:-1]]
+            # if the interval of the previous matrix has no overlap
+            if spam is False:
+                matrix[idx] = 0
+            elif len(spam) >= 2:
+                if len(spam) > 2:
+                    print("spam", spam)
+                    raise Exception("David, I am afraid I have done a mistake. After all, I am just a computer.")
+                matrix[idx] = get_overlap(spam, intervals[idx[-1]])
+            elif spam == 0:
+                matrix[idx] = 0
+            else:
+                raise Exception("David, I am afraid I have done a mistake. After all, I am just a computer.")
+
+    print(matrix)
     return matrix
 
 

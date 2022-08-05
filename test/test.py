@@ -81,10 +81,20 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(merge_dictionary({7: 1, 8: 1}, {7: 9}), {7: 10, 8: 1})
         self.assertEqual(merge_dictionary({7: 1, 8: 1}, {8: 9}), {7: 1, 8: 10})
 
-        self.assertTrue(np.array_equal(m_overlaps_of_n_intervals(1, [(6, 8), (9, 11), (7, 10)]), [[1., 0., 1.], [0., 1., 1.], [0., 0., 1.]]))
+        self.assertTrue(np.array_equal(m_overlaps_of_n_intervals(1, [(6, 8), (9, 11), (7, 10)]),
+                                       [[list([6, 8]), 0, list([7, 8])],
+                                        [0, list([9, 11]), list([9, 10])],
+                                        [0, 0, list([7, 10])]]))
         self.assertTrue(np.array_equal(m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)]),
-                                       [[1., 0., 1.], [0., 1., 1.], [0., 0., 1.]]))
+                                       [[list([6, 8]), 0, list([7, 8])],
+                                        [0, list([9, 11]), list([9, 10])],
+                                       [0, 0, list([7, 10])]]))
         m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)])
+        #
+        # self.assertTrue(np.array_equal(get_submatrix(np.arange(10)*2, [1]), 2))
+        # self.assertTrue(np.array_equal(get_submatrix(np.array([[1, 2, 3], [4, 5, 6]]), [1]), [4, 5, 6]))
+        # self.assertTrue(np.array_equal(get_submatrix(np.array([[1, 2, 3], [4, 5, 6]]), [1, 2]), 6))
+        # self.assertTrue(np.array_equal(get_submatrix(np.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]), [1, 1]), [10, 11, 12]))
 
     def testParseTraces(self):
         with open('../test/test.csv', newline='') as csv_file:
