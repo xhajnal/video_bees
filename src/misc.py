@@ -1,4 +1,6 @@
 from copy import copy
+
+import numpy as np
 from interval import Interval
 from mpmath import mpi
 import pandas as pd
@@ -48,6 +50,61 @@ def is_in(range1, range2, strict=False):
         return range1[0] > range2[0] and range1[1] < range2[1]
     else:
         return mpi(range1) in mpi(range2)
+
+
+def m_overlaps_of_n_intervals(m, intervals):
+    """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
+
+    :arg m: (int): degree of overlaps - how many overlaps
+    :arg intervals: (list): list of intervals
+    """
+    assert m <= len(intervals)
+    if m == 1:
+        matrix = np.zeros([len(intervals), len(intervals)])
+        for row in range(len(matrix)):
+            for column in range(row, len(matrix[0])):
+                if has_overlap(intervals[row], intervals[column]):
+                    matrix[row][column] = 1
+    else:
+        matrix = m_overlaps_of_n_intervals(m - 1, intervals)
+        for index, x in enumerate(np.nditer(matrix)):
+            print(x, end=' ')
+
+    return matrix
+
+
+def get_overlap(range1, range2):
+    """ Returns the overlap of range1 and range2.
+
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (tuple): overlap of range1 and range2
+    """
+    assert len(range1) == 2 or isinstance(range1, Interval)
+    assert len(range2) == 2 or isinstance(range2, Interval)
+    # if the range1 starts after range2 swap them
+    if range2[0] < range1[0]:
+        return get_overlap(range2, range1)
+    # if beginning of the range2 is inside of range1
+    if range1[0] <= range2[0] <= range1[1]:
+        return [max(range1[0], range2[0]), min(range1[1], range2[1])]
+    else:
+        return False
+
+
+def get_strict_overlap(range1, range2):
+    """ Returns the overlap of range1 and range2 only if it is a range of nonzero length.
+
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (tuple): overlap of range1 and range2
+    """
+    spam = get_overlap(range1, range2)
+    if spam is False:
+        return spam
+    if spam[0] == spam[1]:
+        return False
+    return spam
 
 
 def has_overlap(range1, range2):

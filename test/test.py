@@ -14,15 +14,77 @@ class MyTestCase(unittest.TestCase):
     #         print("hello")
     #         traces = parse_traces(csv_file)
     def test_misc(self):
-        assert has_overlap([1, 7], [8, 9]) is False
-        assert has_overlap([1, 7], [7, 9]) is False
-        assert has_overlap([8, 9], [1, 7]) is False
-        assert has_overlap([7, 9], [1, 7]) is False
-        assert has_overlap([1, 7], [2, 6]) is True
-        assert has_overlap([4, 6], [3, 9]) is True
-        assert has_overlap([1, 7], [2, 7]) is True
-        assert has_overlap([3, 6], [3, 9]) is True
-        assert has_overlap([1, 7], [1, 7]) is True
+        self.assertEqual(delete_indices([], [8, 9]), [8, 9])
+        self.assertEqual(delete_indices([0], [8, 9]), [9])
+        self.assertEqual(delete_indices([1], [8, 9]), [8])
+        self.assertEqual(delete_indices([0, 1], [8, 9]), [])
+        self.assertEqual(delete_indices([0, 1], [8, 9, 10]), [10])
+        self.assertEqual(delete_indices([1], [8, 9, 10]), [8, 10])
+
+        self.assertEqual(take(0, [8, 9, 10]), [])
+        self.assertEqual(take(1, [8, 9, 10]), [8])
+        self.assertEqual(take(2, [8, 9, 10]), [8, 9])
+        self.assertEqual(take(3, [8, 9, 10]), [8, 9, 10])
+
+        self.assertTrue(is_in([1, 7], [8, 9]) is False)
+        self.assertTrue(is_in([1, 7], [7, 9]) is False)
+        self.assertTrue(is_in([8, 9], [1, 7]) is False)
+        self.assertTrue(is_in([7, 9], [1, 7]) is False)
+        self.assertTrue(is_in([1, 7], [2, 6]) is False)
+        self.assertTrue(is_in([4, 6], [3, 9]) is True)
+        self.assertTrue(is_in([1, 7], [2, 7]) is False)
+        self.assertTrue(is_in([3, 6], [3, 9]) is True)
+        self.assertTrue(is_in([1, 7], [1, 7]) is True)
+
+        self.assertTrue(has_overlap([1, 7], [8, 9]) is False)
+        self.assertTrue(has_overlap([1, 7], [7, 9]) is False)
+        self.assertTrue(has_overlap([8, 9], [1, 7]) is False)
+        self.assertTrue(has_overlap([7, 9], [1, 7]) is False)
+        self.assertTrue(has_overlap([1, 7], [2, 6]) is True)
+        self.assertTrue(has_overlap([4, 6], [3, 9]) is True)
+        self.assertTrue(has_overlap([1, 7], [2, 7]) is True)
+        self.assertTrue(has_overlap([3, 6], [3, 9]) is True)
+        self.assertTrue(has_overlap([1, 7], [1, 7]) is True)
+
+        self.assertTrue(get_overlap([1, 7], [8, 9]) is False)
+        self.assertEqual(get_overlap([1, 7], [7, 9]), [7, 7])
+        self.assertTrue(get_overlap([8, 9], [1, 7]) is False)
+        self.assertEqual(get_overlap([7, 9], [1, 7]), [7, 7])
+        self.assertEqual(get_overlap([1, 7], [2, 6]), [2, 6])
+        self.assertEqual(get_overlap([4, 6], [3, 9]), [4, 6])
+        self.assertEqual(get_overlap([1, 7], [2, 7]), [2, 7])
+        self.assertEqual(get_overlap([3, 6], [3, 9]), [3, 6])
+        self.assertEqual(get_overlap([1, 7], [1, 7]), [1, 7])
+
+        self.assertTrue(get_strict_overlap([1, 7], [8, 9]) is False)
+        self.assertTrue(get_strict_overlap([1, 7], [7, 9]) is False)
+        self.assertTrue(get_strict_overlap([8, 9], [1, 7]) is False)
+        self.assertTrue(get_strict_overlap([7, 9], [1, 7]) is False)
+        self.assertEqual(get_strict_overlap([1, 7], [2, 6]), [2, 6])
+        self.assertEqual(get_strict_overlap([4, 6], [3, 9]), [4, 6])
+        self.assertEqual(get_strict_overlap([1, 7], [2, 7]), [2, 7])
+        self.assertEqual(get_strict_overlap([3, 6], [3, 9]), [3, 6])
+        self.assertEqual(get_strict_overlap([1, 7], [1, 7]), [1, 7])
+
+        self.assertTrue(is_before([1, 7], [8, 9]) is True)
+        self.assertTrue(is_before([1, 7], [7, 9]) is False)
+        self.assertTrue(is_before([8, 9], [1, 7]) is False)
+        self.assertTrue(is_before([7, 9], [1, 7]) is False)
+        self.assertTrue(is_before([1, 7], [2, 6]) is False)
+        self.assertTrue(is_before([4, 6], [3, 9]) is False)
+        self.assertTrue(is_before([1, 7], [2, 7]) is False)
+        self.assertTrue(is_before([3, 6], [3, 9]) is False)
+        self.assertTrue(is_before([1, 7], [1, 7]) is False)
+
+        self.assertEqual(merge_dictionary({8: 1}, {9: 9}), {8: 1, 9: 9})
+        self.assertEqual(merge_dictionary({7: 1, 8: 1}, {9: 9}), {7: 1, 8: 1, 9: 9})
+        self.assertEqual(merge_dictionary({7: 1, 8: 1}, {7: 9}), {7: 10, 8: 1})
+        self.assertEqual(merge_dictionary({7: 1, 8: 1}, {8: 9}), {7: 1, 8: 10})
+
+        self.assertTrue(np.array_equal(m_overlaps_of_n_intervals(1, [(6, 8), (9, 11), (7, 10)]), [[1., 0., 1.], [0., 1., 1.], [0., 0., 1.]]))
+        self.assertTrue(np.array_equal(m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)]),
+                                       [[1., 0., 1.], [0., 1., 1.], [0., 0., 1.]]))
+        m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)])
 
     def testParseTraces(self):
         with open('../test/test.csv', newline='') as csv_file:
