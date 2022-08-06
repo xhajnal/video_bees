@@ -81,44 +81,68 @@ def is_in(range1, range2, strict=False):
 #         return get_submatrix(matrix2, indices)
 
 
-def m_overlaps_of_n_intervals(m, intervals):
+def m_overlaps_of_n_intervals(m, intervals, debug=False):
     """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
 
     :arg m: (int): degree of overlaps - how many overlaps
     :arg intervals: (list): list of intervals
+    :arg debug: (bool): if True extensive output is shown
     """
     assert m <= len(intervals)
     if m == 1:
         matrix = np.zeros([len(intervals), len(intervals)], dtype=object)
+        foo = np.zeros([len(intervals), len(intervals)], dtype=object)
         for row in range(len(matrix)):
             for column in range(row, len(matrix[0])):
                 if has_overlap(intervals[row], intervals[column]):
                     matrix[row][column] = get_overlap(intervals[row], intervals[column])
     else:
         matrix2 = m_overlaps_of_n_intervals(m - 1, intervals)
-        matrix = np.zeros([len(intervals)]*m)
+        matrix = np.zeros([len(intervals)]*(m+1), dtype=object)
+        foo = np.zeros([len(intervals)]*(m+1), dtype=object)
+
+        if debug:
+            print("matrix2.shape", matrix2.shape)
+            print("matrix.shape", matrix.shape)
 
         # for index, x in enumerate(np.nditer(matrix2)):
         #     print(x, end=' ')
 
         # Gonna join each overlap of m-1 intervals with mth interval by overlap of these intervals
         for idx, x in np.ndenumerate(matrix):
-            print(idx, x)
+            foo[idx] = idx
+            if debug:
+                print(idx, x)
             spam = matrix2[idx[:-1]]
+            if debug:
+                print("spam", spam)
             # if the interval of the previous matrix has no overlap
             if spam is False:
                 matrix[idx] = 0
+            elif isinstance(spam, int):
+                if spam == 0:
+                    matrix[idx] = 0
+                else:
+                    raise Exception("David, I am afraid I have done a mistake. After all, I am just a computer.")
             elif len(spam) >= 2:
                 if len(spam) > 2:
                     print("spam", spam)
                     raise Exception("David, I am afraid I have done a mistake. After all, I am just a computer.")
+                if debug:
+                    print("intervals[idx[-1]]", intervals[idx[-1]])
+                    print("type intervals[idx[-1]]", type(intervals[idx[-1]]))
+                    print("idx[-1]", idx[-1])
                 matrix[idx] = get_overlap(spam, intervals[idx[-1]])
-            elif spam == 0:
-                matrix[idx] = 0
             else:
                 raise Exception("David, I am afraid I have done a mistake. After all, I am just a computer.")
 
-    print(matrix)
+    if debug:
+        print()
+        print()
+        print()
+        print(foo)
+        print()
+        print(matrix)
     return matrix
 
 
