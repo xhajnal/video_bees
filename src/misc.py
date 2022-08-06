@@ -81,25 +81,74 @@ def is_in(range1, range2, strict=False):
 #         return get_submatrix(matrix2, indices)
 
 
-def m_overlaps_of_n_intervals(m, intervals, debug=False):
+def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
+    """ Returns a dictionary index -> m overlapping interval of n intervals.
+        No key if there is no interval.
+
+        :arg m: (int): degree of overlaps - how many overlaps
+        :arg intervals: (list): list of intervals
+        :arg strict: (bool): if True point intervals are not used
+        :arg debug: (bool): if True extensive output is shown
+        """
+    dictionary = dict()
+    matrix = matrix_of_m_overlaps_of_n_intervals(m, intervals, debug)
+
+    ## Iterate through the matrix
+    for idx, x in np.ndenumerate(matrix):
+        if tuple(sorted(idx)) in dictionary.keys():
+            if debug:
+                print(f"skipping index {idx} as the index is not sorted hence it is a duplicated pair")
+            continue
+        dictionary[tuple(sorted(idx))] = matrix[idx]
+
+    ## Trim out non-intervals items
+    dictionary2 = dict()
+    for key in dictionary.keys():
+        item = dictionary[key]
+        if item is None or item == 0 or item == 9 or item is False:
+            pass
+        else:
+            assert isinstance(item, list)
+            dictionary2[key] = item
+
+    print(dictionary2)
+    return dictionary2
+
+
+def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
 
     :arg m: (int): degree of overlaps - how many overlaps
     :arg intervals: (list): list of intervals
+    :arg strict: (bool): if True point intervals are not used
     :arg debug: (bool): if True extensive output is shown
+
+    :returns matrix: matrix of flags of m-overlaps (m overlapping intervals) of n intervals
     """
+    ## INTERN values:
+    # False - no interval
+    # 9     - index is not sorted hence it is a duplicated pair
+    # 0     - skipped as default value
+
     assert m <= len(intervals)
-    if m == 1:
+    assert m > 1
+
+    if m == 2:
         matrix = np.zeros([len(intervals), len(intervals)], dtype=object)
         foo = np.zeros([len(intervals), len(intervals)], dtype=object)
         for row in range(len(matrix)):
-            for column in range(row, len(matrix[0])):
-                if has_overlap(intervals[row], intervals[column]):
+            for column in range(row, len(matrix)):
+                # print(colored(f"row, column: {row}, {column}", "white"))
+                if row == column:
+                    matrix[row][column] = None
+                # elif has_overlap(intervals[row], intervals[column]):
+                else:
+                    # print(colored(f"row, column: {row}, {column}", "yellow"))
                     matrix[row][column] = get_overlap(intervals[row], intervals[column])
     else:
-        matrix2 = m_overlaps_of_n_intervals(m - 1, intervals)
-        matrix = np.zeros([len(intervals)]*(m+1), dtype=object)
-        foo = np.zeros([len(intervals)]*(m+1), dtype=object)
+        matrix2 = matrix_of_m_overlaps_of_n_intervals(m - 1, intervals)
+        matrix = np.zeros([len(intervals)]*m, dtype=object)
+        foo = np.zeros([len(intervals)]*m, dtype=object)
 
         if debug:
             print("matrix2.shape", matrix2.shape)
@@ -111,6 +160,18 @@ def m_overlaps_of_n_intervals(m, intervals, debug=False):
         # Gonna join each overlap of m-1 intervals with mth interval by overlap of these intervals
         for idx, x in np.ndenumerate(matrix):
             foo[idx] = idx
+            # if the indices are not sorted - hence duplicated pair
+            if list(sorted(idx)) != list(idx):
+                if debug:
+                    print(f"setting index {idx} as None because the index is not sorted hence it is a duplicated pair")
+                matrix[idx] = 9
+                continue
+            # if there is a duplicate index
+            if len(set(idx)) != len(idx):
+                if debug:
+                    print(f"setting index {idx} as None because it contains a duplicated interval index")
+                matrix[idx] = None
+                continue
             if debug:
                 print(idx, x)
             spam = matrix2[idx[:-1]]
@@ -118,10 +179,12 @@ def m_overlaps_of_n_intervals(m, intervals, debug=False):
                 print("spam", spam)
             # if the interval of the previous matrix has no overlap
             if spam is False:
-                matrix[idx] = 0
+                matrix[idx] = False
             elif isinstance(spam, int):
                 if spam == 0:
                     matrix[idx] = 0
+                if spam == 9:
+                    matrix[idx] = 9
                 else:
                     raise Exception("David, I am afraid I have done a mistake. After all, I am just a computer.")
             elif len(spam) >= 2:
@@ -132,13 +195,14 @@ def m_overlaps_of_n_intervals(m, intervals, debug=False):
                     print("intervals[idx[-1]]", intervals[idx[-1]])
                     print("type intervals[idx[-1]]", type(intervals[idx[-1]]))
                     print("idx[-1]", idx[-1])
-                matrix[idx] = get_overlap(spam, intervals[idx[-1]])
+                if strict:
+                    matrix[idx] = get_strict_overlap(spam, intervals[idx[-1]])
+                else:
+                    matrix[idx] = get_overlap(spam, intervals[idx[-1]])
             else:
                 raise Exception("David, I am afraid I have done a mistake. After all, I am just a computer.")
 
     if debug:
-        print()
-        print()
         print()
         print(foo)
         print()
