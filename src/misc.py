@@ -91,7 +91,7 @@ def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
         :arg debug: (bool): if True extensive output is shown
         """
     dictionary = dict()
-    matrix = matrix_of_m_overlaps_of_n_intervals(m, intervals, debug)
+    matrix = matrix_of_m_overlaps_of_n_intervals(m, intervals, strict, debug)
 
     ## Iterate through the matrix
     for idx, x in np.ndenumerate(matrix):
@@ -146,7 +146,7 @@ def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False)
                     # print(colored(f"row, column: {row}, {column}", "yellow"))
                     matrix[row][column] = get_overlap(intervals[row], intervals[column])
     else:
-        matrix2 = matrix_of_m_overlaps_of_n_intervals(m - 1, intervals)
+        matrix2 = matrix_of_m_overlaps_of_n_intervals(m - 1, intervals, strict, debug)
         matrix = np.zeros([len(intervals)]*m, dtype=object)
         foo = np.zeros([len(intervals)]*m, dtype=object)
 
