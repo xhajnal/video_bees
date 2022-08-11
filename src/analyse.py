@@ -1,9 +1,9 @@
-from cross_traces import trim_out_additional_agents_over_long_traces, put_traces_together, track_reappearence, \
-    cross_trace_analyse
+from cross_traces import trim_out_additional_agents_over_long_traces, put_traces_together, track_reappearance, \
+    cross_trace_analyse, trim_out_additional_agents_over_long_traces2
 from parse import parse_traces
 from single_trace import single_trace_checker
 from trace import Trace
-from visualise import scatter_detection
+from visualise import scatter_detection, show_all_traces
 
 
 def analyse(file_path, population_size):
@@ -21,6 +21,9 @@ def analyse(file_path, population_size):
             # print(scraped_traces[trace])
             traces.append(Trace(scraped_traces[trace], index))
 
+        # for trace in traces:
+        #     print(trace.frame_range)
+
         scatter_detection(traces, subtitle="Initial.")
         single_trace_checker(traces)
         scatter_detection(traces, subtitle="After deleting traces with zero len in xy.")
@@ -34,23 +37,24 @@ def analyse(file_path, population_size):
         cross_trace_analyse(traces, scraped_traces)
 
         ## ALL TRACES SHOW
-        for index, trace in enumerate(traces):
-            if index == 0:
-                figs = trace.show_trace_in_xy(show=False)
-            elif index < len(traces):
-                figs = trace.show_trace_in_xy(figs, show=False)
-            else:
-                figs = trace.show_trace_in_xy(figs, show=True)
+        show_all_traces(traces)
 
         ## TRIM TRACES
         before_number_of_traces = len(traces)
         after_number_of_traces = 0
         while not before_number_of_traces == after_number_of_traces:
             before_number_of_traces = len(traces)
-            traces = trim_out_additional_agents_over_long_traces(traces, population_size)
+            traces = trim_out_additional_agents_over_long_traces2(traces, population_size, debug=False)
             scatter_detection(traces, subtitle="after trimming")
             traces = put_traces_together(traces, population_size)
             scatter_detection(traces, subtitle="after putting traces together")
             after_number_of_traces = len(traces)
 
-        track_reappearence(traces)
+        for trace in traces:
+            print(trace.frame_range)
+
+        ## ALL TRACES SHOW
+        show_all_traces(traces)
+
+        track_reappearance(traces, show=True)
+        print()

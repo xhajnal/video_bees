@@ -2,9 +2,58 @@ import math
 import sys
 from matplotlib import pyplot as plt
 from termcolor import colored
-from misc import is_in, delete_indices
+from misc import is_in, delete_indices, m_overlaps_of_n_intervals, index_of_shortest_range
 from trace import Trace, merge_two_traces
 from scipy.interpolate import InterpolatedUnivariateSpline
+
+
+def trim_out_additional_agents_over_long_traces2(traces, population_size, debug=False):
+    """ Trims out additional appearance of an agent when long traces are over here.
+
+    :arg traces: (list): list of Traces
+    :arg population_size: (int): expected number of agents
+    :arg debug: (bool): if True extensive output is shown
+    :returns: traces: (list): list of trimmed Traces
+    """
+    print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES 2", "blue"))
+    ranges = []
+    for index1, trace in enumerate(traces):
+        assert isinstance(trace, Trace)
+        trace.check_trace_consistency()
+        ranges.append(trace.frame_range)
+    ranges = sorted(ranges)
+    dictionary = m_overlaps_of_n_intervals(population_size + 1, ranges, strict=False, debug=False)
+
+    indices_of_intervals_to_be_deleted = []
+
+    for overlap in dictionary.keys():
+        if debug:
+            print(colored(f"Currently checking overlapping indices: {overlap}", "blue"))
+        overlapping_ranges = []
+        for interval_index in overlap:
+            overlapping_ranges.append(ranges[interval_index])
+
+        shortest_index = overlap[index_of_shortest_range(overlapping_ranges)]
+        if debug:
+            print(colored(f" Index_of_shortest_range: {shortest_index}", "blue"))
+        shortest_range = ranges[shortest_index]
+
+        to_be_deleted = True
+        for range in overlapping_ranges:
+            if debug:
+                print(colored(f" Checking whether range index {shortest_index}, {shortest_range}, is in {range}", "blue"))
+            if not is_in(shortest_range, range):
+                to_be_deleted = False
+
+        if to_be_deleted:
+            if debug:
+                print(colored(f"Gonna delete range index {shortest_index}, {shortest_range}", "yellow"))
+            indices_of_intervals_to_be_deleted.append(shortest_index)
+
+    print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
+    traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
+
+    return traces
 
 
 def trim_out_additional_agents_over_long_traces(traces, population_size, debug=False):
@@ -138,10 +187,10 @@ def put_traces_together(traces, population_size, debug=False):
     min_trace_length = 100
 
     ## code
-    reappearence = track_reappearence(traces, show=False)
+    reappearance = track_reappearance(traces, show=False)
     if debug:
         print(len(traces))
-        print(len(reappearence))
+        print(len(reappearance))
 
     trace_indices_to_trim = []
 
@@ -179,9 +228,11 @@ def put_traces_together(traces, population_size, debug=False):
 
         try:
             next_step_to = min(next_steps_to)
-            print("next_steps_to: ", next_steps_to)
+            if debug:
+                print("next_steps_to: ", next_steps_to)
         except ValueError:
-            print(f"Fixing empty next_steps_to while step_to: {step_to} and next_step_to:{next_step_to}")
+            if debug:
+                print(f"Fixing empty next_steps_to while step_to: {step_to} and next_step_to:{next_step_to}")
             traces_after = 0
             for index3, trace3 in enumerate(traces):
                 assert isinstance(trace3, Trace)
@@ -216,9 +267,9 @@ def put_traces_together(traces, population_size, debug=False):
             print("index_to_go", index_to_go)
 
         if len(next_steps_to) == population_size:
-            step_to = next_step_to
             ## look for a mergeable trace
-            print(colored("Gonna have a look for a mergeable traces", "blue"))
+            print(colored(f"Gonna have a look for a mergeable traces from {step_to} till {next_step_to} (frame range)", "blue"))
+            step_to = next_step_to
             for index2, trace2 in enumerate(traces):
                 assert isinstance(trace2, Trace)
                 if index2 in trace_indices_to_trim:
@@ -242,18 +293,18 @@ def put_traces_together(traces, population_size, debug=False):
                 extrapolated_point = [splt_x(trace1.frames_tracked[-1] + dist_of_traces_in_frames), splt_y(trace1.frames_tracked[-1] + dist_of_traces_in_frames)]
                 dist_of_trace2_and_extrapolation =  math.dist(extrapolated_point, trace2.locations[0])
 
-                # COMPUTE WHETHER THE TWO TRACES ARE "ALLIGNED"
+                # COMPUTE WHETHER THE TWO TRACES ARE "ALIGNED"
                 spam = trace2.frame_range[0] - step_to <= max_trace_gap and trace2.frame_range_len >= min_trace_length
                 msg = f"{'' if spam else 'NOT '}MERGING TRACES {trace1.trace_id} of " \
                       f"frame {trace1.frame_range} of length {trace1.frame_range_len} and " \
                       f"trace {trace2.trace_id} of range {trace2.frame_range} of " \
-                      f"length {trace2.frame_range_len} " \
-                      f"the distance of traces in x,y is {dist_of_traces_in_xy} which is " \
-                      f"{dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])} per frame \n" \
-                      f"the distance of traces in frames is {dist_of_traces_in_frames}\n " \
-                      f"last point position: {trace1.locations[-1]}\n " \
-                      f"the extrapolated point is {extrapolated_point} \n " \
-                      f"the distance of extrapolated point to the second trace {dist_of_trace2_and_extrapolation} \n",
+                      f"length {int(trace2.frame_range_len)} " \
+                      f"the distance of traces in x,y is {round(dist_of_traces_in_xy, 3)} which is " \
+                      f"{round(dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1]), 3)} per frame " \
+                      f"the distance of traces in frames is {round(dist_of_traces_in_frames, 3)} " \
+                      f"last point position: {trace1.locations[-1]} " \
+                      f"the extrapolated point is {extrapolated_point} " \
+                      f"the distance of extrapolated point to the second trace {round(dist_of_trace2_and_extrapolation, 3)} "
                 print(colored(msg, "yellow" if spam else "red"))
 
                 if spam:
@@ -266,17 +317,19 @@ def put_traces_together(traces, population_size, debug=False):
                     step_to = trace.frame_range[1]
         else:
             step_to = next_step_to
-        print(colored(f"jumping to step {step_to}", "blue"))
+        if debug:
+            print(colored(f"jumping to step {step_to}", "blue"))
 
-    print(f"Gonna delete the following traces: {trace_indices_to_trim}")
+    if debug:
+        print(f"Gonna delete the following traces as we have merged them: {trace_indices_to_trim}")
     traces = delete_indices(trace_indices_to_trim, traces)
 
-    print(colored(f"Returning traces of length {len(traces)}", "green"))
+    print(colored(f"Returning traces of length {len(traces)}, {len(trace_indices_to_trim)} shorter", "green"))
     print()
     return traces
 
 
-def track_reappearence(traces, show=True, debug=False):
+def track_reappearance(traces, show=True, debug=False):
     """ Tracks the time it takes for an agent to appear when one is lost (end of a trace)
 
     :arg traces: (list): a list of Traces
@@ -285,7 +338,7 @@ def track_reappearence(traces, show=True, debug=False):
 
     :returns: time_to_reappear (list): list of times for an agent to reappear after end of a trace
     """
-    print(colored("TRACE REAPPEARENCE", "blue"))
+    print(colored("TRACE REAPPEARANCE", "blue"))
     frames_of_loss = []
     for trace in traces:
         frames_of_loss.append(trace.frame_range[1])
@@ -297,18 +350,18 @@ def track_reappearence(traces, show=True, debug=False):
     # for trace in traces:
     #     print(trace.frame_range[0])
 
-    frames_of_reappearence = []
+    frames_of_reappearance = []
     for frame in frames_of_loss:
         for trace in traces:
             if trace.frame_range[0] < frame:
                 continue
             else:
-                frames_of_reappearence.append(trace.frame_range[0])
+                frames_of_reappearance.append(trace.frame_range[0])
                 break
     if debug:
-        print("frames_of_reappearence", frames_of_reappearence)
+        print("frames_of_reappearance", frames_of_reappearance)
 
-    time_to_reappear = list(map(lambda x, y: y - x, frames_of_loss, frames_of_reappearence))
+    time_to_reappear = list(map(lambda x, y: y - x, frames_of_loss, frames_of_reappearance))
     if debug:
         print("time_to_reappear", time_to_reappear)
 
@@ -344,7 +397,7 @@ def cross_trace_analyse(traces, scraped_traces):
                                            list(map(float, (scraped_traces[trace2.trace_id][trace2.frame_range[0]][1]))))
                 message = f"The beginning of trace {index2} is close to end of trace {index} " \
                           f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} while the x,y distance is " \
-                          f"{point_distance}. Consider joining them."
+                          f"{round(point_distance,3)}. Consider joining them."
 
                 if index2 == index + 1:
                     if point_distance < 10:

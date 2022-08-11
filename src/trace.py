@@ -36,7 +36,7 @@ class Trace:
         self.number_of_frames = len(trace.keys())
         self.frame_range = (frames[0], frames[-1])
         # print(frame_range)
-        self.frame_range_len = float(frames[-1]) - float(frames[0])
+        self.frame_range_len = int(float(frames[-1]) - float(frames[0]))
         self.max_step_len = 0
         self.max_step_len_step_index = None
         self.max_step_len_line = None
@@ -186,8 +186,8 @@ class Trace:
 
     def __str__(self):
         return f"trace_id:{self.trace_id} frame_range:{self.frame_range} number_of_frames:{self.number_of_frames} " \
-               f" frame_range_len:{self.frame_range_len} trace_length:{self.trace_length} " \
-               f"max_step_len:{self.max_step_len} max_step_len_step_index:{self.max_step_len_step_index} " \
+               f" frame_range_len:{self.frame_range_len} trace_length:{round(self.trace_length,3)} " \
+               f"max_step_len:{round(self.max_step_len,3)} max_step_len_step_index:{self.max_step_len_step_index} " \
                f"max_step_len_line:{self.max_step_len_line} max_step_len_frame_number:{self.max_step_len_frame_number} " \
                f"trace_lengths:{take(5, self.trace_lengths.items())}[ frames_tracked:{self.frames_tracked[:5]} locations:{self.locations[:5]} "
 

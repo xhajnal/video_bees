@@ -1,3 +1,4 @@
+import sys
 from copy import copy
 import numpy as np
 from interval import Interval
@@ -268,6 +269,22 @@ def is_before(range1, range2):
     assert len(range1) == 2 or isinstance(range1, Interval)
     assert len(range2) == 2 or isinstance(range2, Interval)
     return range1[1] < range2[0]
+
+
+def index_of_shortest_range(ranges):
+    """ Return the index of the shortest interval from given list
+
+    :arg ranges: (list): list of ranges
+    """
+    # TODO make tests
+    shortest_index = -1
+    shortest_range_len = sys.maxsize
+
+    for index, range in enumerate(ranges):
+        if range[1] - range[0] < shortest_range_len:
+            shortest_index = index
+
+    return shortest_index
 
 
 def merge_dictionary(dict_1, dict_2):
