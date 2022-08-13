@@ -1,5 +1,5 @@
 from cross_traces import trim_out_additional_agents_over_long_traces, put_traces_together, track_reappearance, \
-    cross_trace_analyse, trim_out_additional_agents_over_long_traces2
+    cross_trace_analyse, trim_out_additional_agents_over_long_traces2, compare_two_traces
 from parse import parse_traces
 from single_trace import single_trace_checker
 from trace import Trace
@@ -42,7 +42,7 @@ def analyse(file_path, population_size):
         ## TRIM TRACES
         before_number_of_traces = len(traces)
         after_number_of_traces = 0
-        while not before_number_of_traces == after_number_of_traces:
+        while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
             before_number_of_traces = len(traces)
             traces = trim_out_additional_agents_over_long_traces2(traces, population_size, debug=False)
             scatter_detection(traces, subtitle="after trimming")
@@ -58,3 +58,4 @@ def analyse(file_path, population_size):
 
         track_reappearance(traces, show=True)
         print()
+        compare_two_traces(traces[1], traces[2])

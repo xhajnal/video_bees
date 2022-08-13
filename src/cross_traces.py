@@ -2,9 +2,62 @@ import math
 import sys
 from matplotlib import pyplot as plt
 from termcolor import colored
-from misc import is_in, delete_indices, m_overlaps_of_n_intervals, index_of_shortest_range
+from misc import is_in, delete_indices, m_overlaps_of_n_intervals, index_of_shortest_range, get_overlap
 from trace import Trace, merge_two_traces
 from scipy.interpolate import InterpolatedUnivariateSpline
+
+
+def compare_two_traces(trace1, trace2):
+    """ Compares two traces
+
+    :arg trace1: Trace: first trace to be compared
+    :arg trace2: Trace: second trace to be compared
+    """
+    print(colored("COMPARE TWO TRACES", "blue"))
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+
+    overlapping_range = get_overlap(trace1.frame_range, trace2.frame_range)
+    start_index1 = trace1.frames_tracked.index(overlapping_range[0])
+    end_index1 = trace1.frames_tracked.index(overlapping_range[1])
+    start_index2 = trace2.frames_tracked.index(overlapping_range[0])
+    end_index2 = trace2.frames_tracked.index(overlapping_range[1])
+    print("start_index1", start_index1)
+    print("end_index1", end_index1)
+    print("start_index2", start_index2)
+    print("end_index2", end_index2)
+    print()
+
+    print("Showing the overlap frame by frame:")
+    inter_index = 0
+    distances = []
+    first_trace_overlapping_frames = []
+    for index in range(start_index1, end_index1+1):
+        first_trace_overlapping_frames.append(index)
+        print("index1", index)
+        index2 = range(start_index2, end_index2+1)[inter_index]
+        print("index2", index2)
+        inter_index = inter_index + 1
+        position1 = trace1.locations[index]
+        position2 = trace2.locations[index2]
+        print("position1", position1)
+        print("position2", position2)
+        distance = math.dist(position1, position2)
+        print("distance of the positions", distance)
+        distances.append(distance)
+        print()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+
+    x = first_trace_overlapping_frames
+    y = distances
+    ax1.scatter(x, y, alpha=0.5)
+    plt.xlabel('Frame number of the first trace')
+    plt.ylabel('distance of the two races')
+    title = f'Scatter plot of of the distance of the overlapping section.'
+    plt.title(title)
+    plt.show()
 
 
 def trim_out_additional_agents_over_long_traces2(traces, population_size, debug=False):
@@ -407,3 +460,4 @@ def cross_trace_analyse(traces, scraped_traces):
                 else:
                     print(message)
     print()
+

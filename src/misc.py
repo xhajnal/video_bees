@@ -131,7 +131,12 @@ def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False)
     # 9     - index is not sorted hence it is a duplicated pair
     # 0     - skipped as default value
 
-    assert m <= len(intervals)
+    try:
+        assert m <= len(intervals)
+    except AssertionError as err:
+        print("m", m)
+        print("intervals", intervals)
+        raise err
     assert m > 1
 
     if m == 2:
