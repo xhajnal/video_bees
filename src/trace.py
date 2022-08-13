@@ -1,6 +1,8 @@
 import copy
 import math
 import matplotlib.pyplot as plt
+
+from config import get_screen_size
 from misc import has_overlap, is_before, merge_dictionary, take
 
 
@@ -171,6 +173,8 @@ class Trace:
         ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5)
         ax3.set_xlabel('x')
         ax3.set_ylabel('y')
+        plt.xlim(get_screen_size()[0])
+        plt.ylim(get_screen_size()[1])
         if where:
             ax3.set_title(f'Traces "phase" space.')
         else:
