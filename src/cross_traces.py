@@ -18,6 +18,9 @@ def compare_two_traces(trace1, trace2):
     assert isinstance(trace2, Trace)
 
     overlapping_range = get_overlap(trace1.frame_range, trace2.frame_range)
+    if overlapping_range is False:
+        print(colored(f"There is no overlap of trace {trace1.trace_id} and trace {trace2.trace_id}"))
+        return None
     start_index1 = trace1.frames_tracked.index(overlapping_range[0])
     end_index1 = trace1.frames_tracked.index(overlapping_range[1])
     start_index2 = trace2.frames_tracked.index(overlapping_range[0])
