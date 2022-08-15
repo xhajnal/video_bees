@@ -59,6 +59,8 @@ def compare_two_traces(trace1, trace2):
     plt.title(title)
     plt.show()
 
+    print(f"The overlap of the traces is {end_index2 - start_index2} long and its distance is {sum(distances)} pointwise")
+
 
 def trim_out_additional_agents_over_long_traces2(traces, population_size, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
@@ -269,12 +271,12 @@ def put_traces_together(traces, population_size, debug=False):
             assert isinstance(trace, Trace)
             if trace.frame_range[0] <= step_to < trace.frame_range[1]:
                 if debug:
-                    print(colored(f"adding trace {index} of {trace.frame_range} to in between", "yellow"))
+                    print(colored(f"adding trace {trace.trace_id} of {trace.frame_range} to in between", "yellow"))
                 next_steps_to.append(trace.frame_range[1])
                 indices_in.append(index)
             else:
                 if debug:
-                    print(colored(f"skipping trace {index} of {trace.frame_range}", "red"))
+                    print(colored(f"skipping trace {trace.trace_id} of {trace.frame_range}", "red"))
                 continue
         if debug:
             print(colored(f"finished first cycle with next_steps_to:{next_steps_to}", "blue"))
@@ -448,7 +450,7 @@ def cross_trace_analyse(traces, scraped_traces):
                 # print(traces[index2][str(trace2.frame_range[0])][1])
                 point_distance = math.dist(list(map(float, (scraped_traces[trace.trace_id][trace.frame_range[1]][1]))),
                                            list(map(float, (scraped_traces[trace2.trace_id][trace2.frame_range[0]][1]))))
-                message = f"The beginning of trace {index2} is close to end of trace {index} " \
+                message = f"The beginning of trace {trace2.trace_id} is close to end of trace {trace.trace_id} " \
                           f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} while the x,y distance is " \
                           f"{round(point_distance,3)}. Consider joining them."
 

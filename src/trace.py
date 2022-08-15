@@ -173,8 +173,15 @@ class Trace:
         ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5)
         ax3.set_xlabel('x')
         ax3.set_ylabel('y')
-        plt.xlim(get_screen_size()[0])
-        plt.ylim(get_screen_size()[1])
+        max_position = max([max(xs), max(xs)])
+        # if max_position < 800:
+        if max_position < max([get_screen_size()[0][1], get_screen_size()[1][1]]):
+            plt.xlim(get_screen_size()[0])
+            plt.ylim(get_screen_size()[1])
+        else:
+            plt.xlim(max_position)
+            plt.ylim(max_position)
+
         if where:
             ax3.set_title(f'Traces "phase" space.')
         else:
