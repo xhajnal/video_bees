@@ -6,4 +6,4 @@ def get_bee_max_step_len():
 
 def get_screen_size():
     """ Returns size of the screen as [[xmin, xmax],[ymin, ymax]] """
-    return [[0, 800], [0, 800]]
+    return [[0, 900], [0, 900]]
