@@ -2,10 +2,10 @@
 Fixing video tracking of the bees made by [loopy](http://loopbio.com/loopy/). 
 
 ## PREREQUISITIES
-install [Python 3.9](https://www.python.org/downloads/)
+1. install [Python 3.9](https://www.python.org/downloads/)
 
 ## HOW TO INSTALL
-As we use only python, the only installation are non included libraries, which you can simply install with
+As we use only python, the only installation are non included libraries, which you can simply install with command
 
 `>> pip install -r requirements`
 
@@ -40,3 +40,9 @@ In the `dave.py` there are individual lines loading and parsing individual `_nn.
 >> cd src
 >> python dave.py
 ```
+## WHAT DAVE DOES
+1. deleting traces of 0 length in x,y
+2. merging traces while there is not enough traces (in case study according to population_size) 
+3. deleting traces with overlap over enough traces (in case study according to population_size) 
+4. visualisations
+5. comparison of traces (under construction)
