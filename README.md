@@ -1,7 +1,7 @@
 # Dave
 Fixing video tracking of the bees made by [loopy](http://loopbio.com/loopy/). 
 
-## PREREQUISITIES
+## PREREQUISITES
 1. install [Python 3.9](https://www.python.org/downloads/)
 
 ## HOW TO INSTALL

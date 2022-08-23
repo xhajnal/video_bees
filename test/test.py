@@ -82,6 +82,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(merge_dictionary({7: 1, 8: 1}, {8: 9}), {7: 1, 8: 10})
 
         # m = 2
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)]), {(0, 2): [7, 8], (1, 2): [9, 10]})
+
         self.assertTrue(np.array_equal(matrix_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)]),
                                        [[None, False, list([7, 8])],
                                         [0, None, list([9, 10])],
@@ -90,21 +92,32 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(m_overlaps_of_n_intervals(3, [(6, 8), (9, 11), (7, 10)]), {})
 
         # m = 3
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(3, [(6, 8), (9, 11), (7, 10)]), {})
         self.assertTrue(np.array_equal(matrix_of_m_overlaps_of_n_intervals(3, [(6, 8), (9, 11), (7, 10)]),
                                        [[[None, None, None], [9, None, False], [9, 9, None]],
                                         [[9, 9, 9], [9, None, None], [9, 9, None]],
                                         [[9, 9, 9], [9, 9, 9], [9, 9, None]]]))
+
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(3, [(6, 8), (9, 11), (7, 10)]), {})
         self.assertTrue(np.array_equal(matrix_of_m_overlaps_of_n_intervals(3, [(6, 10), (9, 11), (7, 10)]),
                                        [[[None, None, None], [9, None, list([9, 10])], [9, 9, None]],
                                         [[9, 9, 9], [9, None, None], [9, 9, None]],
                                         [[9, 9, 9], [9, 9, 9], [9, 9, None]]]))
+
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(3, [(6, 10), (9, 11), (7, 10)]), {(0, 1, 2): [9, 10]})
         self.assertEqual(m_overlaps_of_n_intervals(3, [(6, 10), (9, 11), (7, 10)]), {(0, 1, 2): [9, 10]})
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(3, [(5, 10), (9, 11), (6, 10), (3, 7)]),
+                         {(0, 1, 2): [9, 10], (0, 2, 3): [6, 7]})
         self.assertEqual(m_overlaps_of_n_intervals(3, [(5, 10), (9, 11), (6, 10), (3, 7)]), {(0, 1, 2): [9, 10], (0, 2, 3): [6, 7]})
 
         # m = 4
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (9, 11), (6, 10), (3, 7)]), {})
         self.assertEqual(m_overlaps_of_n_intervals(4, [(5, 10), (9, 11), (6, 10), (3, 7)]), {})
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7)]), {(0, 1, 2, 3): [6, 7]})
         self.assertEqual(m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7)]), {(0, 1, 2, 3): [6, 7]})
 
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True),
+                         {(0, 1, 2, 3): [6, 7]})
         self.assertEqual(m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True), {(0, 1, 2, 3): [6, 7]})
 
         # self.assertTrue(np.array_equal(get_submatrix(np.arange(10)*2, [1]), 2))

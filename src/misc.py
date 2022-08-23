@@ -116,6 +116,57 @@ def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     return dictionary2
 
 
+def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
+    """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
+
+    :arg m: (int): degree of overlaps - how many overlaps
+    :arg intervals: (list): list of intervals
+    :arg strict: (bool): if True point intervals are not used
+    :arg debug: (bool): if True extensive output is shown
+
+    :returns matrix: matrix of flags of m-overlaps (m overlapping intervals) of n intervals
+    """
+    ## INTERN values:
+    # False - no interval
+    # 9     - index is not sorted hence it is a duplicated pair
+    # 0     - skipped as default value
+    try:
+        assert m <= len(intervals)
+    except AssertionError as err:
+        print("m", m)
+        print("intervals", intervals)
+        raise err
+    assert m > 1
+    dictionary = {}
+
+    for index1, range1 in enumerate(intervals):
+        for index2, range2 in enumerate(intervals):
+            if index1 >= index2:
+                continue
+            if has_overlap(range1, range2):
+                dictionary[(index1, index2)] = get_overlap(range1, range2)
+
+    if debug:
+        print("dictionary m=2", dictionary)
+
+    for j in list(range(3, m + 1)):
+        dictionary2 = copy(dictionary)
+        del dictionary
+        dictionary = {}
+        for overlap_indices in dictionary2.keys():
+            for index, rangee in enumerate(intervals):
+                if index in overlap_indices:
+                    continue
+                elif has_overlap(rangee, dictionary2[overlap_indices]):
+                    new_index = overlap_indices + (index,)
+                    new_index = tuple(list(sorted(list(new_index))))
+                    dictionary[new_index] = get_overlap(rangee, dictionary2[overlap_indices])
+                if debug:
+                    print(f"dictionary m={j}", dictionary)
+
+    return dictionary
+
+
 def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
 

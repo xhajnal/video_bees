@@ -58,4 +58,4 @@ def analyse(file_path, population_size):
 
         track_reappearance(traces, show=True)
         print()
-        compare_two_traces(traces[1], traces[2])
+        # compare_two_traces(traces[1], traces[2])

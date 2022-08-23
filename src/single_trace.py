@@ -21,4 +21,5 @@ def single_trace_checker(traces):
 
     # DELETING TRACES WITH 0 LEN in XY
     traces = delete_indices(traces_with_zero_len_in_xy, traces)
+    print(colored(f"Returning {len(traces)} traces.", "blue"))
     return traces
