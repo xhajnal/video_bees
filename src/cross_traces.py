@@ -357,7 +357,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     next_step_to = trace3.frame_range[0]
                     next_steps_to.append(next_step_to)
                     step_to = next_step_to
-                    print(f"FIXED next_step_to: {next_step_to}")
+                    if debug:
+                        print(f"FIXED next_step_to: {next_step_to}")
                     do_skip = True
                     break
             if traces_after == 0:
