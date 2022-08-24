@@ -42,4 +42,5 @@ def parse_traces(csv_file):
             # print("hello", row['oid'])
             traces[int(row['oid'])] = dict()
         traces[int(row['oid'])][int(row['frame_number'])] = [row[''], [float(row['x']), float(row['y'])]]
+    print(colored(f"Loaded {len(traces)} traces", "yellow"))
     return traces

@@ -6,6 +6,22 @@ from trace import Trace
 from visualise import scatter_detection, show_all_traces
 
 
+global silent
+global debug
+silent = True
+debug = False
+
+
+def set_silent(is_silent):
+    global silent
+    silent = is_silent
+
+
+def set_debug(is_debug):
+    global debug
+    debug = is_debug
+
+
 def analyse(file_path, population_size):
     """ Runs the whole file analysis
 
@@ -25,7 +41,7 @@ def analyse(file_path, population_size):
         #     print(trace.frame_range)
 
         scatter_detection(traces, subtitle="Initial.")
-        single_trace_checker(traces)
+        single_trace_checker(traces, silent=silent, debug=debug)
         scatter_detection(traces, subtitle="After deleting traces with zero len in xy.")
 
         if population_size > 1:
@@ -34,7 +50,7 @@ def analyse(file_path, population_size):
             traces[i].show_trace_in_xy()
 
         ## CROSS-TRACE ANALYSIS
-        cross_trace_analyse(traces, scraped_traces)
+        cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
 
         ## ALL TRACES SHOW
         show_all_traces(traces)
@@ -44,14 +60,15 @@ def analyse(file_path, population_size):
         after_number_of_traces = 0
         while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
             before_number_of_traces = len(traces)
-            traces = trim_out_additional_agents_over_long_traces2(traces, population_size, debug=False)
+            traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
             scatter_detection(traces, subtitle="after trimming")
-            traces = put_traces_together(traces, population_size)
+            traces = put_traces_together(traces, population_size, silent=silent, debug=debug)
             scatter_detection(traces, subtitle="after putting traces together")
             after_number_of_traces = len(traces)
 
-        for trace in traces:
-            print(trace.frame_range)
+        if not silent:
+            for trace in traces:
+                print(f"trace {trace.trace_id} of range {trace.frame_range}")
 
         ## ALL TRACES SHOW
         show_all_traces(traces)

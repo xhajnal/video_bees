@@ -65,11 +65,12 @@ def compare_two_traces(trace1, trace2):
     print(f"The overlap of the traces is {end_index2 - start_index2} long and its distance is {sum(distances)} pointwise")
 
 
-def trim_out_additional_agents_over_long_traces3(traces, population_size, debug=False):
+def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
     :arg traces: (list): list of Traces
     :arg population_size: (int): expected number of agents
+    :arg silent (bool) if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns: traces: (list): list of trimmed Traces
     """
@@ -108,17 +109,19 @@ def trim_out_additional_agents_over_long_traces3(traces, population_size, debug=
                 print(colored(f"Gonna delete range index {shortest_index}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(shortest_index)
 
-    print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
+    if not silent:
+        print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
 
     return traces
 
 
-def trim_out_additional_agents_over_long_traces2(traces, population_size, debug=False):
+def trim_out_additional_agents_over_long_traces2(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
     :arg traces: (list): list of Traces
     :arg population_size: (int): expected number of agents
+    :arg silent (bool) if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns: traces: (list): list of trimmed Traces
     """
@@ -157,17 +160,19 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, debug=
                 print(colored(f"Gonna delete range index {shortest_index}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(shortest_index)
 
-    print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
+    if not silent:
+        print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
 
     return traces
 
 
-def trim_out_additional_agents_over_long_traces(traces, population_size, debug=False):
+def trim_out_additional_agents_over_long_traces(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
     :arg traces: (list): list of Traces
     :arg population_size: (int): expected number of agents
+    :arg silent (bool) if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns: traces: (list): list of trimmed Traces
     """
@@ -280,11 +285,12 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, debug=F
     return traces
 
 
-def put_traces_together(traces, population_size, debug=False):
+def put_traces_together(traces, population_size, silent=False, debug=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
     :arg traces (list) list of traces
     :arg population_size (int) expected number of agents
+    :arg silent (bool) if True no output is shown
     :arg debug (bool) if True extensive output is shown
     :returns: traces: (list): list of concatenated Traces
     """
@@ -375,7 +381,8 @@ def put_traces_together(traces, population_size, debug=False):
 
         if len(next_steps_to) == population_size:
             ## look for a mergeable trace
-            print(colored(f"Gonna have a look for a mergeable traces from {step_to} till {next_step_to} (frame range)", "blue"))
+            if not silent:
+                print(colored(f"Gonna have a look for a mergeable traces from {step_to} till {next_step_to} (frame range)", "blue"))
             step_to = next_step_to
             for index2, trace2 in enumerate(traces):
                 assert isinstance(trace2, Trace)
@@ -417,7 +424,8 @@ def put_traces_together(traces, population_size, debug=False):
                       f"last point position: {trace1.locations[-1]} " \
                       f"the extrapolated point is {extrapolated_point} " \
                       f"the distance of extrapolated point to the second trace {round(dist_of_trace2_and_extrapolation, 3)} "
-                print(colored(msg, "yellow" if spam else "red"))
+                if not silent:
+                    print(colored(msg, "yellow" if spam else "red"))
 
                 if spam:
 
@@ -488,11 +496,13 @@ def track_reappearance(traces, show=True, debug=False):
 
 
 ## CROSS-TRACE ANALYSIS
-def cross_trace_analyse(traces, scraped_traces):
+def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
     """ Checks traces against each other.
 
     :arg traces: list: a list of Traces
     :arg scraped_traces: list: a list of scraped traces obtained by parse_traces()
+    :arg silent (bool) if True no output is shown
+    :arg debug (bool) if True extensive output is shown
     """
     print(colored("CROSS-TRACE ANALYSIS", "blue"))
     for index, trace in enumerate(traces):
@@ -510,13 +520,13 @@ def cross_trace_analyse(traces, scraped_traces):
                 message = f"The beginning of trace {trace2.trace_id} is close to end of trace {trace.trace_id} " \
                           f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} while the x,y distance is " \
                           f"{round(point_distance,3)}. Consider joining them."
-
-                if index2 == index + 1:
-                    if point_distance < 10:
-                        print(colored(message, "blue"))
+                if not silent:
+                    if index2 == index + 1:
+                        if point_distance < 10:
+                            print(colored(message, "blue"))
+                        else:
+                            print(colored(message, "yellow"))
                     else:
-                        print(colored(message, "yellow"))
-                else:
-                    print(message)
+                        print(message)
     print()
 
