@@ -67,12 +67,12 @@ def analyse(file_path, population_size):
             after_number_of_traces = len(traces)
 
         if not silent:
-            for trace in traces:
-                print(f"trace {trace.trace_id} of range {trace.frame_range}")
+            for index, trace in enumerate(traces):
+                print(f"trace {index} with id {trace.trace_id} of range {trace.frame_range}")
 
         ## ALL TRACES SHOW
         show_all_traces(traces)
 
         track_reappearance(traces, show=True)
         print()
-        # compare_two_traces(traces[1], traces[2])
+        compare_two_traces(traces[4], traces[5])

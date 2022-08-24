@@ -8,7 +8,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 
 
 def compare_two_traces(trace1, trace2):
-    """ Compares two traces
+    """ Compares two traces.
 
     :arg trace1: Trace: first trace to be compared
     :arg trace2: Trace: second trace to be compared
@@ -17,7 +17,13 @@ def compare_two_traces(trace1, trace2):
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
 
+    print("trace1.frame_range", trace1.frame_range)
+    print("trace2.frame_range", trace2.frame_range)
+
     overlapping_range = get_overlap(trace1.frame_range, trace2.frame_range)
+    x = range(overlapping_range[0], overlapping_range[1] + 1)
+    print("overlapping_range", overlapping_range)
+
     if overlapping_range is False:
         print(colored(f"There is no overlap of trace {trace1.trace_id} and trace {trace2.trace_id}"))
         return None
@@ -36,6 +42,7 @@ def compare_two_traces(trace1, trace2):
     distances = []
     first_trace_overlapping_frames = []
     for index in range(start_index1, end_index1+1):
+        print(f"frame n. {trace1.frames_tracked[index]}")
         first_trace_overlapping_frames.append(index)
         print("index1", index)
         index2 = range(start_index2, end_index2+1)[inter_index]
@@ -53,16 +60,15 @@ def compare_two_traces(trace1, trace2):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
-    x = first_trace_overlapping_frames
     y = distances
     ax1.scatter(x, y, alpha=0.5)
-    plt.xlabel('Frame number of the first trace')
-    plt.ylabel('distance of the two races')
+    plt.xlabel('Overlapping frame numbers')
+    plt.ylabel('Distance of the two traces')
     title = f'Scatter plot of of the distance of the overlapping section.'
     plt.title(title)
     plt.show()
 
-    print(f"The overlap of the traces is {end_index2 - start_index2} long and its distance is {sum(distances)} pointwise")
+    print(f"The overlap of the traces is {end_index2 - start_index2} long and its distance is {sum(distances)} point wise")
 
 
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
@@ -98,10 +104,10 @@ def trim_out_additional_agents_over_long_traces3(traces, population_size, silent
         shortest_range = ranges[shortest_index]
 
         to_be_deleted = True
-        for range in overlapping_ranges:
+        for rangee in overlapping_ranges:
             if debug:
-                print(colored(f" Checking whether range index {shortest_index}, {shortest_range}, is in {range}", "blue"))
-            if not is_in(shortest_range, range):
+                print(colored(f" Checking whether range index {shortest_index}, {shortest_range}, is in {rangee}", "blue"))
+            if not is_in(shortest_range, rangee):
                 to_be_deleted = False
 
         if to_be_deleted:
@@ -149,10 +155,10 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
         shortest_range = ranges[shortest_index]
 
         to_be_deleted = True
-        for range in overlapping_ranges:
+        for rangee in overlapping_ranges:
             if debug:
-                print(colored(f" Checking whether range index {shortest_index}, {shortest_range}, is in {range}", "blue"))
-            if not is_in(shortest_range, range):
+                print(colored(f" Checking whether range index {shortest_index}, {shortest_range}, is in {rangee}", "blue"))
+            if not is_in(shortest_range, rangee):
                 to_be_deleted = False
 
         if to_be_deleted:
