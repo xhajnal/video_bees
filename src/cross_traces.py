@@ -70,7 +70,13 @@ def compare_two_traces(trace1, trace2):
     ax1.scatter(x, y, alpha=0.5)
     plt.xlabel('Overlapping frame numbers')
     plt.ylabel('Distance of the two traces')
-    title = f'Scatter plot of of the distance of the overlapping section.'
+    title = f'Scatter plot of of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace1 (left red) \n or cutting trace2 (right red).'
+
+    distances2 = []
+    distances2.append(math.dist(trace1.locations[start_index1-1], trace2.locations[0]))
+    distances2.append(math.dist(trace1.locations[-1], trace2.locations[end_index2+1]))
+    ax1.scatter([x[0]-1, x[-1]+1], distances2, c="r")
+
     plt.title(title)
     plt.show()
 
@@ -554,39 +560,49 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
         :returns: traces: (list): list of concatenated Traces
         """
     if population_size == 1:
-        ## Find overlapping pairs
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)))
-        print("dictionary", dictionary)
-        for trace in traces:
-            print(trace.trace_id, trace.frame_range)
+        count_one = [-9]
 
-        print()
-        keys = flatten(tuple(dictionary.keys()))
-        counts = {}
-        from operator import countOf
-        for item in set(keys):
-            counts[item] = countOf(keys, item)
-        print("keys", keys)
-        print("counts", counts)
+        while len(count_one) >= 1 and len(traces) > 1:
+            ## Find overlapping pairs
+            dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)))
+            if debug:
+                print("dictionary", dictionary)
+                for trace in traces:
+                    print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
+                print()
+            keys = flatten(tuple(dictionary.keys()))
+            counts = {}
+            from operator import countOf
+            for item in set(keys):
+                counts[item] = countOf(keys, item)
+            if debug:
+                print("keys", keys)
+                print("counts", counts)
 
-        count_one = []
-        ## Check there is no interval with 3 or more overlaps - hence cannot easily merge
-        for key in counts.keys():
-            if counts[key] >= 3:
-                raise Exception("I`m sorry Dave, I`m afraid I cannot do that.")
-            if counts[key] == 1:
-                count_one.append(key)
+            count_one = []
+            ## Check there is no interval with 3 or more overlaps - hence cannot easily merge
+            for key in counts.keys():
+                if counts[key] >= 3:
+                    raise Exception("I`m sorry Dave, I`m afraid I cannot do that.")
+                if counts[key] == 1:
+                    count_one.append(key)
 
-        print("count_one", count_one)
-        pick_key = min(count_one)
-        print("pick_key", pick_key)
+            pick_key = min(count_one)
 
-        for key in dictionary.keys():
-            if pick_key in key:
-                pick_key2 = key
+            if debug:
+                print("count_one", count_one)
+                print("pick_key", pick_key)
 
-        print("pick_key2", pick_key2)
+            for key in dictionary.keys():
+                if pick_key in key:
+                    pick_key2 = key
 
-        merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]])
+            if debug:
+                print("pick_key2", pick_key2)
+
+            merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
+            id = traces[pick_key2[1]].trace_id
+            traces = delete_indices([pick_key2[1]], traces)
+            scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {id}")
 
     return traces

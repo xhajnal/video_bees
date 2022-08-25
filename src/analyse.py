@@ -75,6 +75,8 @@ def analyse(file_path, population_size):
 
         track_reappearance(traces, show=True)
         print()
-        compare_two_traces(traces[4], traces[5])
+        compare_two_traces(traces[0], traces[1])
 
         merge_overlapping_traces(traces, population_size)
+
+
