@@ -1,5 +1,5 @@
 from cross_traces import trim_out_additional_agents_over_long_traces, put_traces_together, track_reappearance, \
-    cross_trace_analyse, trim_out_additional_agents_over_long_traces2, compare_two_traces
+    cross_trace_analyse, trim_out_additional_agents_over_long_traces2, compare_two_traces, merge_overlapping_traces
 from parse import parse_traces
 from single_trace import single_trace_checker
 from trace import Trace
@@ -8,7 +8,7 @@ from visualise import scatter_detection, show_all_traces
 
 global silent
 global debug
-silent = True
+silent = False
 debug = False
 
 
@@ -76,3 +76,5 @@ def analyse(file_path, population_size):
         track_reappearance(traces, show=True)
         print()
         compare_two_traces(traces[4], traces[5])
+
+        merge_overlapping_traces(traces, population_size)

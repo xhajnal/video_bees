@@ -2,9 +2,12 @@ import math
 import sys
 from matplotlib import pyplot as plt
 from termcolor import colored
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, get_overlap
-from trace import Trace, merge_two_traces
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, get_overlap, \
+    flatten
+from trace import Trace, merge_two_traces, merge_two_overlapping_traces
 from scipy.interpolate import InterpolatedUnivariateSpline
+
+from visualise import show_all_traces, scatter_detection
 
 
 def compare_two_traces(trace1, trace2):
@@ -16,6 +19,9 @@ def compare_two_traces(trace1, trace2):
     print(colored("COMPARE TWO TRACES", "blue"))
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
+
+    show_all_traces([trace1, trace2])
+    scatter_detection([trace1, trace2], subtitle=False)
 
     print("trace1.frame_range", trace1.frame_range)
     print("trace2.frame_range", trace2.frame_range)
@@ -537,3 +543,50 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
                         print(message)
     print()
 
+
+def merge_overlapping_traces(traces, population_size, silent=False, debug=False):
+    """ Puts traces together such that all the agents but one is being tracked.
+
+        :arg traces (list) list of traces
+        :arg population_size (int) expected number of agents
+        :arg silent (bool) if True no output is shown
+        :arg debug (bool) if True extensive output is shown
+        :returns: traces: (list): list of concatenated Traces
+        """
+    if population_size == 1:
+        ## Find overlapping pairs
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)))
+        print("dictionary", dictionary)
+        for trace in traces:
+            print(trace.trace_id, trace.frame_range)
+
+        print()
+        keys = flatten(tuple(dictionary.keys()))
+        counts = {}
+        from operator import countOf
+        for item in set(keys):
+            counts[item] = countOf(keys, item)
+        print("keys", keys)
+        print("counts", counts)
+
+        count_one = []
+        ## Check there is no interval with 3 or more overlaps - hence cannot easily merge
+        for key in counts.keys():
+            if counts[key] >= 3:
+                raise Exception("I`m sorry Dave, I`m afraid I cannot do that.")
+            if counts[key] == 1:
+                count_one.append(key)
+
+        print("count_one", count_one)
+        pick_key = min(count_one)
+        print("pick_key", pick_key)
+
+        for key in dictionary.keys():
+            if pick_key in key:
+                pick_key2 = key
+
+        print("pick_key2", pick_key2)
+
+        merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]])
+
+    return traces

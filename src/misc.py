@@ -38,6 +38,16 @@ def take(n, iterable):
     return list(islice(iterable, n))
 
 
+def flatten(data):
+    if isinstance(data, tuple):
+        if len(data) == 0:
+            return ()
+        else:
+            return flatten(data[0]) + flatten(data[1:])
+    else:
+        return (data,)
+
+
 def is_in(range1, range2, strict=False):
     """ Returns whether the range1 is in range2.
 
@@ -82,6 +92,7 @@ def is_in(range1, range2, strict=False):
 #         return get_submatrix(matrix2, indices)
 
 
+## DEPRICATED
 def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     """ Returns a dictionary index -> m overlapping interval of n intervals.
         No key if there is no interval.
@@ -166,7 +177,7 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=Fa
 
     return dictionary
 
-
+# DEPRECATED
 def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
 
