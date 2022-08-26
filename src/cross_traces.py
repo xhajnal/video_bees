@@ -575,18 +575,21 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
         :returns: traces: (list): list of concatenated Traces
         """
     if population_size == 1:
-        count_one = [-9]
+        count_one = [-9]  # indices of traces which have only one occurrence
 
         while len(count_one) >= 1 and len(traces) > 1:
-            ## Find overlapping pairs
+            # Find overlapping pairs
             dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)))
             if debug:
                 print("dictionary", dictionary)
                 for trace in traces:
                     print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
                 print()
+            # flattened indices of overlapping pairs of traces
             keys = flatten(tuple(dictionary.keys()))
             counts = {}
+
+            # count occurrences of trace indices in overlapping pairs
             from operator import countOf
             for item in set(keys):
                 counts[item] = countOf(keys, item)
@@ -595,29 +598,36 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
                 print("counts", counts)
 
             count_one = []
-            ## Check there is no interval with 3 or more overlaps - hence cannot easily merge
+            # Check there is no interval with 3 or more overlaps - hence cannot easily merge
+            # Find traces with single occurrence (within the pairs of overlapping traces)
             for key in counts.keys():
                 if counts[key] >= 3:
                     raise Exception("I`m sorry Dave, I`m afraid I cannot do that.")
                 if counts[key] == 1:
                     count_one.append(key)
-
+            # Pick the smallest index
             pick_key = min(count_one)
 
             if debug:
                 print("count_one", count_one)
                 print("pick_key", pick_key)
-
+            
+            # Find the pair of the smallest index which has a single overlap
             for key in dictionary.keys():
                 if pick_key in key:
                     pick_key2 = key
+                    break
 
             if debug:
                 print("pick_key2", pick_key2)
 
+            # Merge these two traces
             merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
+            # Save the id of the merged trace before it is removed
             id = traces[pick_key2[1]].trace_id
+            # Remove the merged trace
             traces = delete_indices([pick_key2[1]], traces)
+            # Show scatter plot of traces having two traces merged
             scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {id}")
 
     return traces
