@@ -9,20 +9,22 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from visualise import show_all_traces, scatter_detection
 
 
-def compare_two_traces(trace1, trace2, silent=False, debug=False):
+def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots=False):
     """ Compares two traces.
 
     :arg trace1: Trace: first trace to be compared
     :arg trace2: Trace: second trace to be compared
     :arg silent (bool) if True no output is shown
     :arg debug: (bool): if True extensive output is shown
+    :arg show_all_plots: (bool): if True show all the plots
     """
     print(colored("COMPARE TWO TRACES", "blue"))
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
 
-    show_all_traces([trace1, trace2])
-    scatter_detection([trace1, trace2], subtitle=False)
+    if show_all_plots:
+        show_all_traces([trace1, trace2])
+        scatter_detection([trace1, trace2], subtitle=False)
 
     if not silent:
         print("trace1.frame_range", trace1.frame_range)
@@ -85,7 +87,7 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False):
     ax1.scatter(x, y, alpha=0.5)
     plt.xlabel('Overlapping frame numbers')
     plt.ylabel('Distance of the two traces')
-    title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace1 (left red) \n or cutting trace2 (right red).'
+    title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace {trace1.trace_id} (left red) \n or cutting trace {trace2.trace_id} (right red).'
 
     distances2 = []
     distances2.append(math.dist(trace1.locations[start_index1-1], trace2.locations[0]))
@@ -93,6 +95,7 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False):
     ax1.scatter([x[0]-1, x[-1]+1], distances2, c="r")
 
     plt.title(title)
+    plt.tight_layout()
     plt.show()
 
     print(f"The overlap of the traces is {end_index2 - start_index2} long and its distance is {sum(distances)} point wise")
@@ -611,7 +614,7 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
             if debug:
                 print("count_one", count_one)
                 print("pick_key", pick_key)
-            
+
             # Find the pair of the smallest index which has a single overlap
             for key in dictionary.keys():
                 if pick_key in key:
@@ -621,6 +624,8 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
             if debug:
                 print("pick_key2", pick_key2)
 
+            # Compare the two traces
+            compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]])
             # Merge these two traces
             merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
             # Save the id of the merged trace before it is removed

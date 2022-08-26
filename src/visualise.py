@@ -8,7 +8,9 @@ def show_all_traces(traces):
     :arg traces: (list): a list of Traces
     """
     for index, trace in enumerate(traces):
-        if index == 0:
+        if len(traces) == 1:
+            figs = trace.show_trace_in_xy(show=True)
+        elif index == 0:
             figs = trace.show_trace_in_xy(show=False)
         elif index < len(traces) - 1:
             figs = trace.show_trace_in_xy(figs, show=False)

@@ -53,7 +53,7 @@ def analyse(file_path, population_size):
         cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
 
         ## ALL TRACES SHOW
-        show_all_traces(traces)
+        # show_all_traces(traces)
 
         ## TRIM TRACES
         before_number_of_traces = len(traces)
@@ -75,8 +75,8 @@ def analyse(file_path, population_size):
 
         track_reappearance(traces, show=True)
         print()
-        compare_two_traces(traces[0], traces[1])
 
         merge_overlapping_traces(traces, population_size)
 
-
+        ## ALL TRACES SHOW
+        show_all_traces(traces)

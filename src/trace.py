@@ -190,6 +190,8 @@ class Trace:
         if show:
             fig3.show()
 
+        if show:
+            plt.show()
         return [[fig1, ax1], [fig2, ax2], [fig3, ax3]]
 
     def check_trace_consistency(self):
