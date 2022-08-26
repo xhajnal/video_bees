@@ -48,10 +48,19 @@ def flatten(data):
         return (data,)
 
 
+def range_len(range):
+    """ Returns the length of the range.
+
+    :arg range: (tuple or list): range to compute its length
+    """
+    assert len(range) == 2
+    return range[1] - range[0]
+
+
 def is_in(range1, range2, strict=False):
     """ Returns whether the range1 is in range2.
 
-    :param range1: (tuple or list): first interval
+    :arg range1: (tuple or list): first interval
     :arg range2: (tuple or list): second interval
     :arg strict: (bool): flag whether use >,< instead of >=, <=
     :returns: (bool): whether range1 is (strictly) inside range2
@@ -127,11 +136,12 @@ def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     return dictionary2
 
 
-def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
+def dictionary_of_m_overlaps_of_n_intervals(m, intervals, while_not_in=False, strict=False, debug=False):
     """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
 
     :arg m: (int): degree of overlaps - how many overlaps
     :arg intervals: (list): list of intervals
+    :arg while_not_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg strict: (bool): if True point intervals are not used
     :arg debug: (bool): if True extensive output is shown
 
@@ -155,8 +165,11 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=Fa
             if index1 >= index2:
                 continue
             if has_overlap(range1, range2):
+                # to skip the intervals which are overlapping with whole range
+                if while_not_in:
+                    if is_in(range1, range2) or is_in(range2, range1):
+                        continue
                 dictionary[(index1, index2)] = get_overlap(range1, range2)
-
     if debug:
         print("dictionary m=2", dictionary)
 
@@ -176,6 +189,7 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=Fa
                     print(f"dictionary m={j}", dictionary)
 
     return dictionary
+
 
 # DEPRECATED
 def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
