@@ -1,5 +1,5 @@
-from cross_traces import trim_out_additional_agents_over_long_traces, put_traces_together, track_reappearance, \
-    cross_trace_analyse, trim_out_additional_agents_over_long_traces2, compare_two_traces, merge_overlapping_traces
+from cross_traces import put_traces_together, track_reappearance, cross_trace_analyse,\
+    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces
 from parse import parse_traces
 from single_trace import single_trace_checker
 from trace import Trace
