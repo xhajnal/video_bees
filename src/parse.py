@@ -46,5 +46,5 @@ def parse_traces(csv_file):
             # print("hello", row['oid'])
             traces[int(row['oid'])] = dict()
         traces[int(row['oid'])][int(row['frame_number'])] = [row[''], [float(row['x']), float(row['y'])]]
-    print(colored(f"Loaded {len(traces)} traces. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"Loaded {len(traces)} traces. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces

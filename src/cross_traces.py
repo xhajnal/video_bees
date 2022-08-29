@@ -34,8 +34,8 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
         scatter_detection([trace1, trace2], subtitle=False)
 
     if not silent:
-        print("trace1.frame_range", trace1.frame_range)
-        print("trace2.frame_range", trace2.frame_range)
+        print("trace1.frame_range", list(trace1.frame_range))
+        print("trace2.frame_range", list(trace2.frame_range))
 
     overlapping_range = get_overlap(trace1.frame_range, trace2.frame_range)
     # x = range(overlapping_range[0], overlapping_range[1] + 1)
@@ -111,9 +111,8 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     plt.tight_layout()
     plt.show()
 
-    print(colored(f"Comparing two traces done. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
-    print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and its distance is {sum(distances)} point wise"), "green")
-
+    print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
 
 
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
@@ -216,8 +215,8 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
 
-    print(colored(f"trim_out_additional_agents_over_long_traces2 analysis done. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
-    print(colored(f"Returning traces of length {len(traces)}, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration.", "green"))
+    print(colored(f"trim_out_additional_agents_over_long_traces2 analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    print(colored(f"Returning traces of length {len(traces)}, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration. \n", "green"))
     return traces
 
 
@@ -335,7 +334,7 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, silent=
         trace.check_trace_consistency()
 
     print(colored(
-        f"trim_out_additional_agents_over_long_traces analysis done. It took {gethostname()} {time() - start_time} seconds.",
+        f"trim_out_additional_agents_over_long_traces analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.",
         "yellow"))
     print(colored(f"Returning traces of length {len(traces)}, {len(traces_indices_to_be_deleted)} shorter than in previous iteration.", "green"))
     print()
@@ -441,7 +440,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
         if len(next_steps_to) == population_size:
             ## look for a mergeable trace
             if not silent:
-                print(colored(f"Gonna have a look for a mergeable traces from {step_to} till {next_step_to} (frame range)", "blue"))
+                print(colored(f"Gonna have a look for a mergeable traces from frame {step_to} till {next_step_to}.", "blue"))
             step_to = next_step_to
             for index2, trace2 in enumerate(traces):
                 assert isinstance(trace2, Trace)
@@ -473,8 +472,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
-                msg = f"{'' if spam else 'NOT '}MERGING TRACES {trace1.trace_id} of " \
-                      f"frame {trace1.frame_range} of length {trace1.frame_range_len} and " \
+                msg = f"{'' if spam else 'NOT '}MERGING TRACES {trace1.trace_id} " \
+                      f"of length {trace1.frame_range_len} and " \
                       f"trace {trace2.trace_id} of range {trace2.frame_range} of " \
                       f"length {int(trace2.frame_range_len)} " \
                       f"the distance of traces in x,y is {round(dist_of_traces_in_xy, 3)} which is " \
@@ -502,7 +501,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
         print(f"Gonna delete the following traces as we have merged them: {trace_indices_to_trim}")
     traces = delete_indices(trace_indices_to_trim, traces)
 
-    print(colored(f"put_traces_together analysis done. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"put_traces_together analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"Returning traces of length {len(traces)}, {len(trace_indices_to_trim)} shorter than in previous iteration.", "green"))
     print()
     return traces
@@ -588,7 +587,7 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
                             print(colored(message, "yellow"))
                     else:
                         print(message)
-    print(colored(f"Cross_trace analysis done. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"Cross_trace analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print()
 
 
@@ -688,7 +687,7 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
             # Save the id of the merged trace before it is removed
             trace2_id = traces[pick_key2[1]].trace_id
             # Remove the merged trace
-            print(colored(f"Gonna cut trace {trace2_id}", "blue"))
+            print(colored(f"Gonna cut trace {trace2_id}.", "blue"))
             print()
             traces = delete_indices([pick_key2[1]], traces)
             # Show scatter plot of traces having two traces merged
@@ -696,6 +695,6 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
             go_next = False
 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} deleted. "
-                  f"It took {gethostname()} {time() - start_time} seconds."), "yellow")
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n"), "yellow")
     return traces
 

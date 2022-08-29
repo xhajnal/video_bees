@@ -28,12 +28,12 @@ def single_trace_checker(traces, silent=False, debug=False):
         if trace.max_step_len > get_bee_max_step_len():
             if not silent:
                 print(colored(f"This agent has moved {trace.max_step_len} in a single step on frame {trace.max_step_len_frame_number}, you might consider fixing it!", "yellow"))
-        if not silent:
-            print()
+        # if not silent:
+        #     print()
 
     # DELETING TRACES WITH 0 LEN in XY
     traces = delete_indices(traces_with_zero_len_in_xy, traces)
-    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces
 
 
@@ -95,5 +95,5 @@ def check_inside_of_arena(traces, silent=False, debug=False):
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)
-    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces

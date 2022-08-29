@@ -44,9 +44,11 @@ def analyse(file_path, population_size):
         #     print(trace.frame_range)
         show_all_traces(traces)
 
+        ## FIND TRACES OUTSIDE OF THE ARENA
         check_inside_of_arena(traces)
         show_all_traces(traces)
 
+        ## FIND TRACES OF ZERO LENGTH
         scatter_detection(traces, subtitle="Initial.")
         single_trace_checker(traces, silent=silent, debug=debug)
         scatter_detection(traces, subtitle="After deleting traces with zero len in xy.")
@@ -62,7 +64,7 @@ def analyse(file_path, population_size):
         ## ALL TRACES SHOW
         show_all_traces(traces)
 
-        ## TRIM TRACES
+        ## TRIM TRACES AND PUT NOT OVERLAPPING ONES TOGETHER
         before_number_of_traces = len(traces)
         after_number_of_traces = 0
         while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
@@ -73,9 +75,10 @@ def analyse(file_path, population_size):
             scatter_detection(traces, subtitle="after putting traces together")
             after_number_of_traces = len(traces)
 
+        print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
         if not silent:
             for index, trace in enumerate(traces):
-                print(f"trace {index} with id {trace.trace_id} of range {trace.frame_range}")
+                print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
 
         ## ALL TRACES SHOW
         show_all_traces(traces)
@@ -83,6 +86,7 @@ def analyse(file_path, population_size):
         track_reappearance(traces, show=True)
         print()
 
+        ## MERGE OVERLAPPING TRACES
         merge_overlapping_traces(traces, population_size, silent=silent, debug=debug)
         print()
         if len(traces) >= 2:
