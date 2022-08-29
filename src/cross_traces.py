@@ -23,9 +23,11 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     :arg debug: (bool): if True extensive output is shown
     :arg show_all_plots: (bool): if True show all the plots
     """
-    print(colored("COMPARE TWO TRACES", "blue"))
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
+
+    print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
+    start_time = time()
 
     if show_all_plots:
         show_all_traces([trace1, trace2])
@@ -109,7 +111,9 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     plt.tight_layout()
     plt.show()
 
-    print(f"The overlap of the traces is {end_index2 - start_index2} long and its distance is {sum(distances)} point wise")
+    print(colored(f"Comparing two traces done. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and its distance is {sum(distances)} point wise"), "green")
+
 
 
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
@@ -642,13 +646,13 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
 
             # Find traces with single occurrence (within the pairs of overlapping traces)
             for key in counts.keys():
-                ## Check there is no interval with 3 or more overlaps - hence cannot easily merge
+                # Check there is no interval with 3 or more overlaps - hence cannot easily merge
                 # if counts[key] >= 3:
                 #     raise Exception("I`m sorry Dave, I`m afraid I cannot do that.")
                 if counts[key] == 1:
                     count_one.append(key)
-
-            print("count_one", count_one)
+            if debug:
+                print("count_one", count_one)
 
             # Pick the smallest index
             pick_key = min(count_one)
@@ -682,13 +686,16 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
             # Merge these two traces
             merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
             # Save the id of the merged trace before it is removed
-            id = traces[pick_key2[1]].trace_id
+            trace2_id = traces[pick_key2[1]].trace_id
             # Remove the merged trace
+            print(colored(f"Gonna cut trace {trace2_id}", "blue"))
+            print()
             traces = delete_indices([pick_key2[1]], traces)
             # Show scatter plot of traces having two traces merged
-            scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {id}")
+            scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}")
             go_next = False
 
-    print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} deleted. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} deleted. "
+                  f"It took {gethostname()} {time() - start_time} seconds."), "yellow")
     return traces
 
