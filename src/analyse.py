@@ -42,6 +42,8 @@ def analyse(file_path, population_size):
 
         # for trace in traces:
         #     print(trace.frame_range)
+        show_all_traces(traces)
+
         check_inside_of_arena(traces)
         show_all_traces(traces)
 
@@ -81,9 +83,12 @@ def analyse(file_path, population_size):
         track_reappearance(traces, show=True)
         print()
 
-        merge_overlapping_traces(traces, population_size, silent=silent, debug=True)
+        merge_overlapping_traces(traces, population_size, silent=silent, debug=debug)
         print()
-        print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)}", "yellow"))
+        if len(traces) >= 2:
+            print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)}", "yellow"))
+        else:
+            show_all_traces(traces)
 
         ## ALL TRACES SHOW
         show_all_traces(traces)

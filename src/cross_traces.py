@@ -1,5 +1,8 @@
 import math
 import sys
+from time import time
+
+from _socket import gethostname
 from matplotlib import pyplot as plt
 from termcolor import colored
 
@@ -52,7 +55,7 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     end_index1 = trace1.frames_tracked.index(overlapping_range[1])
     start_index2 = trace2.frames_tracked.index(overlapping_range[0])
     end_index2 = trace2.frames_tracked.index(overlapping_range[1])
-    if not silent:
+    if debug:
         print("start_index1", start_index1)
         print("end_index1", end_index1)
         print("start_index2", start_index2)
@@ -170,6 +173,7 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
     :returns: traces: (list): list of trimmed Traces
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES 2", "blue"))
+    start_time = time()
     ranges = []
     for index1, trace in enumerate(traces):
         assert isinstance(trace, Trace)
@@ -208,20 +212,22 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
 
+    print(colored(f"trim_out_additional_agents_over_long_traces2 analysis done. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"Returning traces of length {len(traces)}, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration.", "green"))
     return traces
 
 
 def trim_out_additional_agents_over_long_traces(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
-
-    :arg traces: (list): list of Traces
+, {len(trace_indices_to_trim)} shorter than in previous iteration.
     :arg population_size: (int): expected number of agents
     :arg silent (bool) if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns: traces: (list): list of trimmed Traces
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES", "blue"))
-    ## obtain the ranges with the size of frame more than 100 where all the agents are being tracked
+    start_time = time()
+    ## Obtain the ranges with the size of frame more than 100 where all the agents are being tracked
     ranges = []
     for index1, trace in enumerate(traces):
         assert isinstance(trace, Trace)
@@ -324,7 +330,10 @@ def trim_out_additional_agents_over_long_traces(traces, population_size, silent=
     for trace in traces:
         trace.check_trace_consistency()
 
-    print(colored(f"Returning traces of length {len(traces)}", "green"))
+    print(colored(
+        f"trim_out_additional_agents_over_long_traces analysis done. It took {gethostname()} {time() - start_time} seconds.",
+        "yellow"))
+    print(colored(f"Returning traces of length {len(traces)}, {len(traces_indices_to_be_deleted)} shorter than in previous iteration.", "green"))
     print()
     return traces
 
@@ -339,6 +348,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
     :returns: traces: (list): list of concatenated Traces
     """
     print(colored("PUT TRACES TOGETHER", "blue"))
+    start_time = time()
     ## params
     max_trace_gap = get_max_trace_gap()
     min_trace_length = get_min_trace_length()
@@ -488,7 +498,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
         print(f"Gonna delete the following traces as we have merged them: {trace_indices_to_trim}")
     traces = delete_indices(trace_indices_to_trim, traces)
 
-    print(colored(f"Returning traces of length {len(traces)}, {len(trace_indices_to_trim)} shorter than in previous iteration", "green"))
+    print(colored(f"put_traces_together analysis done. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
+    print(colored(f"Returning traces of length {len(traces)}, {len(trace_indices_to_trim)} shorter than in previous iteration.", "green"))
     print()
     return traces
 
@@ -549,6 +560,7 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
     :arg debug (bool) if True extensive output is shown
     """
     print(colored("CROSS-TRACE ANALYSIS", "blue"))
+    start_time = time()
     for index, trace in enumerate(traces):
         for index2, trace2 in enumerate(traces):
             if index == index2:
@@ -572,6 +584,7 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
                             print(colored(message, "yellow"))
                     else:
                         print(message)
+    print(colored(f"Cross_trace analysis done. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
     print()
 
 
@@ -584,17 +597,28 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
         :arg debug (bool) if True extensive output is shown
         :returns: traces: (list): list of concatenated Traces
     """
+    print(colored("MERGE OVERLAPPING TRACES", "blue"))
+    start_time = time()
+    starting_number_of_traces = len(traces)
 
     count_one = [-9]  # indices of traces which have only one occurrence
     number_of_traces = -9
 
     while (len(count_one) >= 1 and len(traces) > 1) or number_of_traces != len(traces):
         number_of_traces = len(traces)
+        if len(traces) <= 1:
+            if len(traces) == 1:
+                print(colored("Cannot merge a single trace.", "red"))
+                return
+            if len(traces) == 0:
+                print(colored("Cannot merge no trace.", "red"))
+                return
         # Find overlapping pairs
         dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)
         if dictionary == {}:
+            print(colored("Cannot merge any trace as there is no overlap of two traces.", "red"))
             return
-        # flag whether to try another pair of overlapping intervals
+        # Flag whether to try another pair of overlapping intervals
         go_next = True
         while go_next:
             if debug:
@@ -602,11 +626,11 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
                 for trace in traces:
                     print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
                 print()
-            # flattened indices of overlapping pairs of traces
+            # Flattened indices of overlapping pairs of traces
             keys = flatten(tuple(dictionary.keys()))
             counts = {}
 
-            # count occurrences of trace indices in overlapping pairs
+            # Count occurrences of trace indices in overlapping pairs
             from operator import countOf
             for item in set(keys):
                 counts[item] = countOf(keys, item)
@@ -654,7 +678,7 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
                 continue
 
             # Compare the two traces
-            compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]])
+            compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
             # Merge these two traces
             merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
             # Save the id of the merged trace before it is removed
@@ -664,4 +688,7 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
             # Show scatter plot of traces having two traces merged
             scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {id}")
             go_next = False
+
+    print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} deleted. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
     return traces
+

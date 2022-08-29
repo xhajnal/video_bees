@@ -1,4 +1,7 @@
 import csv
+from time import time
+
+from _socket import gethostname
 from termcolor import colored
 
 
@@ -34,6 +37,7 @@ def parse_traces(csv_file):
     :arg csv_file: (file): input file
     :returns: traces (dic): dictionary of traces 'oid' -> 'frame_number' -> [line_id, location [x,y]]
     """
+    start_time = time()
     print(colored("PARSE TRACES", "blue"))
     traces = dict()
     reader = csv.DictReader(csv_file)
@@ -42,5 +46,5 @@ def parse_traces(csv_file):
             # print("hello", row['oid'])
             traces[int(row['oid'])] = dict()
         traces[int(row['oid'])][int(row['frame_number'])] = [row[''], [float(row['x']), float(row['y'])]]
-    print(colored(f"Loaded {len(traces)} traces", "yellow"))
+    print(colored(f"Loaded {len(traces)} traces. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
     return traces

@@ -1,3 +1,6 @@
+from time import time
+
+from _socket import gethostname
 from termcolor import colored
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices
@@ -12,6 +15,7 @@ def single_trace_checker(traces, silent=False, debug=False):
     :returns traces: (list): a list of Traces
     """
     print(colored("SINGLE TRACE CHECKER", "blue"))
+    start_time = time()
     traces_with_zero_len_in_xy = []
     number_of_traces = len(traces)
     for index, trace in enumerate(traces):
@@ -29,7 +33,7 @@ def single_trace_checker(traces, silent=False, debug=False):
 
     # DELETING TRACES WITH 0 LEN in XY
     traces = delete_indices(traces_with_zero_len_in_xy, traces)
-    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted.", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
     return traces
 
 
@@ -42,6 +46,7 @@ def check_inside_of_arena(traces, silent=False, debug=False):
     :returns traces: (list): a list of Traces
     """
     print(colored("SINGLE TRACE INSIDE ARENA CHECKER", "blue"))
+    start_time = time()
     number_of_traces = len(traces)
 
     all_locations = []
@@ -90,5 +95,5 @@ def check_inside_of_arena(traces, silent=False, debug=False):
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)
-    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted.", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {time() - start_time} seconds.", "yellow"))
     return traces
