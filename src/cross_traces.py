@@ -2,6 +2,8 @@ import math
 import sys
 from matplotlib import pyplot as plt
 from termcolor import colored
+
+from config import get_max_trace_gap, get_min_trace_length
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, get_overlap, \
     flatten, range_len
 from trace import Trace, merge_two_traces, merge_two_overlapping_traces
@@ -338,8 +340,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
     """
     print(colored("PUT TRACES TOGETHER", "blue"))
     ## params
-    max_trace_gap = 500
-    min_trace_length = 100
+    max_trace_gap = get_max_trace_gap()
+    min_trace_length = get_min_trace_length()
 
     ## code
     reappearance = track_reappearance(traces, show=False)
@@ -471,7 +473,6 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     print(colored(msg, "yellow" if spam else "red"))
 
                 if spam:
-
                     trace = merge_two_traces(trace1, trace2)
                     trace1 = trace
                     if debug:
@@ -591,6 +592,8 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
         number_of_traces = len(traces)
         # Find overlapping pairs
         dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)
+        if dictionary == {}:
+            return
         # flag whether to try another pair of overlapping intervals
         go_next = True
         while go_next:
@@ -621,11 +624,13 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
                 if counts[key] == 1:
                     count_one.append(key)
 
+            print("count_one", count_one)
+
             # Pick the smallest index
             pick_key = min(count_one)
 
             if debug:
-                print("count_one", count_one)
+
                 print("pick_key", pick_key)
 
             # Find the pair of the smallest index which has a single overlap

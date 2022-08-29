@@ -1,7 +1,10 @@
+from termcolor import colored
+
 from cross_traces import put_traces_together, track_reappearance, cross_trace_analyse,\
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces
+from misc import dictionary_of_m_overlaps_of_n_intervals
 from parse import parse_traces
-from single_trace import single_trace_checker
+from single_trace import single_trace_checker, check_inside_of_arena
 from trace import Trace
 from visualise import scatter_detection, show_all_traces
 
@@ -39,6 +42,8 @@ def analyse(file_path, population_size):
 
         # for trace in traces:
         #     print(trace.frame_range)
+        check_inside_of_arena(traces)
+        show_all_traces(traces)
 
         scatter_detection(traces, subtitle="Initial.")
         single_trace_checker(traces, silent=silent, debug=debug)
@@ -53,7 +58,7 @@ def analyse(file_path, population_size):
         cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
 
         ## ALL TRACES SHOW
-        # show_all_traces(traces)
+        show_all_traces(traces)
 
         ## TRIM TRACES
         before_number_of_traces = len(traces)
@@ -76,7 +81,9 @@ def analyse(file_path, population_size):
         track_reappearance(traces, show=True)
         print()
 
-        merge_overlapping_traces(traces, population_size)
+        merge_overlapping_traces(traces, population_size, silent=silent, debug=True)
+        print()
+        print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)}", "yellow"))
 
         ## ALL TRACES SHOW
         show_all_traces(traces)
