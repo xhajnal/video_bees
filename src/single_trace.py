@@ -1,3 +1,4 @@
+import csv
 from time import time
 
 from _socket import gethostname
@@ -97,3 +98,29 @@ def check_inside_of_arena(traces, silent=False, debug=False):
     delete_indices(traces_to_be_deleted, traces, debug=debug)
     print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces
+
+
+def dummy_collision_finder(csv_file, size):
+    """ Parses  a loopy csv file nn/ai. It prints the frame numbers where the additional agents.
+    The print includes agent's id.
+    Returns a list of frames where an additional agent was found.
+
+    :arg csv_file: (file): input file
+    :arg size: (int): expected number of agents
+    :returns: frame_numbers_of_collided_agents: list of frames where an additional agent was found
+    """
+    print(colored("DUMMY COLLISION FINDER", "blue"))
+    reader = csv.DictReader(csv_file)
+    i = 0
+    frame_numbers_of_collided_agents = []
+
+    for row in reader:
+        # print(row['oid'])
+        if int(row['oid']) > size - 1:
+            print("A new fake agents appears on frame number", row['frame_number'], "iteration number", i, "with oid",
+                  row['oid'])
+            frame_numbers_of_collided_agents.append(row['frame_number'])
+            size = size + 1
+        i = i + 1
+
+    return frame_numbers_of_collided_agents

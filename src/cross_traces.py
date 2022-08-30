@@ -1,7 +1,6 @@
 import math
 import sys
 from time import time
-
 from _socket import gethostname
 from matplotlib import pyplot as plt
 from termcolor import colored
@@ -695,6 +694,6 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
             go_next = False
 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} deleted. "
-                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n"), "yellow")
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces
 

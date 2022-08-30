@@ -1,34 +1,28 @@
 import csv
+import os
+import pickle
 from time import time
-
 from _socket import gethostname
 from termcolor import colored
 
 
-def dummy_collision_finder(csv_file, size):
-    """ Parses  a loopy csv file nn/ai. It prints the frame numbers where the additional agents.
-    The print includes agent's id.
-    Returns a list of frames where an additional agent was found.
+def pickle_load(file):
+    """ Returns loaded pickled data
 
-    :arg csv_file: (file): input file
-    :arg size: (int): expected number of agents
-    :returns: frame_numbers_of_collided_agents: list of frames where an additional agent was found
+    Args:
+        file (string or Path): filename/filepath
     """
-    print(colored("DUMMY COLLISION FINDER", "blue"))
-    reader = csv.DictReader(csv_file)
-    i = 0
-    frame_numbers_of_collided_agents = []
 
-    for row in reader:
-        # print(row['oid'])
-        if int(row['oid']) > size - 1:
-            print("A new fake agents appears on frame number", row['frame_number'], "iteration number", i, "with oid",
-                  row['oid'])
-            frame_numbers_of_collided_agents.append(row['frame_number'])
-            size = size + 1
-        i = i + 1
+    filename, file_extension = os.path.splitext(file)
 
-    return frame_numbers_of_collided_agents
+    if file_extension == ".p":
+        with open(file, "rb") as f:
+            return pickle.load(f)
+    elif file_extension == "":
+        with open(str(file) + ".p", "rb") as f:
+            return pickle.load(f)
+    else:
+        raise Exception("File extension does not match", f"{file} does not seem to be pickle file!")
 
 
 def parse_traces(csv_file):

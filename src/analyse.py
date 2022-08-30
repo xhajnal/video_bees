@@ -1,9 +1,12 @@
+import os.path
+
 from termcolor import colored
 
 from cross_traces import put_traces_together, track_reappearance, cross_trace_analyse,\
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from parse import parse_traces
+from save import save_traces, pickle_traces
 from single_trace import single_trace_checker, check_inside_of_arena
 from trace import Trace
 from visualise import scatter_detection, show_all_traces
@@ -96,3 +99,6 @@ def analyse(file_path, population_size):
 
         ## ALL TRACES SHOW
         show_all_traces(traces)
+
+        # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+        pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
