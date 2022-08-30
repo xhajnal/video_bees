@@ -25,6 +25,12 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
 
+    if show_all_plots is None:
+        show_all_plots = False
+        show = False
+    else:
+        show = True
+
     print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
     start_time = time()
 
@@ -89,26 +95,27 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
         distances.append(distance)
         x.append(trace1.frames_tracked[index])
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
+    if show:
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
 
-    y = distances
-    if debug:
-        print("distance len", len(distances))
-        print("x len", len(x))
-    ax1.scatter(x, y, alpha=0.5)
-    plt.xlabel('Overlapping frame numbers')
-    plt.ylabel('Distance of the two traces')
-    title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace {trace1.trace_id} (left red) \n or cutting trace {trace2.trace_id} (right red).'
+        y = distances
+        if debug:
+            print("distance len", len(distances))
+            print("x len", len(x))
+        ax1.scatter(x, y, alpha=0.5)
+        plt.xlabel('Overlapping frame numbers')
+        plt.ylabel('Distance of the two traces')
+        title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace {trace1.trace_id} (left red) \n or cutting trace {trace2.trace_id} (right red).'
 
-    distances2 = []
-    distances2.append(math.dist(trace1.locations[start_index1-1], trace2.locations[0]))
-    distances2.append(math.dist(trace1.locations[-1], trace2.locations[end_index2+1]))
-    ax1.scatter([x[0]-1, x[-1]+1], distances2, c="r")
+        distances2 = []
+        distances2.append(math.dist(trace1.locations[start_index1-1], trace2.locations[0]))
+        distances2.append(math.dist(trace1.locations[-1], trace2.locations[end_index2+1]))
+        ax1.scatter([x[0]-1, x[-1]+1], distances2, c="r")
 
-    plt.title(title)
-    plt.tight_layout()
-    plt.show()
+        plt.title(title)
+        plt.tight_layout()
+        plt.show()
 
     print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
@@ -590,13 +597,14 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
     print()
 
 
-def merge_overlapping_traces(traces, population_size, silent=False, debug=False):
+def merge_overlapping_traces(traces, population_size, silent=False, debug=False, show=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
         :arg population_size (int) expected number of agents
         :arg silent (bool) if True no output is shown
         :arg debug (bool) if True extensive output is shown
+        :arg show (bool) if True plots are shown
         :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE OVERLAPPING TRACES", "blue"))
@@ -680,7 +688,11 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
                 continue
 
             # Compare the two traces
-            compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
+            if show:
+                showw = False
+            else:
+                showw = None
+            compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug, show_all_plots=showw)
             # Merge these two traces
             merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
             # Save the id of the merged trace before it is removed
@@ -690,7 +702,8 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False)
             print()
             traces = delete_indices([pick_key2[1]], traces)
             # Show scatter plot of traces having two traces merged
-            scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}")
+            if show:
+                scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}")
             go_next = False
 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} deleted. "

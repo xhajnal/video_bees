@@ -83,9 +83,9 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
         pass
 
     file = str(os.path.splitext(f"../output/{file_name}")[0])+".p"
-    print("file", file)
+    if debug:
+        print("file", file)
     with open(file, 'wb') as f:
         pickle.dump(traces, f)
 
-    print(colored(f"Saving pickled {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds. \n",
-                  "yellow"))
+    print(colored(f"Saving pickled {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))

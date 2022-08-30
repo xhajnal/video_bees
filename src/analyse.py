@@ -45,11 +45,11 @@ def analyse(file_path, population_size):
 
         # for trace in traces:
         #     print(trace.frame_range)
-        show_all_traces(traces)
+        # show_all_traces(traces)
 
         ## FIND TRACES OUTSIDE OF THE ARENA
         check_inside_of_arena(traces)
-        show_all_traces(traces)
+        # show_all_traces(traces)
 
         ## FIND TRACES OF ZERO LENGTH
         scatter_detection(traces, subtitle="Initial.")
@@ -59,13 +59,14 @@ def analyse(file_path, population_size):
         if population_size > 1:
             ## CHOSEN TRACE SHOW - choose i, index of trace
             i = 0
-            traces[i].show_trace_in_xy()
+            # TODO uncomment the following line to show the selected trace
+            # traces[i].show_trace_in_xy()
 
         ## CROSS-TRACE ANALYSIS
         cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
 
         ## ALL TRACES SHOW
-        show_all_traces(traces)
+        # show_all_traces(traces)
 
         ## TRIM TRACES AND PUT NOT OVERLAPPING ONES TOGETHER
         before_number_of_traces = len(traces)
@@ -86,16 +87,17 @@ def analyse(file_path, population_size):
         ## ALL TRACES SHOW
         show_all_traces(traces)
 
-        track_reappearance(traces, show=True)
+        track_reappearance(traces, show=debug)
         print()
 
         ## MERGE OVERLAPPING TRACES
-        merge_overlapping_traces(traces, population_size, silent=silent, debug=debug)
+        merge_overlapping_traces(traces, population_size, silent=silent, debug=debug, show=debug)
         print()
         if len(traces) >= 2:
             print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)}", "yellow"))
         else:
-            show_all_traces(traces)
+            pass
+            # show_all_traces(traces)
 
         ## ALL TRACES SHOW
         show_all_traces(traces)
