@@ -91,7 +91,7 @@ def analyse(file_path, population_size):
         print()
 
         ## MERGE OVERLAPPING TRACES
-        merge_overlapping_traces(traces, population_size, silent=silent, debug=debug, show=debug)
+        merge_overlapping_traces(traces, population_size, silent=silent, debug=debug, show=True)
         print()
         if len(traces) >= 2:
             print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)}", "yellow"))

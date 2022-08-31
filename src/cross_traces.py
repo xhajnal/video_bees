@@ -5,7 +5,8 @@ from _socket import gethostname
 from matplotlib import pyplot as plt
 from termcolor import colored
 
-from config import get_max_trace_gap, get_min_trace_length
+from config import get_max_trace_gap, get_min_trace_length, get_bee_max_step_len, get_bee_max_step_len_per_frame, \
+    get_max_step_distance_to_merge_overlapping_traces
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, get_overlap, \
     flatten, range_len
 from trace import Trace, merge_two_traces, merge_two_overlapping_traces
@@ -119,6 +120,8 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
 
     print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
+
+    return distances
 
 
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
@@ -472,13 +475,28 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                 dist_of_trace2_and_extrapolation = math.dist(extrapolated_point, trace2.locations[0])
 
                 # COMPUTE WHETHER THE TWO TRACES ARE "ALIGNED"
+                # the gap is lower than a given number (500)
+                # length of the second trace is longer than a given number (100)
                 spam = trace2.frame_range[0] - step_to <= max_trace_gap and trace2.frame_range_len >= min_trace_length
+                # CHECK FOR DISTANCE OF TRACES IN X,Y
+                # if the distance of traces in frames is high
+                if spam:
+                    if dist_of_traces_in_frames > max_trace_gap/10:
+                        print("helg")
+                        if dist_of_traces_in_xy > get_bee_max_step_len()*3:
+                            print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance.")
+                            spam = False
+                    else:
+                        print("helh")
+                        if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
+                            print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance.")
+                            spam = False
 
                 if trace2.frame_range[0] - trace1.frame_range[-1] == 0:
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
-                msg = f"{'' if spam else 'NOT '}MERGING TRACES {trace1.trace_id} " \
+                msg = f"{'' if spam else 'NOT '}MERGING TRACES {trace1.trace_id}  {trace1.frame_range} " \
                       f"of length {trace1.frame_range_len} and " \
                       f"trace {trace2.trace_id} of range {trace2.frame_range} of " \
                       f"length {int(trace2.frame_range_len)} " \
@@ -631,11 +649,11 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
         # Flag whether to try another pair of overlapping intervals
         go_next = True
         while go_next:
-            if debug:
-                print("dictionary", dictionary)
-                for trace in traces:
-                    print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
-                print()
+            # if debug:
+            print("dictionary", dictionary)
+            for trace in traces:
+                print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
+            print()
             # Flattened indices of overlapping pairs of traces
             keys = flatten(tuple(dictionary.keys()))
             counts = {}
@@ -664,7 +682,6 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
             pick_key = min(count_one)
 
             if debug:
-
                 print("pick_key", pick_key)
 
             # Find the pair of the smallest index which has a single overlap
@@ -675,15 +692,19 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
 
             if debug:
                 print("pick_key2", pick_key2)
-            if is_in(traces[pick_key2[0]].frame_range, traces[pick_key2[1]].frame_range) or is_in(traces[pick_key2[1]].frame_range, traces[pick_key2[0]].frame_range):
-                print("traces[pick_key2[0]].frame_range", traces[pick_key2[0]].frame_range)
-                print("traces[pick_key2[1]].frame_range", traces[pick_key2[1]].frame_range)
 
-                print("Gonna delete ", dictionary[pick_key2])
-                print(dictionary)
+            # if the picked traces are overlapping in whole range of one of the traces we delete it from the dictionary and move on
+            if is_in(traces[pick_key2[0]].frame_range, traces[pick_key2[1]].frame_range) or is_in(traces[pick_key2[1]].frame_range, traces[pick_key2[0]].frame_range):
+                if debug:
+                    print("traces[pick_key2[0]].frame_range", traces[pick_key2[0]].frame_range)
+                    print("traces[pick_key2[1]].frame_range", traces[pick_key2[1]].frame_range)
+
+                    print("Gonna delete ", dictionary[pick_key2])
+                    print(dictionary)
                 del dictionary[pick_key2]
-                print(dictionary)
-                print()
+                if debug:
+                    print(dictionary)
+                    print()
                 go_next = True
                 continue
 
@@ -692,19 +713,29 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
                 showw = False
             else:
                 showw = None
-            compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug, show_all_plots=showw)
-            # Merge these two traces
-            merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
-            # Save the id of the merged trace before it is removed
-            trace2_id = traces[pick_key2[1]].trace_id
-            # Remove the merged trace
-            print(colored(f"Gonna cut trace {trace2_id}.", "blue"))
-            print()
-            traces = delete_indices([pick_key2[1]], traces)
-            # Show scatter plot of traces having two traces merged
+            distances = compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug, show_all_plots=showw)
+            # Check the distances of overlap for a big difference
+
+            if distances is not None and any(list(map(lambda x: x > get_max_step_distance_to_merge_overlapping_traces(), distances))):
+                go_next = True
+                # the distance of the traces is greater than the given threshold, we move on
+                del dictionary[pick_key2]
+            else:
+                # Merge these two traces
+                merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
+                # Save the id of the merged trace before it is removed
+                trace2_id = traces[pick_key2[1]].trace_id
+                # Remove the merged trace
+                print(colored(f"Gonna cut trace {trace2_id}.", "blue"))
+                print()
+                traces = delete_indices([pick_key2[1]], traces)
+                # Show scatter plot of traces having two traces merged
+                go_next = False
             if show:
-                scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}")
-            go_next = False
+                try:
+                    scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}")
+                except UnboundLocalError:
+                    pass
 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} deleted. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
