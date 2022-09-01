@@ -66,7 +66,7 @@ def analyse(file_path, population_size):
         cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
 
         ## ALL TRACES SHOW
-        # show_all_traces(traces)
+        show_all_traces(traces)
 
         ## TRIM TRACES AND PUT NOT OVERLAPPING ONES TOGETHER
         before_number_of_traces = len(traces)

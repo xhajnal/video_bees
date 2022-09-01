@@ -168,7 +168,7 @@ def trim_out_additional_agents_over_long_traces3(traces, population_size, silent
                 print(colored(f"Gonna delete range index {shortest_index}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(shortest_index)
 
-    if not silent:
+    if debug:
         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
 
@@ -361,9 +361,6 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
     """
     print(colored("PUT TRACES TOGETHER", "blue"))
     start_time = time()
-    ## params
-    max_trace_gap = get_max_trace_gap()
-    min_trace_length = get_min_trace_length()
 
     ## code
     reappearance = track_reappearance(traces, show=False)
@@ -437,8 +434,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
             else:
                 continue
 
-        spam = next_steps_to.index(next_step_to)
-        index_to_go = indices_in[spam]
+        to_merge = next_steps_to.index(next_step_to)
+        index_to_go = indices_in[to_merge]
         if debug:
             print("CHECKING")
             print("next_steps_to", next_steps_to)
@@ -475,47 +472,60 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                 dist_of_trace2_and_extrapolation = math.dist(extrapolated_point, trace2.locations[0])
 
                 # COMPUTE WHETHER THE TWO TRACES ARE "ALIGNED"
+                to_merge = True
+                reason = ""
                 # the gap is lower than a given number (500)
+                if trace2.frame_range[0] - step_to > get_max_trace_gap():
+                    to_merge = False
+                    reason = "gap long"
                 # length of the second trace is longer than a given number (100)
-                spam = trace2.frame_range[0] - step_to <= max_trace_gap and trace2.frame_range_len >= min_trace_length
+                if trace2.frame_range_len < get_min_trace_length():
+                    to_merge = False
+                    reason = "2nd trace short"
                 # CHECK FOR DISTANCE OF TRACES IN X,Y
                 # if the distance of traces in frames is high
-                if spam:
-                    if dist_of_traces_in_frames > max_trace_gap/10:
-                        print("helg")
+                if to_merge:
+                    if dist_of_traces_in_frames > get_max_trace_gap()/10:
+                        reason = "long gap too distant"
                         if dist_of_traces_in_xy > get_bee_max_step_len()*3:
                             print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance.")
-                            spam = False
+                            to_merge = False
+                        else:
+                            print("heaven1")
                     else:
-                        print("helh")
+                        reason = "short gap too distant"
                         if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
                             print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance.")
-                            spam = False
+                            to_merge = False
+                        else:
+                            print("heaven2")
 
                 if trace2.frame_range[0] - trace1.frame_range[-1] == 0:
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
-                msg = f"{'' if spam else 'NOT '}MERGING TRACES {trace1.trace_id}  {trace1.frame_range} " \
-                      f"of length {trace1.frame_range_len} and " \
-                      f"trace {trace2.trace_id} of range {trace2.frame_range} of " \
-                      f"length {int(trace2.frame_range_len)} " \
-                      f"the distance of traces in x,y is {round(dist_of_traces_in_xy, 3)} which is " \
-                      f"{round(distance_per_frame, 3) if distance_per_frame is not None else None} per frame " \
-                      f"the distance of traces in frames is {round(dist_of_traces_in_frames, 3)} " \
-                      f"last point position: {trace1.locations[-1]} " \
+                msg = f"{'' if to_merge else 'NOT '}MERGING TRACES ({reason}) {trace1.trace_id} {trace1.frame_range} " \
+                      f"of {trace1.frame_range_len} frames and " \
+                      f"trace {trace2.trace_id} {trace2.frame_range} of " \
+                      f"{int(trace2.frame_range_len)} frames| " \
+                      f"{dist_of_traces_in_frames} frames apart, x,y-distance {round(dist_of_traces_in_xy, 3)} which is " \
+                      f"{round(distance_per_frame, 3) if distance_per_frame is not None else None}/frame. " \
+                      f"Last point position: {trace1.locations[-1]} " \
                       f"the extrapolated point is {extrapolated_point} " \
                       f"the distance of extrapolated point to the second trace {round(dist_of_trace2_and_extrapolation, 3)} "
                 if not silent:
-                    print(colored(msg, "yellow" if spam else "red"))
+                    print(colored(msg, "yellow" if to_merge else "red"))
 
-                if spam:
+                if to_merge:
                     trace = merge_two_traces(trace1, trace2)
                     trace1 = trace
                     if debug:
                         print(trace)
                     trace_indices_to_trim.append(index2)
                     step_to = trace.frame_range[1]
+                elif reason == "gap long":
+                    print(colored("NOT CHECKING OTHER TRACES - they have to have longer gap", "red"))
+                    break
         else:
             step_to = next_step_to
         if debug:
@@ -645,15 +655,18 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
         dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)
         if dictionary == {}:
             print(colored("Cannot merge any trace as there is no overlap of two traces.", "red"))
+            print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
+                          f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
             return
         # Flag whether to try another pair of overlapping intervals
         go_next = True
         while go_next:
             # if debug:
             print("dictionary", dictionary)
-            for trace in traces:
-                print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
-            print()
+            if debug:
+                for trace in traces:
+                    print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
+                print()
             # Flattened indices of overlapping pairs of traces
             keys = flatten(tuple(dictionary.keys()))
             counts = {}
@@ -677,6 +690,15 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
                     count_one.append(key)
             if debug:
                 print("count_one", count_one)
+
+            if len(count_one) == 0:
+                print(colored("Cannot these traces.", "red"))
+                print("dictionary", dictionary)
+                for trace in traces:
+                    print(f"trace {trace.trace_id} of range {trace.frame_range}")
+                print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
+                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                return
 
             # Pick the smallest index
             pick_key = min(count_one)
@@ -737,7 +759,7 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
                 except UnboundLocalError:
                     pass
 
-    print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} deleted. "
+    print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces
 
