@@ -56,6 +56,16 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(get_overlap([3, 6], [3, 9]), [3, 6])
         self.assertEqual(get_overlap([1, 7], [1, 7]), [1, 7])
 
+        self.assertEqual(get_gap([1, 7], [8, 9]), [7, 8])
+        self.assertEqual(get_gap([1, 7], [7, 9]), False)
+        self.assertEqual(get_gap([8, 9], [1, 7]), [7, 8])
+        self.assertEqual(get_gap([7, 9], [1, 7]), False)
+        self.assertEqual(get_gap([1, 7], [2, 6]), False)
+        self.assertEqual(get_gap([4, 6], [3, 9]), False)
+        self.assertEqual(get_gap([1, 7], [2, 7]), False)
+        self.assertEqual(get_gap([3, 6], [3, 9]), False)
+        self.assertEqual(get_gap([1, 7], [1, 7]), False)
+
         self.assertTrue(get_strict_overlap([1, 7], [8, 9]) is False)
         self.assertTrue(get_strict_overlap([1, 7], [7, 9]) is False)
         self.assertTrue(get_strict_overlap([8, 9], [1, 7]) is False)

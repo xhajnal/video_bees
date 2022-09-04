@@ -7,142 +7,12 @@ from termcolor import colored
 
 from config import get_max_trace_gap, get_min_trace_length, get_bee_max_step_len, get_bee_max_step_len_per_frame, \
     get_max_step_distance_to_merge_overlapping_traces
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, get_overlap, \
-    flatten, range_len
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
+    get_overlap, range_len
 from trace import Trace, merge_two_traces_with_gap, merge_two_overlapping_traces
 from scipy.interpolate import InterpolatedUnivariateSpline
-from visualise import show_all_traces, scatter_detection
 
-
-def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots=False):
-    """ Compares two traces.
-
-    :arg trace1: Trace: first trace to be compared
-    :arg trace2: Trace: second trace to be compared
-    :arg silent (bool) if True no output is shown
-    :arg debug: (bool): if True extensive output is shown
-    :arg show_all_plots: (bool): if True show all the plots
-    """
-    assert isinstance(trace1, Trace)
-    assert isinstance(trace2, Trace)
-
-    if show_all_plots is None:
-        show_all_plots = False
-        show = False
-    else:
-        show = True
-
-    print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
-    start_time = time()
-
-    if show_all_plots:
-        show_all_traces([trace1, trace2])
-        scatter_detection([trace1, trace2], subtitle=False)
-
-    if not silent:
-        print("trace1.frame_range", list(trace1.frame_range))
-        print("trace2.frame_range", list(trace2.frame_range))
-
-    overlapping_range = get_overlap(trace1.frame_range, trace2.frame_range)
-    # x = range(overlapping_range[0], overlapping_range[1] + 1)
-    x = []
-    if not silent:
-        print("overlapping_range", overlapping_range)
-
-    if overlapping_range is False:
-        if not silent:
-            print(colored(f"There is no overlap of trace {trace1.trace_id} and trace {trace2.trace_id}"))
-        return None
-
-    if range_len(overlapping_range) >= range_len(trace1.frame_range):
-        raise NotImplemented("Cannot merge nested ranges!")
-    if range_len(overlapping_range) >= range_len(trace2.frame_range):
-        raise NotImplemented("Cannot merge nested ranges!")
-
-    start_index1 = trace1.frames_list.index(overlapping_range[0])
-    end_index1 = trace1.frames_list.index(overlapping_range[1])
-    start_index2 = trace2.frames_list.index(overlapping_range[0])
-    end_index2 = trace2.frames_list.index(overlapping_range[1])
-    if debug:
-        print("start_index1", start_index1)
-        print("end_index1", end_index1)
-        print("start_index2", start_index2)
-        print("end_index2", end_index2)
-        print()
-    if debug:
-        print("Showing the overlap frame by frame:")
-    inter_index = 0
-    distances = []
-    first_trace_overlapping_frames = []
-    for index in range(start_index1, end_index1+1):
-        if debug:
-            print(f"frame n. {trace1.frames_list[index]}")
-        first_trace_overlapping_frames.append(index)
-        if debug:
-            print("index1", index)
-        try:
-            index2 = range(start_index2, end_index2+1)[inter_index]
-        except IndexError as err:
-            # item = trace1.frames_list[start_index1]
-            # for item2 in trace1.frames_list[start_index1+1: end_index1]:
-            #     if item2 - item != 1:
-            #         print(item)
-            #         print(item2)
-            #         raise Exception("Dave!")
-            #     item = item2
-            # item = trace2.frames_list[start_index1]
-            # for item2 in trace2.frames_list[start_index2 + 1: end_index2]:
-            #     if item2 - item != 1:
-            #         raise Exception("Dave!")
-            #     item = item2
-            print("start_index1", start_index1)
-            print("end_index1", end_index1)
-            print("start_index2", start_index2)
-            print("end_index2", end_index2)
-            print("inter_index", inter_index)
-            print(str(trace2))
-            raise err
-        if debug:
-            print("index2", index2)
-        inter_index = inter_index + 1
-        position1 = trace1.locations[index]
-        position2 = trace2.locations[index2]
-        if debug:
-            print("position1", position1)
-            print("position2", position2)
-        distance = math.dist(position1, position2)
-        if debug:
-            print("distance of the positions", distance)
-            print()
-        distances.append(distance)
-        x.append(trace1.frames_list[index])
-
-    if show:
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y = distances
-        if debug:
-            print("distance len", len(distances))
-            print("x len", len(x))
-        ax1.scatter(x, y, alpha=0.5)
-        plt.xlabel('Overlapping frame numbers')
-        plt.ylabel('Distance of the two traces')
-        title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace {trace1.trace_id} (left red) \n or cutting trace {trace2.trace_id} (right red).'
-
-        distances2 = []
-        distances2.append(math.dist(trace1.locations[start_index1-1], trace2.locations[0]))
-        distances2.append(math.dist(trace1.locations[-1], trace2.locations[end_index2+1]))
-        ax1.scatter([x[0]-1, x[-1]+1], distances2, c="r")
-
-        plt.title(title)
-        plt.tight_layout()
-        plt.show()
-
-    print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
-    print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
-
-    return distances
+from visualise import scatter_detection, show_all_traces
 
 
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
@@ -784,3 +654,133 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces
 
+
+def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots=False):
+    """ Compares two traces.
+
+    :arg trace1: Trace: first trace to be compared
+    :arg trace2: Trace: second trace to be compared
+    :arg silent (bool) if True no output is shown
+    :arg debug: (bool): if True extensive output is shown
+    :arg show_all_plots: (bool): if True show all the plots
+    """
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+
+    if show_all_plots is None:
+        show_all_plots = False
+        show = False
+    else:
+        show = True
+
+    print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
+    start_time = time()
+
+    if show_all_plots:
+        show_all_traces([trace1, trace2])
+        scatter_detection([trace1, trace2], subtitle=False)
+
+    if not silent:
+        print("trace1.frame_range", list(trace1.frame_range))
+        print("trace2.frame_range", list(trace2.frame_range))
+
+    overlapping_range = get_overlap(trace1.frame_range, trace2.frame_range)
+    # x = range(overlapping_range[0], overlapping_range[1] + 1)
+    x = []
+    if not silent:
+        print("overlapping_range", overlapping_range)
+
+    if overlapping_range is False:
+        if not silent:
+            print(colored(f"There is no overlap of trace {trace1.trace_id} and trace {trace2.trace_id}"))
+        return None
+
+    if range_len(overlapping_range) >= range_len(trace1.frame_range):
+        raise NotImplemented("Cannot merge nested ranges!")
+    if range_len(overlapping_range) >= range_len(trace2.frame_range):
+        raise NotImplemented("Cannot merge nested ranges!")
+
+    start_index1 = trace1.frames_list.index(overlapping_range[0])
+    end_index1 = trace1.frames_list.index(overlapping_range[1])
+    start_index2 = trace2.frames_list.index(overlapping_range[0])
+    end_index2 = trace2.frames_list.index(overlapping_range[1])
+    if debug:
+        print("start_index1", start_index1)
+        print("end_index1", end_index1)
+        print("start_index2", start_index2)
+        print("end_index2", end_index2)
+        print()
+    if debug:
+        print("Showing the overlap frame by frame:")
+    inter_index = 0
+    distances = []
+    first_trace_overlapping_frames = []
+    for index in range(start_index1, end_index1+1):
+        if debug:
+            print(f"frame n. {trace1.frames_list[index]}")
+        first_trace_overlapping_frames.append(index)
+        if debug:
+            print("index1", index)
+        try:
+            index2 = range(start_index2, end_index2+1)[inter_index]
+        except IndexError as err:
+            # item = trace1.frames_list[start_index1]
+            # for item2 in trace1.frames_list[start_index1+1: end_index1]:
+            #     if item2 - item != 1:
+            #         print(item)
+            #         print(item2)
+            #         raise Exception("Dave!")
+            #     item = item2
+            # item = trace2.frames_list[start_index1]
+            # for item2 in trace2.frames_list[start_index2 + 1: end_index2]:
+            #     if item2 - item != 1:
+            #         raise Exception("Dave!")
+            #     item = item2
+            print("start_index1", start_index1)
+            print("end_index1", end_index1)
+            print("start_index2", start_index2)
+            print("end_index2", end_index2)
+            print("inter_index", inter_index)
+            print(str(trace2))
+            raise err
+        if debug:
+            print("index2", index2)
+        inter_index = inter_index + 1
+        position1 = trace1.locations[index]
+        position2 = trace2.locations[index2]
+        if debug:
+            print("position1", position1)
+            print("position2", position2)
+        distance = math.dist(position1, position2)
+        if debug:
+            print("distance of the positions", distance)
+            print()
+        distances.append(distance)
+        x.append(trace1.frames_list[index])
+
+    if show:
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+
+        y = distances
+        if debug:
+            print("distance len", len(distances))
+            print("x len", len(x))
+        ax1.scatter(x, y, alpha=0.5)
+        plt.xlabel('Overlapping frame numbers')
+        plt.ylabel('Distance of the two traces')
+        title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace {trace1.trace_id} (left red) \n or cutting trace {trace2.trace_id} (right red).'
+
+        distances2 = []
+        distances2.append(math.dist(trace1.locations[start_index1-1], trace2.locations[0]))
+        distances2.append(math.dist(trace1.locations[-1], trace2.locations[end_index2+1]))
+        ax1.scatter([x[0]-1, x[-1]+1], distances2, c="r")
+
+        plt.title(title)
+        plt.tight_layout()
+        plt.show()
+
+    print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
+
+    return distances

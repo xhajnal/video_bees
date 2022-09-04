@@ -136,16 +136,22 @@ def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     return dictionary2
 
 
+def dictionary_of_gaps(intervals, debug=False):
+    """ Returns a dictionary a pair of traces -> range of its gap
+
+        :arg intervals: (list): list of intervals
+        :arg debug: (bool): if True extensive output is shown
+        """
+
+
 def dictionary_of_m_overlaps_of_n_intervals(m, intervals, while_not_in=False, strict=False, debug=False):
-    """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals
+    """ Returns a dictionary m-tuple of interval indices -> m-overlaps (m overlapping intervals) of n intervals
 
     :arg m: (int): degree of overlaps - how many overlaps
     :arg intervals: (list): list of intervals
     :arg while_not_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg strict: (bool): if True point intervals are not used
     :arg debug: (bool): if True extensive output is shown
-
-    :returns matrix: matrix of flags of m-overlaps (m overlapping intervals) of n intervals
     """
     ## INTERN values:
     # False - no interval
@@ -290,6 +296,25 @@ def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False)
         print()
         print(matrix)
     return matrix
+
+
+def get_gap(range1, range2):
+    """ Returns the gap of range1 and range2.
+
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (tuple): gap of range1 and range2
+    """
+    assert len(range1) == 2 or isinstance(range1, Interval)
+    assert len(range2) == 2 or isinstance(range2, Interval)
+    # if the range1 starts after range2 swap them
+    if range2[0] < range1[0]:
+        return get_gap(range2, range1)
+    # if beginning of the range2 is inside of range1
+    if range1[1] < range2[0]:
+        return [range1[1], range2[0]]
+    else:
+        return False
 
 
 def get_overlap(range1, range2):
