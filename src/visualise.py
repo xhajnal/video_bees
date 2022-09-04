@@ -73,15 +73,17 @@ def show_all_overlaps(traces, subtitle=False):
     plt.show()
 
 
-def show_all_gaps(traces, subtitle=False):
+def show_all_gaps(traces, subtitle=False, debug=False):
     """ Creates a scatter plot of gaps of traces.
 
     :arg traces: (list): a list of Traces
     :arg subtitle: (string): subtitle of the plot
+    :arg debug: (bool): if True extensive output is shown
     """
     pairs_of_gaps = get_gaps_of_traces(traces)
 
-    print("pairs_of_gaps", pairs_of_gaps)
+    if debug:
+        print("pairs_of_gaps", pairs_of_gaps)
     gaps = list(pairs_of_gaps.keys())
 
     fig = plt.figure()

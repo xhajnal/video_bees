@@ -121,12 +121,12 @@ def analyse(file_path, population_size):
                 print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
 
         ## ALL TRACES
-        track_reappearance(traces, show=True)
-        scatter_detection(traces, subtitle="after merging overlapping traces")
-        show_all_overlaps(traces)
-        show_all_gaps(traces)
-        show_all_traces(traces)
-        track_reappearance(traces, show=debug)
+        if show_plots:
+            track_reappearance(traces, show=True)
+            scatter_detection(traces, subtitle="after merging overlapping traces")
+            show_all_overlaps(traces)
+            show_all_gaps(traces)
+            show_all_traces(traces)
 
         # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
         pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
