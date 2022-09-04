@@ -9,7 +9,7 @@ from config import get_max_trace_gap, get_min_trace_length, get_bee_max_step_len
     get_max_step_distance_to_merge_overlapping_traces
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, get_overlap, \
     flatten, range_len
-from trace import Trace, merge_two_traces, merge_two_overlapping_traces
+from trace import Trace, merge_two_traces_with_gap, merge_two_overlapping_traces
 from scipy.interpolate import InterpolatedUnivariateSpline
 from visualise import show_all_traces, scatter_detection
 
@@ -59,10 +59,10 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     if range_len(overlapping_range) >= range_len(trace2.frame_range):
         raise NotImplemented("Cannot merge nested ranges!")
 
-    start_index1 = trace1.frames_tracked.index(overlapping_range[0])
-    end_index1 = trace1.frames_tracked.index(overlapping_range[1])
-    start_index2 = trace2.frames_tracked.index(overlapping_range[0])
-    end_index2 = trace2.frames_tracked.index(overlapping_range[1])
+    start_index1 = trace1.frames_list.index(overlapping_range[0])
+    end_index1 = trace1.frames_list.index(overlapping_range[1])
+    start_index2 = trace2.frames_list.index(overlapping_range[0])
+    end_index2 = trace2.frames_list.index(overlapping_range[1])
     if debug:
         print("start_index1", start_index1)
         print("end_index1", end_index1)
@@ -76,11 +76,32 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     first_trace_overlapping_frames = []
     for index in range(start_index1, end_index1+1):
         if debug:
-            print(f"frame n. {trace1.frames_tracked[index]}")
+            print(f"frame n. {trace1.frames_list[index]}")
         first_trace_overlapping_frames.append(index)
         if debug:
             print("index1", index)
-        index2 = range(start_index2, end_index2+1)[inter_index]
+        try:
+            index2 = range(start_index2, end_index2+1)[inter_index]
+        except IndexError as err:
+            # item = trace1.frames_list[start_index1]
+            # for item2 in trace1.frames_list[start_index1+1: end_index1]:
+            #     if item2 - item != 1:
+            #         print(item)
+            #         print(item2)
+            #         raise Exception("Dave!")
+            #     item = item2
+            # item = trace2.frames_list[start_index1]
+            # for item2 in trace2.frames_list[start_index2 + 1: end_index2]:
+            #     if item2 - item != 1:
+            #         raise Exception("Dave!")
+            #     item = item2
+            print("start_index1", start_index1)
+            print("end_index1", end_index1)
+            print("start_index2", start_index2)
+            print("end_index2", end_index2)
+            print("inter_index", inter_index)
+            print(str(trace2))
+            raise err
         if debug:
             print("index2", index2)
         inter_index = inter_index + 1
@@ -94,7 +115,7 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
             print("distance of the positions", distance)
             print()
         distances.append(distance)
-        x.append(trace1.frames_tracked[index])
+        x.append(trace1.frames_list[index])
 
     if show:
         fig = plt.figure()
@@ -459,7 +480,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
 
                 trace1 = traces[index_to_go]
                 # EXTRAPOLATE TRACE
-                frames = trace1.frames_tracked[-50:]  # last 50 frames
+                frames = trace1.frames_list[-50:]  # last 50 frames
                 x = list(map(lambda x: x[0], trace1.locations[-50:]))  # last 50 locations
                 y = list(map(lambda y: y[1], trace1.locations[-50:]))
                 splt_x = InterpolatedUnivariateSpline(frames, x, ext=0)  # extrapolator
@@ -468,7 +489,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                 # COMPUTE DISTANCES AND REST
                 dist_of_traces_in_frames = trace2.frame_range[0] - trace1.frame_range[-1]
                 dist_of_traces_in_xy = math.dist(trace1.locations[-1], trace2.locations[0])
-                extrapolated_point = [splt_x(trace1.frames_tracked[-1] + dist_of_traces_in_frames), splt_y(trace1.frames_tracked[-1] + dist_of_traces_in_frames)]
+                extrapolated_point = [splt_x(trace1.frames_list[-1] + dist_of_traces_in_frames), splt_y(trace1.frames_list[-1] + dist_of_traces_in_frames)]
                 dist_of_trace2_and_extrapolation = math.dist(extrapolated_point, trace2.locations[0])
 
                 # COMPUTE WHETHER THE TWO TRACES ARE "ALIGNED"
@@ -517,7 +538,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     print(colored(msg, "yellow" if to_merge else "red"))
 
                 if to_merge:
-                    trace = merge_two_traces(trace1, trace2)
+                    trace = merge_two_traces_with_gap(trace1, trace2)
                     trace1 = trace
                     if debug:
                         print(trace)

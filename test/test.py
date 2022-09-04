@@ -1,5 +1,5 @@
 from src.parse import parse_traces
-from trace import merge_two_traces, Trace
+from trace import merge_two_traces_with_gap, Trace
 import unittest
 import matplotlib.pyplot as plt
 from misc import *
@@ -136,7 +136,7 @@ class MyTestCase(unittest.TestCase):
             ax1 = fig.add_subplot(111)
 
             for index, trace in enumerate(traces_lengths):
-                x = trace.frames_tracked
+                x = trace.frames_list
                 y = [index] * len(x)
                 ax1.scatter(x, y, alpha=0.5)
             plt.show()
@@ -145,8 +145,8 @@ class MyTestCase(unittest.TestCase):
             trace0 = Trace(traces[0], 0)
             print(trace0)
             self.assertEqual(trace0.trace_id, 0)
-            self.assertEqual(trace0.frame_range, (1620, 1622))
-            self.assertEqual(trace0.number_of_frames, 3)
+            self.assertEqual(trace0.frame_range, [1620, 1622])
+            self.assertEqual(trace0.number_of_frames_tracked, 3)
             self.assertEqual(trace0.frame_range_len, 2)
             self.assertAlmostEqual(trace0.trace_length, 4.242640687119286)
             self.assertAlmostEqual(trace0.max_step_len, 2.8284271247461903)
@@ -154,13 +154,13 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(trace0.max_step_len_line, 3)
             self.assertEqual(trace0.max_step_len_frame_number, 1621)
             self.assertEqual(trace0.trace_lengths, {1.414214: 1, 2.828427: 1})
-            self.assertEqual(trace0.frames_tracked, [1620, 1621, 1622])
+            self.assertEqual(trace0.frames_list, [1620, 1621, 1622])
             self.assertEqual(trace0.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0]])
 
             trace1 = Trace(traces[1], 1)
             self.assertEqual(trace1.trace_id, 1)
-            self.assertEqual(trace1.frame_range, (1620, 1622))
-            self.assertEqual(trace1.number_of_frames, 3)
+            self.assertEqual(trace1.frame_range, [1620, 1622])
+            self.assertEqual(trace1.number_of_frames_tracked, 3)
             self.assertEqual(trace1.frame_range_len, 2)
             self.assertAlmostEqual(trace1.trace_length, 7.6212327846342935)
             self.assertAlmostEqual(trace1.max_step_len, 5.385164807134505)
@@ -168,7 +168,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(trace1.max_step_len_line, 1)
             self.assertEqual(trace1.max_step_len_frame_number, 1620)
             self.assertDictEqual(trace1.trace_lengths, {5.385165: 1, 2.236068: 1})
-            self.assertEqual(trace1.frames_tracked, [1620, 1621, 1622])
+            self.assertEqual(trace1.frames_list, [1620, 1621, 1622])
             self.assertEqual(trace1.locations, [[0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
 
             # print(trace0.frames_tracked)
@@ -183,11 +183,11 @@ class MyTestCase(unittest.TestCase):
             # print(trace0.frame_range)
             # print(trace3.frame_range)
 
-            merged_trace = merge_two_traces(copy(trace0), copy(trace3))
+            merged_trace = merge_two_traces_with_gap(copy(trace0), copy(trace3))
             self.assertEqual(merged_trace.trace_id, 0)
             self.assertIsInstance(merged_trace, Trace)
-            self.assertEqual(merged_trace.frame_range, (1620, 1625))
-            self.assertEqual(merged_trace.number_of_frames, 6)
+            self.assertEqual(merged_trace.frame_range, [1620, 1625])
+            self.assertEqual(merged_trace.number_of_frames_tracked, 6)
             self.assertEqual(merged_trace.frame_range_len, 5)
             self.assertAlmostEqual(merged_trace.trace_length, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
             self.assertAlmostEqual(merged_trace.max_step_len, 5.3851648071)
@@ -198,31 +198,31 @@ class MyTestCase(unittest.TestCase):
             # trace3.trace_lengths: {5.385165: 1, 2.236068: 1}
             # merge step: math.dist([3,3], [0,0])== 4.242640687119285
             self.assertDictEqual(merged_trace.trace_lengths, {1.414214: 1, 2.828427: 1, 5.385165: 1, 2.236068: 1, 4.242641: 1})
-            self.assertEqual(merged_trace.frames_tracked, [1620, 1621, 1622, 1623, 1624, 1625])
+            self.assertEqual(merged_trace.frames_list, [1620, 1621, 1622, 1623, 1624, 1625])
             self.assertEqual(merged_trace.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
 
             trace0 = Trace(traces[0], 0)
-            trace3 = Trace(traces[3], 3)
+            trace4 = Trace(traces[4], 4)
 
-            merged_trace = merge_two_traces(trace3, trace0)
+            merged_trace = merge_two_traces_with_gap(trace4, trace0)
             self.assertEqual(merged_trace.trace_id, 0)
             self.assertIsInstance(merged_trace, Trace)
-            self.assertEqual(merged_trace.frame_range, (1620, 1625))
-            self.assertEqual(merged_trace.number_of_frames, 6)
-            self.assertEqual(merged_trace.frame_range_len, 5)
+            self.assertEqual(merged_trace.frame_range, [1620, 1635])
+            self.assertEqual(merged_trace.number_of_frames_tracked, 6)
+            self.assertEqual(merged_trace.frame_range_len, 15)
             self.assertAlmostEqual(merged_trace.trace_length, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
             self.assertAlmostEqual(merged_trace.max_step_len, 5.3851648071)
             self.assertEqual(merged_trace.max_step_len_step_index, 0)
-            self.assertEqual(merged_trace.max_step_len_line, 7)
-            self.assertEqual(merged_trace.max_step_len_frame_number, 1623)
+            self.assertEqual(merged_trace.max_step_len_line, 10)
+            self.assertEqual(merged_trace.max_step_len_frame_number, 1633)
             # trace3.trace_lengths: {1.414214: 1, 2.828427: 1}
             # trace3.trace_lengths: {5.385165: 1, 2.236068: 1}
             # merge step: math.dist([3,3], [0,0])== 4.242640687119285
             self.assertDictEqual(merged_trace.trace_lengths,
                                  {1.414214: 1, 2.828427: 1, 5.385165: 1, 2.236068: 1, 4.242641: 1})
-            self.assertEqual(merged_trace.frames_tracked, [1620, 1621, 1622, 1623, 1624, 1625])
+            self.assertEqual(merged_trace.frames_list, [1620, 1621, 1622, 1623, 1624, 1625, 1626, 1627, 1628, 1629, 1630, 1631, 1632, 1633, 1634, 1635])
             self.assertEqual(merged_trace.locations,
-                             [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
+                             [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
 
 
 if __name__ == '__main__':

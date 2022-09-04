@@ -29,7 +29,7 @@ def save_traces(traces, file_name, silent=False, debug=False):
 
     for index, trace in enumerate(traces):
         assert isinstance(trace, Trace)
-        frames = trace.frames_tracked
+        frames = trace.frames_list
         trackings.extend(frames)
         frames_tracked.extend(frames)
         for frame in frames:
@@ -57,7 +57,7 @@ def save_traces(traces, file_name, silent=False, debug=False):
             # obtain the specific trace
             trace = traces[trace_index]
             # obtain the index of the frame
-            frame_index = trace.frames_tracked.index(frame)
+            frame_index = trace.frames_list.index(frame)
             location = trace.locations[frame_index]
             id = trace.trace_id
             message = f"{index},,,{frame},{frame},,object_{id},{id},BVIEW_tracked_object,{location[0]},{location[1]}\n"

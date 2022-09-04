@@ -28,7 +28,7 @@ def scatter_detection(traces, subtitle=False):
     ax1 = fig.add_subplot(111)
 
     for index, trace in enumerate(traces):
-        x = trace.frames_tracked
+        x = trace.frames_list
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
     plt.xlabel('Frame number')

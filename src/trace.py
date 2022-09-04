@@ -12,7 +12,7 @@ class Trace:
 
     Stores:
         frame_range (tuple): a pair frame numbers, first and last
-        number_of_frames (int): number of frames
+        number_of_frames_tracked (int): number of frames with tracked location
         frame_range_len (int): length of trace in frames
         trace_length (float): length of trace in x,y coordinates
         max_step_len (float): maximal length of a single step in x,y coordinates
@@ -36,7 +36,7 @@ class Trace:
         frames = sorted(list(map(int, trace.keys())))
         # print("frames", frames)
 
-        self.number_of_frames = len(trace.keys())
+        self.number_of_frames_tracked = len(trace.keys())
         self.frame_range = [frames[0], frames[-1]]
         # print(frame_range)
         self.frame_range_len = int(float(frames[-1]) - float(frames[0]))
@@ -46,14 +46,14 @@ class Trace:
         self.max_step_len_frame_number = None
 
         self.trace_lengths = dict()
-        self.frames_tracked = []
+        self.frames_list = []
 
         self.locations = []
 
         self.trace_length = 0
 
         for index, frame in enumerate(frames):
-            self.frames_tracked.append(frame)
+            self.frames_list.append(frame)
             if debug:
                 print(trace[frame])
             self.locations.append(trace[frame][1])
@@ -135,7 +135,7 @@ class Trace:
             fig1, ax1 = plt.subplots()
 
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
-        ax1.plot(self.frames_tracked, xs, alpha=0.5)
+        ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5)
         ax1.set_xlabel('Time')
         ax1.set_ylabel('x')
         if where:
@@ -153,7 +153,7 @@ class Trace:
             fig2, ax2 = plt.subplots()
 
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
-        ax2.plot(self.frames_tracked, ys, alpha=0.5)
+        ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5)
         ax2.set_xlabel('Time')
         ax2.set_ylabel('y')
         if where:
@@ -199,14 +199,14 @@ class Trace:
         assert self.frame_range[0] <= self.frame_range[1]
 
     def __str__(self):
-        return f"trace_id:{self.trace_id} frame_range:{self.frame_range} number_of_frames:{self.number_of_frames} " \
+        return f"trace_id:{self.trace_id} frame_range:{self.frame_range} number_of_frames_tracked:{self.number_of_frames_tracked} " \
                f"trace_length:{round(self.trace_length,3)} " \
                f"max_step_len:{round(self.max_step_len,3)} max_step_len_step_index:{self.max_step_len_step_index} " \
                f"max_step_len_line:{self.max_step_len_line} max_step_len_frame_number:{self.max_step_len_frame_number} " \
-               f"trace_lengths:{take(5, self.trace_lengths.items())}[ frames_tracked:{self.frames_tracked[:5]} locations:{self.locations[:5]} "
+               f"trace_lengths:{take(5, self.trace_lengths.items())}[ frames_list:{self.frames_list[:5]}... locations:{self.locations[:5]}... "
 
 
-def merge_two_traces(trace1: Trace, trace2: Trace, silent=False, debug=False):
+def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=False):
     """ Puts two traces together.
 
     :arg trace1: (Trace): a Trace to be merged with the following trace
@@ -225,37 +225,51 @@ def merge_two_traces(trace1: Trace, trace2: Trace, silent=False, debug=False):
         print("trace2.trace_id", trace2.trace_id)
 
     if has_overlap(trace1.frame_range, trace2.frame_range):
-        raise Exception("The two traces have an overlap. We cannot merge them.")
+        raise Exception("The two traces have an overlap. We cannot merge them. Try other merge function.")
 
     ## MERGE
     trace1.trace_id = min(trace1.trace_id, trace2.trace_id)
 
-    if is_before(trace1.frame_range, trace2.frame_range):
-        merge_step = math.dist(trace1.locations[-1], trace2.locations[0])
-        trace1.trace_length = trace1.trace_length + merge_step + trace2.trace_length
+    # swapping traces if trace2 is before trace1
+    if is_before(trace2.frame_range, trace1.frame_range):
+        spam = trace2
+        trace2 = trace1
+        trace1 = spam
+        del spam
 
-        trace1.frames_tracked.extend(trace2.frames_tracked)
+    ## Calculate the gap
+    # gap range is the range of the gap no including the border points of traces
+    gap_range = [trace1.frame_range[-1]+1, trace2.frame_range[0]-1]
+    # gap size in frames
+    frame_gap_size = trace2.frames_list[0] - trace1.frames_list[-1]
+    # gap size in xy (last and first point)
+    merge_step = math.dist(trace1.locations[-1], trace2.locations[0])
 
-        trace1.locations.extend(trace2.locations)
+    # trace len is sum of both plus the gap
+    trace1.trace_length = trace1.trace_length + merge_step + trace2.trace_length
 
-    else:
-        merge_step = math.dist(trace2.locations[-1], trace1.locations[0])
-        trace1.trace_length = trace2.trace_length + merge_step + trace1.trace_length
+    # list of frame, not to be confused with number_of_frames_tracked is list of all frames including the gap
+    for frame in range(gap_range[0], gap_range[1]+1):
+        trace1.frames_list.append(frame)
+    trace1.frames_list.extend(trace2.frames_list)
 
-        spam = copy.copy(trace2.frames_tracked)
-        spam.extend(trace1.frames_tracked)
-        trace1.frames_tracked = spam
+    # set a point of location of the gap as a point in the middle between the border points
+    in_middle_point = [abs(trace2.locations[0][0] - trace1.locations[-1][0])/2, abs(trace2.locations[0][1] - trace1.locations[-1][1])/2]
 
-        spam = copy.copy(trace2.locations)
-        spam.extend(trace1.locations)
-        trace1.locations = spam
+    # fill the gap location as the chosen point
+    for frame in range(frame_gap_size - 1):
+        trace1.locations.append(in_middle_point)
+    # extend the locations with locations of trace2
+    trace1.locations.extend(trace2.locations)
 
-    trace1.frame_range = [min(trace1.frame_range[0], trace2.frame_range[0]), max(trace1.frame_range[1], trace2.frame_range[1])]
-    trace1.number_of_frames = trace1.number_of_frames + trace2.number_of_frames
-    if has_overlap(trace1.frame_range, trace2.frame_range):
-        trace1.frame_range_len = trace1.frame_range[1] - trace1.frame_range[0]
-    else:
-        trace1.frame_range_len = trace1.frame_range_len + trace2.frame_range_len
+    # frame range is simply leftmost and rightmost frame of the two traces, remember they are sorted
+    trace1.frame_range = [trace1.frame_range[0], trace2.frame_range[1]]
+
+    # number of frames tracked is sum of the two as there is no overlap
+    trace1.number_of_frames_tracked = trace1.number_of_frames_tracked + trace2.number_of_frames_tracked
+
+    # frame_range_len is the len from new boundary to another
+    trace1.frame_range_len = int(float(trace1.frame_range[-1]) - float(trace1.frame_range[0]))
 
     # print("trace1.max_step_len", trace1.max_step_len)
     # print("trace2.max_step_len", trace2.max_step_len)
@@ -267,6 +281,7 @@ def merge_two_traces(trace1: Trace, trace2: Trace, silent=False, debug=False):
 
     trace1.max_step_len = max(trace1.max_step_len, trace2.max_step_len)
 
+    # TODO fix this by adding the the steps of the gap
     trace1.trace_lengths = merge_dictionary(trace1.trace_lengths, trace2.trace_lengths)
 
     # print(trace1.trace_lengths)
@@ -298,8 +313,8 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, silent=False, deb
         overlap = get_overlap(trace1.frame_range, trace2.frame_range)
 
     ## Decide whether to keep overlap of trace1 or trace2
-    index1_overlap_start = trace1.frames_tracked.index(overlap[0])
-    index2_overlap_end = trace2.frames_tracked.index(overlap[1])
+    index1_overlap_start = trace1.frames_list.index(overlap[0])
+    index2_overlap_end = trace2.frames_list.index(overlap[1])
 
     if debug:
         print("index1_overlap_start", index1_overlap_start)
@@ -319,22 +334,22 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, silent=False, deb
         if not silent:
             print(colored(f"Cutting first trace of the pair of id {trace1.trace_id}.", "yellow"))
         # trim
-        trace1.frames_tracked = trace1.frames_tracked[:index1_overlap_start]
+        trace1.frames_list = trace1.frames_list[:index1_overlap_start]
         trace1.locations = trace1.locations[:index1_overlap_start]
     else:
         ## Cutting trace2
         # trim
         if not silent:
             print(colored(f"Cutting second trace of the pair of id {trace2.trace_id}.", "yellow"))
-        trace2.frames_tracked = trace2.frames_tracked[index2_overlap_end:]
-        trace2.locations = trace2.locations[index2_overlap_end:]
+        trace2.frames_list = trace2.frames_list[index2_overlap_end + 1:]
+        trace2.locations = trace2.locations[index2_overlap_end + 1:]
 
     # append
-    trace1.frames_tracked.extend(trace2.frames_tracked)
+    trace1.frames_list.extend(trace2.frames_list)
     trace1.locations.extend(trace2.locations)
 
     # recalculate
-    trace1.frame_range_len = len(trace1.frames_tracked)
+    trace1.frame_range_len = len(trace1.frames_list)
     trace1.trace_lengths = {}
     trace1.trace_length = 0
 
@@ -349,11 +364,11 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, silent=False, deb
     if debug:
         print("trace1.frame_range", trace1.frame_range)
         # print("trace1.frames_tracked", trace1.frames_tracked)
-        print("length trace1.frames_tracked", len(trace1.frames_tracked))
+        print("length trace1.frames_tracked", len(trace1.frames_list))
         # print("trace1.locations", trace1.locations)
         print("length trace1.locations", len(trace1.locations))
 
-    for index, frame in enumerate(trace1.frames_tracked):
+    for index, frame in enumerate(trace1.frames_list):
         try:
             step_len = math.dist(trace1.locations[index], trace1.locations[index + 1])
             approx_step_len = round(step_len, 6)
@@ -370,8 +385,8 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, silent=False, deb
             if debug:
                 print("index", index)
                 print("frame", frame)
-                print("trace1.frames_tracked[-1]", trace1.frames_tracked[-1])
-            if not frame == trace1.frames_tracked[-1]:
+                print("trace1.frames_tracked[-1]", trace1.frames_list[-1])
+            if not frame == trace1.frames_list[-1]:
                 raise err
         except TypeError as err:
             if debug:
