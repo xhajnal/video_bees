@@ -254,7 +254,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
     trace1.frames_list.extend(trace2.frames_list)
 
     # set a point of location of the gap as a point in the middle between the border points
-    in_middle_point = [abs(trace2.locations[0][0] - trace1.locations[-1][0])/2, abs(trace2.locations[0][1] - trace1.locations[-1][1])/2]
+    in_middle_point = [abs(trace2.locations[0][0] + trace1.locations[-1][0])/2, abs(trace2.locations[0][1] + trace1.locations[-1][1])/2]
 
     # fill the gap location as the chosen point
     for frame in range(frame_gap_size - 1):
