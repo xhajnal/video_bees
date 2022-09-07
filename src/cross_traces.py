@@ -639,7 +639,8 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
                 # Save the id of the merged trace before it is removed
                 trace2_id = traces[pick_key2[1]].trace_id
                 # Remove the merged trace
-                print(colored(f"Gonna cut trace {trace2_id}.", "blue"))
+                if debug:
+                    print(colored(f"Gonna delete trace {trace2_id}.", "blue"))
                 print()
                 traces = delete_indices([pick_key2[1]], traces)
                 # Show scatter plot of traces having two traces merged

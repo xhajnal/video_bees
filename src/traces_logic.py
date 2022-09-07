@@ -1,12 +1,13 @@
-from misc import get_gap, is_in
+from misc import get_gap, is_in, has_overlap
 from trace import Trace
 
 
-def get_gaps_of_traces(traces, debug=False):
+def get_gaps_of_traces(traces, get_all_gaps=False, debug=False):
     """ Returns a dictionary of pairs of traces indices -> range of their gap.
     Including only gaps which do not contain a whole traces - hence only shortest gaps.
 
     :arg traces: (list): a list of Traces
+    :arg get_all_gaps: (bool) if True returns all gaps
     :arg debug: (bool): if True extensive output is shown
     :return: dictionary of pairs of traces indices -> range of their gap.
     """
@@ -31,9 +32,14 @@ def get_gaps_of_traces(traces, debug=False):
         for index, trace in enumerate(traces):
             if index in pair:
                 continue
-            if is_in(trace.frame_range, pairs_of_gaps[pair]):
-                pairs_to_delete.append(pair)
-                break
+            if get_all_gaps:
+                if is_in(trace.frame_range, pairs_of_gaps[pair]):
+                    pairs_to_delete.append(pair)
+                    break
+            else:
+                if has_overlap(trace.frame_range, pairs_of_gaps[pair]):
+                    pairs_to_delete.append(pair)
+                    break
 
     for pair in pairs_to_delete:
         del pairs_of_gaps[pair]
