@@ -112,13 +112,14 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
 
-    def show_trace_in_xy(self, where=False, show=True):
+    def show_trace_in_xy(self, whole_frame_range, where=False, show=True):
         """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
 
-            :arg where: (list): is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
-            :arg show: (bool): if True the plots are shown
-            :returns: list of pairs [figure, axis] for each of three plots
+        :arg whole_frame_range: [int, int]: frame range of the whole video
+        :arg where: (list): is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
+        :arg show: (bool): if True the plots are shown
+        :returns: list of pairs [figure, axis] for each of three plots
         """
         xs = []
         ys = []
@@ -138,6 +139,7 @@ class Trace:
         ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5)
         ax1.set_xlabel('Time')
         ax1.set_ylabel('x')
+        ax1.set_xlim(whole_frame_range)
         if where:
             ax1.set_title(f'Traces in x-axis.')
         else:
@@ -156,6 +158,7 @@ class Trace:
         ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5)
         ax2.set_xlabel('Time')
         ax2.set_ylabel('y')
+        ax2.set_xlim(whole_frame_range)
         if where:
             ax2.set_title(f'Traces in y-axis.')
         else:

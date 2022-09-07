@@ -15,6 +15,21 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from visualise import scatter_detection, show_all_traces
 
 
+def get_whole_frame_range(traces):
+    """ Returns frame range of the whole video.
+
+    :arg traces: (list): list of Traces
+    """
+    # TODO use max int instead
+    frame_range = [999999999999999, -9]
+    for trace in traces:
+        if trace.frame_range[0] < frame_range[0]:
+            frame_range[0] = trace.frame_range[0]
+        if trace.frame_range[1] > frame_range[1]:
+            frame_range[1] = trace.frame_range[1]
+    return frame_range
+
+
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
