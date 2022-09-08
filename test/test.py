@@ -186,7 +186,10 @@ class MyTestCase(unittest.TestCase):
             trace0.show_step_lengths_hist()
             trace1.show_step_lengths_hist()
 
+            trace0 = Trace(traces[0], 0)
             trace3 = Trace(traces[3], 3)
+            self.assertTrue(np.array_equal(trace0.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0]]))
+            self.assertTrue(np.array_equal(trace3.locations, [[0.0, 0.0], [2.0, 5.0], [3.0, 7.0]]))
             # print(trace0)
             # print(trace3)
             #
@@ -209,7 +212,7 @@ class MyTestCase(unittest.TestCase):
             # merge step: math.dist([3,3], [0,0])== 4.242640687119285
             self.assertDictEqual(merged_trace.trace_lengths, {1.414214: 1, 2.828427: 1, 5.385165: 1, 2.236068: 1, 4.242641: 1})
             self.assertEqual(merged_trace.frames_list, [1620, 1621, 1622, 1623, 1624, 1625])
-            self.assertEqual(merged_trace.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
+            self.assertTrue(np.array_equal(merged_trace.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]]))
 
             trace0 = Trace(traces[0], 0)
             trace4 = Trace(traces[4], 4)
@@ -231,8 +234,10 @@ class MyTestCase(unittest.TestCase):
             self.assertDictEqual(merged_trace.trace_lengths,
                                  {1.414214: 1, 2.828427: 1, 5.385165: 1, 2.236068: 1, 4.242641: 1})
             self.assertEqual(merged_trace.frames_list, [1620, 1621, 1622, 1623, 1624, 1625, 1626, 1627, 1628, 1629, 1630, 1631, 1632, 1633, 1634, 1635])
-            self.assertEqual(merged_trace.locations,
-                             [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
+            # DEPRECATED
+            # self.assertEqual(merged_trace.locations,
+            #                  [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
+            self.assertEqual(merged_trace.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [2.7272727272727275, 2.7272727272727275], [2.4545454545454546, 2.4545454545454546], [2.1818181818181817, 2.1818181818181817], [1.9090909090909092, 1.9090909090909092], [1.6363636363636365, 1.6363636363636365], [1.3636363636363638, 1.3636363636363638], [1.090909090909091, 1.090909090909091], [0.8181818181818183, 0.8181818181818183], [0.5454545454545459, 0.5454545454545459], [0.27272727272727293, 0.27272727272727293], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
 
 
 if __name__ == '__main__':

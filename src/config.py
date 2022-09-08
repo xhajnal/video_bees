@@ -34,6 +34,12 @@ def get_max_step_distance_to_merge_overlapping_traces():
     return 200
 
 
+def get_max_trace_gap_to_interpolate_distance():
+    """ Returns a maximal distance so that the location of the bee is linearly interpolated based on border points"""
+    # TODO check this
+    return 200
+
+
 def get_screen_size():
     """ Returns size of the screen as [[xmin, xmax],[ymin, ymax]] ."""
     return [[0, 900], [0, 900]]

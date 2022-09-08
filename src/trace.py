@@ -1,9 +1,10 @@
-import copy
 import math
+import sys
 import matplotlib.pyplot as plt
+import numpy as np
 from termcolor import colored
 
-from config import get_screen_size
+from config import *
 from misc import has_overlap, is_before, merge_dictionary, take, get_overlap
 
 
@@ -249,7 +250,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
     # add the gap to the gap frames
     trace1.gap_frames.extend(gap_range)
     # gap size in frames
-    frame_gap_size = trace2.frames_list[0] - trace1.frames_list[-1]
+    frame_gap_size = trace2.frames_list[0] - trace1.frames_list[-1] -1
     # gap size in xy (last and first point)
     merge_step = math.dist(trace1.locations[-1], trace2.locations[0])
 
@@ -261,12 +262,31 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
         trace1.frames_list.append(frame)
     trace1.frames_list.extend(trace2.frames_list)
 
-    # set a point of location of the gap as a point in the middle between the border points
-    in_middle_point = [abs(trace2.locations[0][0] + trace1.locations[-1][0])/2, abs(trace2.locations[0][1] + trace1.locations[-1][1])/2]
+    # Based on the gap size
+    if frame_gap_size <= get_max_trace_gap_to_interpolate_distance():
+        # set a point of location of the gap as linear interpolation of two bordering points
+        print("frame_gap_size", frame_gap_size)
+        print(trace1.locations[-1], trace2.locations[0])
+        in_middle_points = np.linspace(trace1.locations[-1], trace2.locations[0], num=frame_gap_size+1, endpoint=False)
+        # in_middle_points = list(map(lambda x: [int(x[0]), int(x[1])], in_middle_points))
+        # cutting the first point and changing to float
+        in_middle_points = list(map(lambda x: [float(x[0]), float(x[1])], in_middle_points))[1:]
+        trace1.locations.extend(in_middle_points)
 
-    # fill the gap location as the chosen point
-    for frame in range(frame_gap_size - 1):
-        trace1.locations.append(in_middle_point)
+    else:
+        in_middle_point = [-sys.maxsize, -sys.maxsize]
+
+        # fill the gap location as the chosen point
+        for frame in range(frame_gap_size):
+            trace1.locations.append(in_middle_point)
+
+    ## DEPRICATED
+    # set a point of location of the gap as a point in the middle between the border points
+    # in_middle_point = [abs(trace2.locations[0][0] + trace1.locations[-1][0])/2, abs(trace2.locations[0][1] + trace1.locations[-1][1])/2]
+    # # fill the gap location as the chosen point
+    # for frame in range(frame_gap_size - 1):
+    #     trace1.locations.append(in_middle_point)
+
     # extend the locations with locations of trace2
     trace1.locations.extend(trace2.locations)
 
