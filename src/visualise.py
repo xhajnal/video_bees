@@ -49,7 +49,7 @@ def scatter_detection(traces, whole_frame_range, subtitle=False):
     plt.show()
 
 
-def show_all_overlaps(traces, whole_frame_range, subtitle=False, silent=False, debug=False):
+def show_overlaps(traces, whole_frame_range, subtitle=False, silent=False, debug=False):
     """ Creates a scatter plot of overlaps of traces.
 
     :arg traces: (list): a list of Traces

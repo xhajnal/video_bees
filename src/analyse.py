@@ -8,7 +8,7 @@ from cross_traces import put_traces_together, track_reappearance, cross_trace_an
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range
 from parse import parse_traces
 from save import pickle_traces
-from visualise import scatter_detection, show_all_traces, show_all_overlaps, show_gaps
+from visualise import scatter_detection, show_all_traces, show_overlaps, show_gaps
 
 global silent
 global debug
@@ -53,9 +53,13 @@ def analyse(file_path, population_size):
 
         # for trace in traces:
         #     print(trace.frame_range)
-        # show_all_traces(traces)
-
-        # show_gaps(traces, whole_frame_range)
+        # show_all_traces(traces, whole_frame_range)
+        for trace in traces:
+            print("trace", trace.trace_id, trace.frame_range)
+        show_gaps(traces, whole_frame_range)
+        # TODO have a look on this
+        show_overlaps(traces, whole_frame_range)
+        raise Exception
 
         ## FIND TRACES OUTSIDE OF THE ARENA
         check_inside_of_arena(traces)
@@ -141,7 +145,7 @@ def analyse(file_path, population_size):
         # if show_plots:
         track_reappearance(traces, show=True)
         scatter_detection(traces, whole_frame_range, subtitle="after merging overlapping traces")
-        show_all_overlaps(traces, whole_frame_range)
+        show_overlaps(traces, whole_frame_range)
         show_gaps(traces, whole_frame_range)
         show_all_traces(traces, whole_frame_range)
 
