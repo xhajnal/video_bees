@@ -37,6 +37,12 @@ def scatter_detection(traces, whole_frame_range, subtitle=False):
         x = trace.frames_list
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
+        x = trace.overlap_frames
+        y = [index] * len(x)
+        ax1.scatter(x, y, c="black")
+        x = trace.gap_frames
+        y = [index] * len(x)
+        ax1.scatter(x, y, alpha=0.5, c="white", edgecolors="black")
     ax1.set_xlim(whole_frame_range)
     plt.xlabel('Frame number')
     plt.ylabel('Agent id')

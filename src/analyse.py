@@ -59,7 +59,7 @@ def analyse(file_path, population_size):
         show_gaps(traces, whole_frame_range)
         # TODO have a look on this
         show_overlaps(traces, whole_frame_range)
-        raise Exception
+
 
         ## FIND TRACES OUTSIDE OF THE ARENA
         check_inside_of_arena(traces)

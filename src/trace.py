@@ -52,6 +52,9 @@ class Trace:
 
         self.trace_length = 0
 
+        self.gap_frames = []
+        self.overlap_frames = []
+
         for index, frame in enumerate(frames):
             self.frames_list.append(frame)
             if debug:
@@ -243,6 +246,8 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
     ## Calculate the gap
     # gap range is the range of the gap no including the border points of traces
     gap_range = [trace1.frame_range[-1]+1, trace2.frame_range[0]-1]
+    # add the gap to the gap frames
+    trace1.gap_frames.extend(gap_range)
     # gap size in frames
     frame_gap_size = trace2.frames_list[0] - trace1.frames_list[-1]
     # gap size in xy (last and first point)
@@ -371,6 +376,12 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, silent=False, deb
         # print("trace1.locations", trace1.locations)
         print("length trace1.locations", len(trace1.locations))
 
+    # add overlapping frames to the trace
+    for frame in range(overlap[0], overlap[1]+1):
+        trace1.overlap_frames.append(frame)
+    trace1.overlap_frames = list(sorted(trace1.overlap_frames))
+
+    # compute max step attributes
     for index, frame in enumerate(trace1.frames_list):
         try:
             step_len = math.dist(trace1.locations[index], trace1.locations[index + 1])
