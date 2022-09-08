@@ -68,11 +68,12 @@ def show_overlaps(traces, whole_frame_range, subtitle=False, silent=False, debug
     ax1 = fig.add_subplot(111)
 
     if len(traces) >= 2:
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)
+        # get dictionary of overlaps of two traces: pair of traces indices -> overlap frame range
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
         overlaps = list(dictionary.keys())
         if debug:
+            print("dictionary", dictionary)
             print("overlaps", overlaps)
-            print("dictionary.items()", dictionary.items())
 
         for index, overlap in enumerate(overlaps):
             x = list(range(dictionary[overlap][0], dictionary[overlap][1]+1))

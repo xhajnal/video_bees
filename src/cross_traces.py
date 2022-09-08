@@ -46,7 +46,7 @@ def trim_out_additional_agents_over_long_traces3(traces, population_size, silent
         trace.check_trace_consistency()
         ranges.append(trace.frame_range)
     ranges = sorted(ranges)
-    dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, strict=False, debug=debug)
+    dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=debug)
 
     indices_of_intervals_to_be_deleted = []
 
@@ -98,7 +98,7 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
         trace.check_trace_consistency()
         ranges.append(trace.frame_range)
     ranges = sorted(ranges)
-    dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, strict=False, debug=False)
+    dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=False)
 
     indices_of_intervals_to_be_deleted = []
 
@@ -558,7 +558,7 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
                 print(colored("Cannot merge no trace.", "red"))
                 return
         # Find overlapping pairs
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
         if dictionary == {}:
             print(colored("Cannot merge any trace as there is no overlap of two traces.", "red"))
             print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "

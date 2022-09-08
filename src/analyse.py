@@ -54,12 +54,13 @@ def analyse(file_path, population_size):
         # for trace in traces:
         #     print(trace.frame_range)
         # show_all_traces(traces, whole_frame_range)
+        scatter_detection(traces, whole_frame_range)
         for trace in traces:
             print("trace", trace.trace_id, trace.frame_range)
         show_gaps(traces, whole_frame_range)
-        # TODO have a look on this
         show_overlaps(traces, whole_frame_range)
 
+        raise Exception
 
         ## FIND TRACES OUTSIDE OF THE ARENA
         check_inside_of_arena(traces)
@@ -130,7 +131,7 @@ def analyse(file_path, population_size):
 
         print()
         if len(traces) >= 2:
-            print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), while_not_in=True)}", "yellow"))
+            print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)}", "yellow"))
         else:
             pass
             # show_all_traces(traces)
