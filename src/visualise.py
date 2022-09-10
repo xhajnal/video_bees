@@ -40,7 +40,10 @@ def scatter_detection(traces, whole_frame_range, subtitle=False, show_trace_id=T
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
         if show_trace_id:
-            ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]+0.5, trace.trace_id)
+            if len(traces) > 5:
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id)
+            else:
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id)
         if show_trace_range:
             if trace.frame_range_len < 5000:
                 ax1.text(trace.frame_range[0], y[0], nice_range_print(trace.frame_range))
