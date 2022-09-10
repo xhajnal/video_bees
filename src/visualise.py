@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 from traces_logic import get_gaps_of_traces
-from misc import dictionary_of_m_overlaps_of_n_intervals
+from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
 
 
 def show_all_traces(traces, whole_frame_range):
@@ -43,8 +43,7 @@ def scatter_detection(traces, whole_frame_range, subtitle=False, show_trace_id=T
             ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]+0.5, trace.trace_id)
         if show_trace_range:
             if trace.frame_range_len < 5000:
-
-                ax1.text(f"{trace.frame_range[0]} to {trace.frame_range[1]}", y[0], trace.frame_range[0])
+                ax1.text(trace.frame_range[0], y[0], nice_range_print(trace.frame_range))
             else:
                 ax1.text(trace.frame_range[0], y[0], trace.frame_range[0])
                 ax1.text(trace.frame_range[1], y[0], trace.frame_range[1])
@@ -64,7 +63,7 @@ def scatter_detection(traces, whole_frame_range, subtitle=False, show_trace_id=T
         plt.title(title + "\n" + subtitle)
     else:
         plt.title(title)
-    plt.show()
+        plt.show()
 
 
 def show_overlaps(traces, whole_frame_range, subtitle=False, silent=False, debug=False):
