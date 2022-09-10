@@ -40,46 +40,58 @@ def analyse(file_path, population_size):
     :arg population_size: (int): expected number of agents
     """
     with open(file_path, newline='') as csv_file:
-        ## PARSER
+        ### PARSER
+        # parse traces from csv file
         scraped_traces = parse_traces(csv_file)
+
+        # store traces as list of Traces
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             # print(trace)
             # print(scraped_traces[trace])
             traces.append(Trace(scraped_traces[trace], index))
 
+        ### AUXILIARY COMPUTATION
+        ## FRAME RANGE
+        # obtain the frame range of the video
         real_whole_frame_range = get_whole_frame_range(traces)
-        whole_frame_range = [real_whole_frame_range[0]-2000, real_whole_frame_range[1]+2000]
+        # compute frame range margins for visualisation
+        whole_frame_range = [real_whole_frame_range[0] - 2000, real_whole_frame_range[1] + 2000]
 
+        ### ANALYSIS
+        if show_plots:
+            scatter_detection(traces, whole_frame_range, subtitle="Initial.")
+
+        # TODO DELETE THIS SECTION
         # for trace in traces:
         #     print(trace.frame_range)
         # show_all_traces(traces, whole_frame_range)
-        scatter_detection(traces, whole_frame_range)
-        for trace in traces:
-            print("trace", trace.trace_id, trace.frame_range)
-        show_gaps(traces, whole_frame_range)
-        show_overlaps(traces, whole_frame_range)
-
-        raise Exception
+        scatter_detection(traces, whole_frame_range, subtitle="Initial.")
+        # for trace in traces:
+        #     print("trace", trace.trace_id, trace.frame_range)
+        # show_gaps(traces, whole_frame_range)
+        # show_overlaps(traces, whole_frame_range)
 
         ## FIND TRACES OUTSIDE OF THE ARENA
         check_inside_of_arena(traces)
         if show_plots:
             show_all_traces(traces, whole_frame_range)
+        if show_plots:
+            scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
+        # TODO DELETE THIS SECTION
+        scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
         ## FIND TRACES OF ZERO LENGTH
-        if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="Initial.")
         single_trace_checker(traces, silent=silent, debug=debug)
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
-
-        # show_gaps(traces, whole_frame_range)
+        # TODO DELETE THIS SECTION
+        scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
 
         if population_size > 1:
             ## CHOSEN TRACE SHOW - choose i, index of trace
             i = 0
-            # TODO uncomment the following line to show the selected trace
+            # TODO uncomment the following line to show selected trace
             # traces[i].show_trace_in_xy()
 
         ## CROSS-TRACE ANALYSIS
@@ -108,6 +120,10 @@ def analyse(file_path, population_size):
                 print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
 
         scatter_detection(traces, whole_frame_range)
+        show_gaps(traces, whole_frame_range)
+        show_overlaps(traces, whole_frame_range)
+        raise Exception
+
         for trace in traces:
             print("trace", trace.trace_id, trace.frame_range)
 

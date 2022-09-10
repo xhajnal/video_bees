@@ -23,12 +23,14 @@ def show_all_traces(traces, whole_frame_range):
             figs = trace.show_trace_in_xy(whole_frame_range, where=figs, show=True)
 
 
-def scatter_detection(traces, whole_frame_range, subtitle=False):
+def scatter_detection(traces, whole_frame_range, subtitle=False, show_trace_id=True, show_trace_range=True):
     """ Creates a scatter plot of detected traces of each agent.
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg subtitle: (string): subtitle of the plot
+    :arg show_trace_id: (bool): if True trace id is shown above the trace
+    :arg show_trace_range: (bool): if True frame number of beginning af the trace and end of the trace is shown above the trace
     """
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -37,12 +39,22 @@ def scatter_detection(traces, whole_frame_range, subtitle=False):
         x = trace.frames_list
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
+        if show_trace_id:
+            ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]+0.5, trace.trace_id)
+        if show_trace_range:
+            if trace.frame_range_len < 5000:
+
+                ax1.text(f"{trace.frame_range[0]} to {trace.frame_range[1]}", y[0], trace.frame_range[0])
+            else:
+                ax1.text(trace.frame_range[0], y[0], trace.frame_range[0])
+                ax1.text(trace.frame_range[1], y[0], trace.frame_range[1])
         x = trace.overlap_frames
         y = [index] * len(x)
         ax1.scatter(x, y, c="black")
         x = trace.gap_frames
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5, c="white", edgecolors="black")
+
     ax1.set_xlim(whole_frame_range)
     plt.xlabel('Frame number')
     plt.ylabel('Agent id')
