@@ -14,6 +14,11 @@ class MyTestCase(unittest.TestCase):
     #         print("hello")
     #         traces = parse_traces(csv_file)
     def test_misc(self):
+        self.assertEqual(nice_range_print([605, 610]), "605-10")
+        self.assertEqual(nice_range_print([605, 710]), "605 - 710")
+        self.assertEqual(nice_range_print([605, 1710]), "605 - 1710")
+        self.assertEqual(nice_range_print([605, 1610]), "605 - 1610")
+
         self.assertEqual(delete_indices([], [8, 9]), [8, 9])
         self.assertEqual(delete_indices([0], [8, 9]), [9])
         self.assertEqual(delete_indices([1], [8, 9]), [8])
@@ -126,7 +131,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7)]), {(0, 1, 2, 3): [6, 7]})
         self.assertEqual(m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7)]), {(0, 1, 2, 3): [6, 7]})
 
-        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True),
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], skip_whole_in=True),
                          {(0, 1, 2, 3): [6, 7]})
         self.assertEqual(m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True), {(0, 1, 2, 3): [6, 7]})
 

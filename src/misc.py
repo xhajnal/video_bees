@@ -8,6 +8,34 @@ from itertools import islice
 from termcolor import colored
 
 
+def nice_range_print(interval):
+    """ Prints the shortest frame range
+
+    Eg. 605 - 610  ->  605-10
+
+    :arg interval: (pair of numbers): range to print
+    """
+    a = f"{interval[0]}"
+    b = f"{interval[1]}"
+
+    # if the ranges are different in magnitude
+    if len(a) != len(b):
+        return f"{interval[0]} - {interval[1]}"
+    else:
+        i = 0
+        # compute number of same digits from left
+        for index in range(len(a)):
+            if a[index] == b[index]:
+                i = i + 1
+            else:
+                break
+
+        if i == 0:
+            return f"{interval[0]} - {interval[1]}"
+
+        return f"{interval[0]}-{str(interval[1])[i:]}"
+
+
 def delete_indices(indices, iterable, debug=False):
     """ Deletes given indices from given iterable
 
