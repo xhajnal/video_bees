@@ -14,6 +14,7 @@ class Trace:
     Stores:
         frame_range (tuple): a pair frame numbers, first and last
         number_of_frames_tracked (int): number of frames with tracked location
+        frames_list (list): list of all frames
         frame_range_len (int): length of trace in frames
         trace_length (float): length of trace in x,y coordinates
         max_step_len (float): maximal length of a single step in x,y coordinates
@@ -90,6 +91,24 @@ class Trace:
                     # print("Error:", str(err))
                     raise err
 
+    def get_gap_locations(self):
+        """ Returns a list of locations of gaps. """
+        gap_locations = []
+        for frame in self.gap_frames:
+            index = self.frames_list.index(frame)
+            gap_locations.append(self.locations[index])
+
+        return gap_locations
+
+    def get_overlap_locations(self):
+        """ Returns a list of locations of overlaps. """
+        overlap_locations = []
+        for frame in self.overlap_frames:
+            index = self.frames_list.index(frame)
+            overlap_locations.append(self.locations[index])
+
+        return overlap_locations
+
     def show_step_lengths_hist(self, bins=100):
         """ Histogram of lengths of a single step. """
         # # print(self.trace_lengths)
@@ -130,7 +149,15 @@ class Trace:
         for location in self.locations:
             xs.append(location[0])
             ys.append(location[1])
-    
+
+        gap_locations = self.get_gap_locations()
+        overlap_locations = self.get_overlap_locations()
+
+        if self.gap_frames:
+            print("gap_frames", self.gap_frames)
+            print("gap_locations", gap_locations)
+            print("list(map(lambda x: x[0], overlap_locations))", list(map(lambda x: x[0], gap_locations)))
+
         ## MAKE AND SHOW PLOTS
         if where:
             assert isinstance(where, list)
@@ -141,6 +168,8 @@ class Trace:
 
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
         ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5)
+        ax1.scatter(self.overlap_frames, list(map(lambda x: x[0], overlap_locations)), c="black")
+        ax1.scatter(self.gap_frames, list(map(lambda x: x[0], gap_locations)), c="white", edgecolors="black")
         ax1.set_xlabel('Time')
         ax1.set_ylabel('x')
         ax1.set_xlim(whole_frame_range)
@@ -160,6 +189,8 @@ class Trace:
 
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
         ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5)
+        ax2.scatter(self.overlap_frames, list(map(lambda x: x[1], overlap_locations)), c="black")
+        ax2.scatter(self.gap_frames, list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
         ax2.set_xlabel('Time')
         ax2.set_ylabel('y')
         ax2.set_xlim(whole_frame_range)
@@ -179,6 +210,8 @@ class Trace:
 
         # ax3.scatter(xs, ys, alpha=0.5)
         ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5)
+        ax3.scatter(list(map(lambda x: x[0], overlap_locations)), list(map(lambda x: x[1], overlap_locations)), c="black")
+        ax3.scatter(list(map(lambda x: x[0], gap_locations)), list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
         ax3.set_xlabel('x')
         ax3.set_ylabel('y')
         max_position = max([max(xs), max(xs)])

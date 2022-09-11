@@ -51,12 +51,16 @@ def analyse(file_path, population_size):
             # print(scraped_traces[trace])
             traces.append(Trace(scraped_traces[trace], index))
 
+
+
         ### AUXILIARY COMPUTATION
         ## FRAME RANGE
         # obtain the frame range of the video
         real_whole_frame_range = get_whole_frame_range(traces)
         # compute frame range margins for visualisation
         whole_frame_range = [real_whole_frame_range[0] - 2000, real_whole_frame_range[1] + 2000]
+
+        show_all_traces(traces, whole_frame_range)
 
         ### ANALYSIS
         if show_plots:
@@ -81,7 +85,7 @@ def analyse(file_path, population_size):
         # TODO DELETE THIS SECTION
         scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
-        ## FIND TRACES OF ZERO LENGTH
+        ## FIND TRACES OF ZERO LENGTH, TRACE INFO
         single_trace_checker(traces, silent=silent, debug=debug)
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
@@ -122,7 +126,6 @@ def analyse(file_path, population_size):
         scatter_detection(traces, whole_frame_range)
         show_gaps(traces, whole_frame_range)
         show_overlaps(traces, whole_frame_range)
-        raise Exception
 
         for trace in traces:
             print("trace", trace.trace_id, trace.frame_range)
@@ -165,6 +168,9 @@ def analyse(file_path, population_size):
         show_overlaps(traces, whole_frame_range)
         show_gaps(traces, whole_frame_range)
         show_all_traces(traces, whole_frame_range)
+        show_all_traces(traces, whole_frame_range)
 
         # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
         pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+
+        single_trace_checker(traces, silent=silent, debug=debug)
