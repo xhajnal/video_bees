@@ -1,10 +1,12 @@
 import csv
+import math
 from time import time
 
 from _socket import gethostname
 from termcolor import colored
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices
+from trace import Trace
 
 
 def single_trace_checker(traces, silent=False, debug=False):
@@ -124,3 +126,46 @@ def dummy_collision_finder(csv_file, size):
         i = i + 1
 
     return frame_numbers_of_collided_agents
+
+
+def track_jump_back_and_forth(trace):
+    """ Tracks when the tracking of the bee jumped at some place and then back quickly. """
+    assert isinstance(trace, Trace)
+    print(colored(f"SINGLE TRACE CHECKER with trace {trace.trace_id}", "blue"))
+    start_time = time()
+
+    # define surrounding in frames to find a jump
+    frame_width = 5
+
+    # define length of the jump
+    jump_len = 50
+
+    # define surrounding to jump back
+    jump_back_dist = 10
+
+    index = 0
+    while index < len(trace.locations)-1:
+        potential_jump_detected = False
+        for index2 in range(index + 1, index+frame_width+1):
+            try:
+                a = trace.locations[index2]
+            except IndexError:
+                break
+            if not potential_jump_detected and math.dist(trace.locations[index], trace.locations[index2]) >= jump_len:
+                potential_jump_detected = True
+                jump_to_index = index2
+            if potential_jump_detected:
+                if math.dist(trace.locations[index], trace.locations[index2]) <= jump_back_dist:
+                    # a jump found
+                    print(f" Jump back and forth detected, with start frame {trace.frames_list[index]}, while jump to"
+                          f" frame {trace.frames_list[jump_to_index]}"
+                          f" with distance {math.dist(trace.locations[index], trace.locations[jump_to_index])}"
+                          f" and jumping back to frame {trace.frames_list[index2]} with distance to start"
+                          f" {math.dist(trace.locations[index], trace.locations[index2])}")
+                    print()
+                    # move forth in frames
+                    index = index2
+                    potential_jump_detected = False
+        index = index + 1
+
+    # print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))

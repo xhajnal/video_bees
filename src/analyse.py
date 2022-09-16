@@ -1,9 +1,12 @@
 import os.path
+from time import time
+
+from _socket import gethostname
 from termcolor import colored
 
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
-from single_trace import single_trace_checker, check_inside_of_arena
+from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth
 from cross_traces import put_traces_together, track_reappearance, cross_trace_analyse, \
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range
 from parse import parse_traces
@@ -61,6 +64,13 @@ def analyse(file_path, population_size):
         whole_frame_range = [real_whole_frame_range[0] - 2000, real_whole_frame_range[1] + 2000]
 
         show_all_traces(traces, whole_frame_range)
+
+        start_time = time()
+        for trace in traces:
+            track_jump_back_and_forth(trace)
+        print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+
+        raise Exception
 
         ### ANALYSIS
         if show_plots:
