@@ -2,6 +2,7 @@ import math
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import rcParams
 from termcolor import colored
 
 from config import *
@@ -167,7 +168,7 @@ class Trace:
             fig1, ax1 = plt.subplots()
 
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
-        ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5)
+        ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         ax1.scatter(self.overlap_frames, list(map(lambda x: x[0], overlap_locations)), c="black")
         ax1.scatter(self.gap_frames, list(map(lambda x: x[0], gap_locations)), c="white", edgecolors="black")
         ax1.set_xlabel('Time')
@@ -188,7 +189,7 @@ class Trace:
             fig2, ax2 = plt.subplots()
 
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
-        ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5)
+        ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         ax2.scatter(self.overlap_frames, list(map(lambda x: x[1], overlap_locations)), c="black")
         ax2.scatter(self.gap_frames, list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
         ax2.set_xlabel('Time')
@@ -209,7 +210,7 @@ class Trace:
             fig3, ax3 = plt.subplots()
 
         # ax3.scatter(xs, ys, alpha=0.5)
-        ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5)
+        ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         ax3.scatter(list(map(lambda x: x[0], overlap_locations)), list(map(lambda x: x[1], overlap_locations)), c="black")
         ax3.scatter(list(map(lambda x: x[0], gap_locations)), list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
         ax3.set_xlabel('x')

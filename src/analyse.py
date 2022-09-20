@@ -70,7 +70,7 @@ def analyse(file_path, population_size):
             track_jump_back_and_forth(trace)
         print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
-        raise Exception
+        return
 
         ### ANALYSIS
         if show_plots:
