@@ -136,20 +136,48 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
 
-    def show_trace_in_xy(self, whole_frame_range, where=False, show=True):
+    def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True):
         """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
 
         :arg whole_frame_range: [int, int]: frame range of the whole video
+        :arg from_to_frame: (list): if set, showing only frames in given range
         :arg where: (list): is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
         :arg show: (bool): if True the plots are shown
         :returns: list of pairs [figure, axis] for each of three plots
         """
-        xs = []
-        ys = []
-        for location in self.locations:
-            xs.append(location[0])
-            ys.append(location[1])
+        # set boundaries for from_to_frame
+        if from_to_frame is not False:
+            assert isinstance(from_to_frame, list)
+            assert len(from_to_frame) == 2
+            if not has_overlap(from_to_frame, self.frame_range):
+                return
+
+            # from_to_frame right is before this trace
+            if self.frame_range[0] < from_to_frame[0]:
+                from_index = self.frames_list.index(from_to_frame[0])
+            else:
+                from_index = 0
+
+            # from_to_frame left is after this trace
+            if from_to_frame[1] < self.frame_range[1]:
+                try:
+                    to_index = self.frames_list.index(from_to_frame[1])
+                except ValueError as err:
+                    print(self.frames_list)
+                    print(self.frame_range)
+                    print(from_to_frame[1] < self.frame_range[1])
+                    raise err
+            else:
+                to_index = -1
+
+        else:
+            from_index = 0
+            to_index = -1
+
+        # load locations for x and y-axis respectively
+        xs = list(map(lambda x: x[0], self.locations))
+        ys = list(map(lambda x: x[1], self.locations))
 
         gap_locations = self.get_gap_locations()
         overlap_locations = self.get_overlap_locations()
@@ -173,7 +201,11 @@ class Trace:
         ax1.scatter(self.gap_frames, list(map(lambda x: x[0], gap_locations)), c="white", edgecolors="black")
         ax1.set_xlabel('Time')
         ax1.set_ylabel('x')
-        ax1.set_xlim(whole_frame_range)
+        if from_to_frame is not False:
+            ax1.set_xlim(from_to_frame)
+        else:
+            ax1.set_xlim(whole_frame_range)
+
         if where:
             ax1.set_title(f'Traces in x-axis.')
         else:
@@ -194,7 +226,11 @@ class Trace:
         ax2.scatter(self.gap_frames, list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
         ax2.set_xlabel('Time')
         ax2.set_ylabel('y')
-        ax2.set_xlim(whole_frame_range)
+        if from_to_frame is not False:
+            ax2.set_xlim(from_to_frame)
+        else:
+            ax2.set_xlim(whole_frame_range)
+
         if where:
             ax2.set_title(f'Traces in y-axis.')
         else:
@@ -209,6 +245,8 @@ class Trace:
         else:
             fig3, ax3 = plt.subplots()
 
+        xs = list(map(lambda x: x[0], self.locations[from_index:to_index]))
+        ys = list(map(lambda x: x[1], self.locations[from_index:to_index]))
         # ax3.scatter(xs, ys, alpha=0.5)
         ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         ax3.scatter(list(map(lambda x: x[0], overlap_locations)), list(map(lambda x: x[1], overlap_locations)), c="black")
@@ -216,6 +254,9 @@ class Trace:
         ax3.set_xlabel('x')
         ax3.set_ylabel('y')
         max_position = max([max(xs), max(xs)])
+
+        ## TODO implement from_to_frame
+
         # if max_position < 800:
         if max_position < max([get_screen_size()[0][1], get_screen_size()[1][1]]):
             plt.xlim(get_screen_size()[0])

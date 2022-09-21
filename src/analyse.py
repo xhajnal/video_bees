@@ -54,8 +54,6 @@ def analyse(file_path, population_size):
             # print(scraped_traces[trace])
             traces.append(Trace(scraped_traces[trace], index))
 
-
-
         ### AUXILIARY COMPUTATION
         ## FRAME RANGE
         # obtain the frame range of the video
@@ -63,28 +61,9 @@ def analyse(file_path, population_size):
         # compute frame range margins for visualisation
         whole_frame_range = [real_whole_frame_range[0] - 2000, real_whole_frame_range[1] + 2000]
 
-        show_all_traces(traces, whole_frame_range)
-
-        start_time = time()
-        for trace in traces:
-            track_jump_back_and_forth(trace)
-        print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
-
-        return
-
         ### ANALYSIS
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="Initial.")
-
-        # TODO DELETE THIS SECTION
-        # for trace in traces:
-        #     print(trace.frame_range)
-        # show_all_traces(traces, whole_frame_range)
-        scatter_detection(traces, whole_frame_range, subtitle="Initial.")
-        # for trace in traces:
-        #     print("trace", trace.trace_id, trace.frame_range)
-        # show_gaps(traces, whole_frame_range)
-        # show_overlaps(traces, whole_frame_range)
 
         ## FIND TRACES OUTSIDE OF THE ARENA
         check_inside_of_arena(traces)
@@ -92,15 +71,23 @@ def analyse(file_path, population_size):
             show_all_traces(traces, whole_frame_range)
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
-        # TODO DELETE THIS SECTION
-        scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
         ## FIND TRACES OF ZERO LENGTH, TRACE INFO
         single_trace_checker(traces, silent=silent, debug=debug)
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
-        # TODO DELETE THIS SECTION
-        scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
+
+        ## TRACK JUMPS BACK AND FORTH
+        start_time = time()
+        for trace in traces:
+            track_jump_back_and_forth(trace)
+        print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+        if show_plots:
+            scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
+
+        show_all_traces(traces, whole_frame_range, from_to_frame=[20000, 30000])
+        scatter_detection(traces, whole_frame_range, from_to_frame=[20000, 30000])
+        return
 
         if population_size > 1:
             ## CHOSEN TRACE SHOW - choose i, index of trace

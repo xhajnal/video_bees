@@ -1,3 +1,6 @@
+from time import time
+from _socket import gethostname
+from termcolor import colored
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
@@ -5,29 +8,34 @@ from traces_logic import get_gaps_of_traces
 from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
 
 
-def show_all_traces(traces, whole_frame_range):
+def show_all_traces(traces, whole_frame_range, from_to_frame=False):
     """ Plots the traces in three plots, traces in x-axis and y-axis separately,
     time on horizontal axis in frame numbers. Last plot is the traces in x,y.
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg from_to_frame: (list): if set, showing only frames in given range
     """
+    start_time = time()
     for index, trace in enumerate(traces):
         if len(traces) == 1:
-            figs = trace.show_trace_in_xy(whole_frame_range, show=True)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=True)
         elif index == 0:
-            figs = trace.show_trace_in_xy(whole_frame_range, show=False)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=False)
         elif index < len(traces) - 1:
-            figs = trace.show_trace_in_xy(whole_frame_range, where=figs, show=False)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show=False)
         else:
-            figs = trace.show_trace_in_xy(whole_frame_range, where=figs, show=True)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show=True)
+
+    print(colored(f"Showing location of {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
 
 
-def scatter_detection(traces, whole_frame_range, subtitle=False, show_trace_id=True, show_trace_range=True):
+def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=False, show_trace_id=True, show_trace_range=True):
     """ Creates a scatter plot of detected traces of each agent.
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg from_to_frame: (list): if set, showing only frames in given range
     :arg subtitle: (string): subtitle of the plot
     :arg show_trace_id: (bool): if True trace id is shown above the trace
     :arg show_trace_range: (bool): if True frame number of beginning af the trace and end of the trace is shown above the trace
@@ -68,7 +76,11 @@ def scatter_detection(traces, whole_frame_range, subtitle=False, show_trace_id=T
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5, c="white", edgecolors="black")
 
-    ax1.set_xlim(whole_frame_range)
+    if from_to_frame is not False:
+        ax1.set_xlim(from_to_frame)
+    else:
+        ax1.set_xlim(whole_frame_range)
+
     plt.xlabel('Frame number')
     plt.ylabel('Agent id')
     title = f'Scatter plot of detections of individual agents over time.'
