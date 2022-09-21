@@ -35,21 +35,32 @@ def scatter_detection(traces, whole_frame_range, subtitle=False, show_trace_id=T
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
+    if len(traces) > 100:
+        fontsize = 0
+    elif len(traces) > 60:
+        fontsize = 5
+    elif len(traces) > 30:
+        fontsize = 6
+    elif len(traces) > 20:
+        fontsize = 8
+    else:
+        fontsize = 10
+
     for index, trace in enumerate(traces):
         x = trace.frames_list
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
         if show_trace_id:
             if len(traces) > 5:
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
             else:
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
         if show_trace_range:
             if trace.frame_range_len < 5000:
-                ax1.text(trace.frame_range[0], y[0], nice_range_print(trace.frame_range))
+                ax1.text(trace.frame_range[0], y[0], nice_range_print(trace.frame_range), fontsize=fontsize)
             else:
-                ax1.text(trace.frame_range[0], y[0], trace.frame_range[0])
-                ax1.text(trace.frame_range[1], y[0], trace.frame_range[1])
+                ax1.text(trace.frame_range[0], y[0], trace.frame_range[0], fontsize=fontsize)
+                ax1.text(trace.frame_range[1], y[0], trace.frame_range[1], fontsize=fontsize)
         x = trace.overlap_frames
         y = [index] * len(x)
         ax1.scatter(x, y, c="black")
