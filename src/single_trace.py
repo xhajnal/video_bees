@@ -2,6 +2,7 @@ import csv
 import math
 from time import time
 
+import numpy as np
 from _socket import gethostname
 from termcolor import colored
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
@@ -128,7 +129,7 @@ def dummy_collision_finder(csv_file, size):
     return frame_numbers_of_collided_agents
 
 
-def track_jump_back_and_forth(trace):
+def track_jump_back_and_forth(trace, whole_frame_range, show_plots=False):
     """ Tracks when the tracking of the bee jumped at some place and then back quickly. """
     assert isinstance(trace, Trace)
     print(colored(f"SINGLE TRACE CHECKER with trace {trace.trace_id}", "blue"))
@@ -163,6 +164,18 @@ def track_jump_back_and_forth(trace):
                           f" and jumping back to frame {trace.frames_list[index2]} with distance to start"
                           f" {math.dist(trace.locations[index], trace.locations[index2])}")
                     print()
+
+                    # show jump in plot
+                    if show_plots:
+                        trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[index]-2, trace.frames_list[index2]+2], show=True, subtitle=f" jump to {trace.frames_list[jump_to_index]}")
+
+                    # smoothen the jump
+                    spam = np.linspace(trace.locations[index], trace.locations[index2], num=index2 - index + 1, endpoint=True)
+                    for index_index, location_index in enumerate(range(index, index2+1)):
+                        trace.locations[location_index] = spam[index_index]
+                    # if show_plots:
+                    #     trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[index]-2, trace.frames_list[index2]+2], show=True, subtitle=f" Smoothened jump to {trace.frames_list[jump_to_index]}")
+
                     # move forth in frames
                     index = index2
                     potential_jump_detected = False

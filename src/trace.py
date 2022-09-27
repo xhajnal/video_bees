@@ -136,7 +136,7 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
 
-    def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True):
+    def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True, subtitle=""):
         """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
 
@@ -207,9 +207,9 @@ class Trace:
             ax1.set_xlim(whole_frame_range)
 
         if where:
-            ax1.set_title(f'Traces in x-axis.')
+            ax1.set_title(f'Traces in x-axis.{subtitle}')
         else:
-            ax1.set_title(f'Trace {self.trace_id} in x-axis.')
+            ax1.set_title(f'Trace {self.trace_id} in x-axis.{subtitle}')
         if show:
             fig1.show()
 
@@ -232,9 +232,9 @@ class Trace:
             ax2.set_xlim(whole_frame_range)
 
         if where:
-            ax2.set_title(f'Traces in y-axis.')
+            ax2.set_title(f'Traces in y-axis.{subtitle}')
         else:
-            ax2.set_title(f'Trace {self.trace_id} in y-axis.')
+            ax2.set_title(f'Trace {self.trace_id} in y-axis.{subtitle}')
         if show:
             fig2.show()
 
@@ -266,9 +266,9 @@ class Trace:
             plt.ylim(max_position)
 
         if where:
-            ax3.set_title(f'Traces "phase" space.')
+            ax3.set_title(f'Traces "phase" space.{subtitle}')
         else:
-            ax3.set_title(f'Trace {self.trace_id} "phase" space.')
+            ax3.set_title(f'Trace {self.trace_id} "phase" space.{subtitle}')
         if show:
             fig3.show()
 

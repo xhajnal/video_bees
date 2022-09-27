@@ -80,13 +80,13 @@ def analyse(file_path, population_size):
         ## TRACK JUMPS BACK AND FORTH
         start_time = time()
         for trace in traces:
-            track_jump_back_and_forth(trace)
+            track_jump_back_and_forth(trace, whole_frame_range, show_plots=True)
         print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
 
-        show_all_traces(traces, whole_frame_range, from_to_frame=[20000, 30000])
-        scatter_detection(traces, whole_frame_range, from_to_frame=[20000, 30000])
+        # show_all_traces(traces, whole_frame_range, from_to_frame=[29100, 29110])
+        # scatter_detection(traces, whole_frame_range, from_to_frame=[29100, 29110])
         return
 
         if population_size > 1:
