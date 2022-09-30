@@ -4,6 +4,7 @@ from time import time
 from _socket import gethostname
 from termcolor import colored
 
+from annotate2 import annotate_video
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth
@@ -53,6 +54,9 @@ def analyse(file_path, population_size):
             # print(trace)
             # print(scraped_traces[trace])
             traces.append(Trace(scraped_traces[trace], index))
+
+        annotate_video(traces, traces[0].frame_range[0])
+        raise Exception
 
         ### AUXILIARY COMPUTATION
         ## FRAME RANGE
