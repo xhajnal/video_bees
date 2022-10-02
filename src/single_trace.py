@@ -129,10 +129,18 @@ def dummy_collision_finder(csv_file, size):
     return frame_numbers_of_collided_agents
 
 
-def track_jump_back_and_forth(trace, whole_frame_range, show_plots=False):
-    """ Tracks when the tracking of the bee jumped at some place and then back quickly. """
+def track_jump_back_and_forth(trace, whole_frame_range, show_plots=False, silent=False, debug=False):
+    """ Tracks when the tracking of the bee jumped at some place and then back quickly.
+
+    :arg trace: (Trace): a Traces to check
+    :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg show_plots: (bool): a flag whether to show the jump in a plot
+    :arg silent (bool) if True no output is shown
+    :arg debug (bool) if True extensive output is shown
+    """
     assert isinstance(trace, Trace)
-    print(colored(f"SINGLE TRACE CHECKER with trace {trace.trace_id}", "blue"))
+    if not silent:
+        print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace {trace.trace_id}", "blue"))
     start_time = time()
 
     # define surrounding in frames to find a jump
@@ -158,15 +166,15 @@ def track_jump_back_and_forth(trace, whole_frame_range, show_plots=False):
             if potential_jump_detected:
                 if math.dist(trace.locations[index], trace.locations[index2]) <= jump_back_dist:
                     # a jump found
-                    print(f" Jump back and forth detected, with start frame {trace.frames_list[index]}, while jump to"
-                          f" frame {trace.frames_list[jump_to_index]}"
-                          f" with distance {math.dist(trace.locations[index], trace.locations[jump_to_index])}"
-                          f" and jumping back to frame {trace.frames_list[index2]} with distance to start"
-                          f" {math.dist(trace.locations[index], trace.locations[index2])}")
-                    print()
+                    if not silent:
+                        print(f" Jump back and forth detected, with start frame {trace.frames_list[index]}, while jump to"
+                              f" frame {trace.frames_list[jump_to_index]}"
+                              f" with distance {math.dist(trace.locations[index], trace.locations[jump_to_index])}"
+                              f" and jumping back to frame {trace.frames_list[index2]} with distance to start"
+                              f" {math.dist(trace.locations[index], trace.locations[index2])}")
 
                     # show jump in plot
-                    if show_plots:
+                    if show_plots and not silent:
                         trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[index]-2, trace.frames_list[index2]+2], show=True, subtitle=f" jump to {trace.frames_list[jump_to_index]}")
 
                     # smoothen the jump

@@ -18,7 +18,7 @@ from visualise import scatter_detection, show_all_traces, show_overlaps, show_ga
 global silent
 global debug
 global show_plots
-silent = False
+silent = True
 debug = False
 show_plots = False
 
@@ -51,10 +51,10 @@ def analyse(file_path, population_size):
     # get the stem of the filename - digital identifier
     video_file = video_file.split("_")[:2]
     video_file = "_".join(video_file)
-    print(video_file)
+    # print(video_file)
 
     folder = os.path.dirname(Path(file_path))
-    print(folder)
+    # print(folder)
 
     video_file = glob.glob(os.path.join(folder, f'*{video_file}*.mp4'))
     if len(video_file) > 1:
@@ -63,6 +63,7 @@ def analyse(file_path, population_size):
         video_file = ""
         output_video_file = ""
     else:
+        video_file = video_file[0]
         output_video_file = os.path.join(folder, "Results", os.path.basename(video_file))
     try:
         os.mkdir(os.path.join(folder, "Results"))
@@ -106,8 +107,9 @@ def analyse(file_path, population_size):
 
     ## TRACK JUMPS BACK AND FORTH
     start_time = time()
+    print(colored(f"TRACE JUMP BACK AND FORTH CHECKER", "blue"))
     for trace in traces:
-        track_jump_back_and_forth(trace, whole_frame_range, show_plots=True)
+        track_jump_back_and_forth(trace, whole_frame_range, show_plots=True, silent=silent, debug=debug)
     print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     if show_plots:
         scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
@@ -147,8 +149,9 @@ def analyse(file_path, population_size):
     show_gaps(traces, whole_frame_range)
     show_overlaps(traces, whole_frame_range)
 
-    for trace in traces:
-        print("trace", trace.trace_id, trace.frame_range)
+    if not silent:
+        for trace in traces:
+            print("trace", trace.trace_id, trace.frame_range)
 
     # show_gaps(traces, whole_frame_range)
 
@@ -175,9 +178,8 @@ def analyse(file_path, population_size):
         pass
         # show_all_traces(traces)
 
-    print(colored(f"After merging overlapping traces together there are {len(traces)} left:",
-                  "yellow"))
     if not silent:
+        print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
             print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
 

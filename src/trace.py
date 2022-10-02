@@ -136,7 +136,7 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
         plt.show()
 
-    def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True, subtitle=""):
+    def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True, subtitle="", silent=False, debug=False):
         """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
 
@@ -145,6 +145,8 @@ class Trace:
         :arg where: (list): is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
         :arg show: (bool): if True the plots are shown
         :returns: list of pairs [figure, axis] for each of three plots
+        :arg silent (bool) if True no output is shown
+        :arg debug (bool) if True extensive output is shown
         """
         # set boundaries for from_to_frame
         if from_to_frame is not False:
@@ -182,7 +184,7 @@ class Trace:
         gap_locations = self.get_gap_locations()
         overlap_locations = self.get_overlap_locations()
 
-        if self.gap_frames:
+        if self.gap_frames and debug:
             print("gap_frames", self.gap_frames)
             print("gap_locations", gap_locations)
             print("list(map(lambda x: x[0], overlap_locations))", list(map(lambda x: x[0], gap_locations)))
@@ -340,8 +342,9 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
     # Based on the gap size
     if frame_gap_size <= get_max_trace_gap_to_interpolate_distance():
         # set a point of location of the gap as linear interpolation of two bordering points
-        print("frame_gap_size", frame_gap_size)
-        print(trace1.locations[-1], trace2.locations[0])
+        if debug:
+            print("frame_gap_size", frame_gap_size)
+            print(trace1.locations[-1], trace2.locations[0])
         in_middle_points = np.linspace(trace1.locations[-1], trace2.locations[0], num=frame_gap_size+1, endpoint=False)
         # in_middle_points = list(map(lambda x: [int(x[0]), int(x[1])], in_middle_points))
         # cutting the first point and changing to float

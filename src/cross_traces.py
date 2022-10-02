@@ -90,7 +90,7 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
     :arg debug: (bool): if True extensive output is shown
     :returns: traces: (list): list of trimmed Traces
     """
-    print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES 2", "blue"))
+    print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES", "blue"))
     start_time = time()
     ranges = []
     for index1, trace in enumerate(traces):
@@ -135,15 +135,16 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
     return traces
 
 
-def trim_out_additional_agents_over_long_traces(traces, population_size, silent=False, debug=False):
+# deprecated
+def trim_out_additional_agents_over_long_traces_old(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
-, {len(trace_indices_to_trim)} shorter than in previous iteration.
+
     :arg population_size: (int): expected number of agents
     :arg silent (bool) if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns: traces: (list): list of trimmed Traces
     """
-    print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES", "blue"))
+    print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES OLD", "blue"))
     start_time = time()
     ## Obtain the ranges with the size of frame more than 100 where all the agents are being tracked
     ranges = []
@@ -397,14 +398,16 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                             print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance.")
                             to_merge = False
                         else:
-                            print("heaven1")
+                            if debug:
+                                print("heaven1")
                     else:
                         reason = "short gap too distant"
                         if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
                             print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance.")
                             to_merge = False
                         else:
-                            print("heaven2")
+                            if debug:
+                                print("heaven2")
 
                 if trace2.frame_range[0] - trace1.frame_range[-1] == 0:
                     distance_per_frame = None
@@ -430,7 +433,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     trace_indices_to_trim.append(index2)
                     step_to = trace.frame_range[1]
                 elif reason == "gap long":
-                    print(colored("NOT CHECKING OTHER TRACES - they have to have longer gap", "red"))
+                    if not silent:
+                        print(colored("NOT CHECKING OTHER TRACES - they have to have longer gap", "red"))
                     break
         else:
             step_to = next_step_to
@@ -567,9 +571,8 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
         # Flag whether to try another pair of overlapping intervals
         go_next = True
         while go_next:
-            # if debug:
-            print("dictionary", dictionary)
             if debug:
+                print("dictionary", dictionary)
                 for trace in traces:
                     print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
                 print()
@@ -598,10 +601,11 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
                 print("count_one", count_one)
 
             if len(count_one) == 0:
-                print(colored("Cannot these traces.", "red"))
+                print(colored("Cannot merge these traces.", "red"))
                 print("dictionary", dictionary)
                 for trace in traces:
-                    print(f"trace {trace.trace_id} of range {trace.frame_range}")
+                    if debug:
+                        print(f"trace {trace.trace_id} of range {trace.frame_range}")
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                               f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
                 return
