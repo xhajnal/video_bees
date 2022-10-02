@@ -1,6 +1,7 @@
 import os.path
+from pathlib import Path
 from time import time
-
+import glob
 from _socket import gethostname
 from termcolor import colored
 
@@ -43,135 +44,157 @@ def analyse(file_path, population_size):
     :arg file_path: (str): path to csv file
     :arg population_size: (int): expected number of agents
     """
+    ## I/O stuff
+
+    # get the name of the file without suffix
+    video_file = Path(file_path).stem
+    # get the stem of the filename - digital identifier
+    video_file = video_file.split("_")[:2]
+    video_file = "_".join(video_file)
+    print(video_file)
+
+    folder = os.path.dirname(Path(file_path))
+    print(folder)
+
+    video_file = glob.glob(os.path.join(folder, f'*{video_file}*.mp4'))
+    if len(video_file) > 1:
+        raise Exception(f"There are more input videos with given identifier: {video_file}. We do not know which to pick.")
+    elif len(video_file) == 0:
+        video_file = ""
+        output_video_file = ""
+    else:
+        output_video_file = os.path.join(folder, "Results", os.path.basename(video_file))
+    try:
+        os.mkdir(os.path.join(folder, "Results"))
+    except OSError:
+        pass
+
+    ## PARSER
     with open(file_path, newline='') as csv_file:
-        ### PARSER
         # parse traces from csv file
         scraped_traces = parse_traces(csv_file)
 
-        # store traces as list of Traces
-        traces = []
-        for index, trace in enumerate(scraped_traces.keys()):
-            # print(trace)
-            # print(scraped_traces[trace])
-            traces.append(Trace(scraped_traces[trace], index))
+    # store traces as list of Traces
+    traces = []
+    for index, trace in enumerate(scraped_traces.keys()):
+        # print(trace)
+        # print(scraped_traces[trace])
+        traces.append(Trace(scraped_traces[trace], index))
 
-        annotate_video(traces, traces[0].frame_range[0])
-        raise Exception
+    ### AUXILIARY COMPUTATION
+    ## FRAME RANGE
+    # obtain the frame range of the video
+    real_whole_frame_range = get_whole_frame_range(traces)
+    # compute frame range margins for visualisation
+    whole_frame_range = [real_whole_frame_range[0] - 2000, real_whole_frame_range[1] + 2000]
 
-        ### AUXILIARY COMPUTATION
-        ## FRAME RANGE
-        # obtain the frame range of the video
-        real_whole_frame_range = get_whole_frame_range(traces)
-        # compute frame range margins for visualisation
-        whole_frame_range = [real_whole_frame_range[0] - 2000, real_whole_frame_range[1] + 2000]
+    ### ANALYSIS
+    if show_plots:
+        scatter_detection(traces, whole_frame_range, subtitle="Initial.")
 
-        ### ANALYSIS
-        if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="Initial.")
+    ## FIND TRACES OUTSIDE OF THE ARENA
+    check_inside_of_arena(traces)
+    if show_plots:
+        show_all_traces(traces, whole_frame_range)
+    if show_plots:
+        scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
-        ## FIND TRACES OUTSIDE OF THE ARENA
-        check_inside_of_arena(traces)
-        if show_plots:
-            show_all_traces(traces, whole_frame_range)
-        if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
+    ## FIND TRACES OF ZERO LENGTH, TRACE INFO
+    single_trace_checker(traces, silent=silent, debug=debug)
+    if show_plots:
+        scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
 
-        ## FIND TRACES OF ZERO LENGTH, TRACE INFO
-        single_trace_checker(traces, silent=silent, debug=debug)
-        if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
+    ## TRACK JUMPS BACK AND FORTH
+    start_time = time()
+    for trace in traces:
+        track_jump_back_and_forth(trace, whole_frame_range, show_plots=True)
+    print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    if show_plots:
+        scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
 
-        ## TRACK JUMPS BACK AND FORTH
-        start_time = time()
-        for trace in traces:
-            track_jump_back_and_forth(trace, whole_frame_range, show_plots=True)
-        print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
-        if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
+    if population_size > 1:
+        ## CHOSEN TRACE SHOW - choose i, index of trace
+        i = 0
+        # TODO uncomment the following line to show selected trace
+        # traces[i].show_trace_in_xy()
 
-        # show_all_traces(traces, whole_frame_range, from_to_frame=[29100, 29110])
-        # scatter_detection(traces, whole_frame_range, from_to_frame=[29100, 29110])
-        return
+    ## CROSS-TRACE ANALYSIS
+    cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
 
-        if population_size > 1:
-            ## CHOSEN TRACE SHOW - choose i, index of trace
-            i = 0
-            # TODO uncomment the following line to show selected trace
-            # traces[i].show_trace_in_xy()
+    ## ALL TRACES SHOW
+    if show_plots:
+        show_all_traces(traces, whole_frame_range)
 
-        ## CROSS-TRACE ANALYSIS
-        cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
-
-        ## ALL TRACES SHOW
-        if show_plots:
-            show_all_traces(traces, whole_frame_range)
-
-        ## TRIM TRACES AND PUT NOT OVERLAPPING ONES TOGETHER
+    ## TRIM TRACES AND PUT NOT OVERLAPPING ONES TOGETHER
+    before_number_of_traces = len(traces)
+    after_number_of_traces = 0
+    while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
         before_number_of_traces = len(traces)
-        after_number_of_traces = 0
-        while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
-            before_number_of_traces = len(traces)
-            traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
-            if show_plots:
-                scatter_detection(traces, whole_frame_range, subtitle="after trimming")
-            traces = put_traces_together(traces, population_size, silent=silent, debug=debug)
-            if show_plots:
-                scatter_detection(traces, whole_frame_range, subtitle="after putting traces together")
-            after_number_of_traces = len(traces)
-
-        print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
-        if not silent:
-            for index, trace in enumerate(traces):
-                print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
-
-        scatter_detection(traces, whole_frame_range)
-        show_gaps(traces, whole_frame_range)
-        show_overlaps(traces, whole_frame_range)
-
-        for trace in traces:
-            print("trace", trace.trace_id, trace.frame_range)
-
-        # show_gaps(traces, whole_frame_range)
-
-        ## ALL TRACES SHOW
-        # if show_plots:
-        show_all_traces(traces, whole_frame_range)
-
+        traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
         if show_plots:
-            track_reappearance(traces, show=debug)
-        print()
+            scatter_detection(traces, whole_frame_range, subtitle="after trimming")
+        traces = put_traces_together(traces, population_size, silent=silent, debug=debug)
+        if show_plots:
+            scatter_detection(traces, whole_frame_range, subtitle="after putting traces together")
+        after_number_of_traces = len(traces)
 
-        ## MERGE OVERLAPPING TRACES
+    print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
+    if not silent:
+        for index, trace in enumerate(traces):
+            print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
+
+    scatter_detection(traces, whole_frame_range)
+    show_gaps(traces, whole_frame_range)
+    show_overlaps(traces, whole_frame_range)
+
+    for trace in traces:
+        print("trace", trace.trace_id, trace.frame_range)
+
+    # show_gaps(traces, whole_frame_range)
+
+    ## ALL TRACES SHOW
+    # if show_plots:
+    show_all_traces(traces, whole_frame_range)
+
+    if show_plots:
+        track_reappearance(traces, show=debug)
+    print()
+
+    ## MERGE OVERLAPPING TRACES
+    before_number_of_traces = len(traces)
+    after_number_of_traces = -9
+    while before_number_of_traces != after_number_of_traces:
         before_number_of_traces = len(traces)
-        after_number_of_traces = -9
-        while before_number_of_traces != after_number_of_traces:
-            before_number_of_traces = len(traces)
-            merge_overlapping_traces(traces, population_size, silent=silent, debug=debug, show=show_plots)
-            after_number_of_traces = len(traces)
+        merge_overlapping_traces(traces, population_size, silent=silent, debug=debug, show=show_plots)
+        after_number_of_traces = len(traces)
 
-        print()
-        if len(traces) >= 2:
-            print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)}", "yellow"))
-        else:
-            pass
-            # show_all_traces(traces)
+    print()
+    if len(traces) >= 2:
+        print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)}", "yellow"))
+    else:
+        pass
+        # show_all_traces(traces)
 
-        print(colored(f"After merging overlapping traces together there are {len(traces)} left:",
-                      "yellow"))
-        if not silent:
-            for index, trace in enumerate(traces):
-                print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
+    print(colored(f"After merging overlapping traces together there are {len(traces)} left:",
+                  "yellow"))
+    if not silent:
+        for index, trace in enumerate(traces):
+            print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
 
-        ## ALL TRACES
-        # if show_plots:
-        track_reappearance(traces, show=True)
-        scatter_detection(traces, whole_frame_range, subtitle="after merging overlapping traces")
-        show_overlaps(traces, whole_frame_range)
-        show_gaps(traces, whole_frame_range)
-        show_all_traces(traces, whole_frame_range)
-        show_all_traces(traces, whole_frame_range)
+    ## ALL TRACES
+    # if show_plots:
+    track_reappearance(traces, show=True)
+    scatter_detection(traces, whole_frame_range, subtitle="after merging overlapping traces")
+    show_overlaps(traces, whole_frame_range)
+    show_gaps(traces, whole_frame_range)
+    show_all_traces(traces, whole_frame_range)
+    show_all_traces(traces, whole_frame_range)
 
-        # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
-        pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+    # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+    pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
 
-        single_trace_checker(traces, silent=silent, debug=debug)
+    single_trace_checker(traces, silent=silent, debug=debug)
+
+    raise Exception
+    ## ANNOTATE THE VIDEO
+    annotate_video(video_file, output_video_file, traces, traces[0].frame_range[0])

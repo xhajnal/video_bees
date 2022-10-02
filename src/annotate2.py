@@ -2,7 +2,6 @@ import cv2
 import distinctipy
 
 from trace import Trace
-## TODO manage input and output
 
 
 def annotate_video(input_video, output_video, traces, frame_offset):
@@ -13,6 +12,11 @@ def annotate_video(input_video, output_video, traces, frame_offset):
     :arg traces: (list): a list of Traces
     :arg frame_offset: (int): number of the first frame cause opencv sees the first frame as 0th
     """
+
+    ## TODO manage input and output
+    input_video = 'Resources/Cars.mp4'
+    output_video = 'Resources/output_video_from_file.mp4'
+
     for trace in traces:
         assert isinstance(trace, Trace)
 
@@ -20,8 +24,7 @@ def annotate_video(input_video, output_video, traces, frame_offset):
     len_of_trace_shown_behind = 30
 
     # Create a video capture object, in this case we are reading the video from a file
-    ## TODO manage input here
-    vid_capture = cv2.VideoCapture('Resources/Cars.mp4')
+    vid_capture = cv2.VideoCapture(input_video)
 
     if (vid_capture.isOpened() == False):
         print("Error opening the video file")
@@ -44,8 +47,7 @@ def annotate_video(input_video, output_video, traces, frame_offset):
     fps = int(vid_capture.get(5))
     # Initialize video writer object
 
-    ## TODO manage output here
-    output = cv2.VideoWriter('Resources/output_video_from_file.mp4', cv2.VideoWriter_fourcc(*'XVID'), fps, frame_size)
+    output = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*'XVID'), fps, frame_size)
 
     ## INITIALISE ANNOTATION
     locations_of_traces = []
