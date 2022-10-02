@@ -148,6 +148,9 @@ class Trace:
         :arg silent (bool) if True no output is shown
         :arg debug (bool) if True extensive output is shown
         """
+        if subtitle is False:
+            subtitle = ""
+
         # set boundaries for from_to_frame
         if from_to_frame is not False:
             assert isinstance(from_to_frame, list)
@@ -203,15 +206,16 @@ class Trace:
         ax1.scatter(self.gap_frames, list(map(lambda x: x[0], gap_locations)), c="white", edgecolors="black")
         ax1.set_xlabel('Time')
         ax1.set_ylabel('x')
+        
         if from_to_frame is not False:
             ax1.set_xlim(from_to_frame)
         else:
             ax1.set_xlim(whole_frame_range)
 
         if where:
-            ax1.set_title(f'Traces in x-axis.{subtitle}')
+            ax1.set_title(f'Traces in x-axis.'+ ("\n"+subtitle if subtitle else ""))
         else:
-            ax1.set_title(f'Trace {self.trace_id} in x-axis.{subtitle}')
+            ax1.set_title(f'Trace {self.trace_id} in x-axis.'+ ("\n"+subtitle if subtitle else ""))
         if show:
             fig1.show()
 
@@ -234,9 +238,9 @@ class Trace:
             ax2.set_xlim(whole_frame_range)
 
         if where:
-            ax2.set_title(f'Traces in y-axis.{subtitle}')
+            ax2.set_title(f'Traces in y-axis.'+ ("\n"+subtitle if subtitle else ""))
         else:
-            ax2.set_title(f'Trace {self.trace_id} in y-axis.{subtitle}')
+            ax2.set_title(f'Trace {self.trace_id} in y-axis.'+ ("\n"+subtitle if subtitle else ""))
         if show:
             fig2.show()
 
@@ -268,9 +272,9 @@ class Trace:
             plt.ylim(max_position)
 
         if where:
-            ax3.set_title(f'Traces "phase" space.{subtitle}')
+            ax3.set_title(f'Traces "phase" space.'+ ("\n"+subtitle if subtitle else ""))
         else:
-            ax3.set_title(f'Trace {self.trace_id} "phase" space.{subtitle}')
+            ax3.set_title(f'Trace {self.trace_id} "phase" space.'+ ("\n"+subtitle if subtitle else ""))
         if show:
             fig3.show()
 

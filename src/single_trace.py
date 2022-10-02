@@ -143,6 +143,8 @@ def track_jump_back_and_forth(trace, whole_frame_range, show_plots=False, silent
         print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace {trace.trace_id}", "blue"))
     start_time = time()
 
+    number_of_jump_detected = 0
+
     # define surrounding in frames to find a jump
     frame_width = 5
 
@@ -166,6 +168,7 @@ def track_jump_back_and_forth(trace, whole_frame_range, show_plots=False, silent
             if potential_jump_detected:
                 if math.dist(trace.locations[index], trace.locations[index2]) <= jump_back_dist:
                     # a jump found
+                    number_of_jump_detected = number_of_jump_detected + 1
                     if not silent:
                         print(f" Jump back and forth detected, with start frame {trace.frames_list[index]}, while jump to"
                               f" frame {trace.frames_list[jump_to_index]}"
@@ -190,3 +193,4 @@ def track_jump_back_and_forth(trace, whole_frame_range, show_plots=False, silent
         index = index + 1
 
     # print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    return number_of_jump_detected

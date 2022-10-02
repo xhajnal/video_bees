@@ -8,26 +8,28 @@ from traces_logic import get_gaps_of_traces
 from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
 
 
-def show_all_traces(traces, whole_frame_range, from_to_frame=False):
+def show_plot_locations(traces, whole_frame_range, from_to_frame=False, subtitle=False):
     """ Plots the traces in three plots, traces in x-axis and y-axis separately,
     time on horizontal axis in frame numbers. Last plot is the traces in x,y.
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg from_to_frame: (list): if set, showing only frames in given range
+    :arg subtitle: (string): subtitle of the plot
     """
+    print(colored("SHOW PLOT LOCATIONS", "blue"))
     start_time = time()
     for index, trace in enumerate(traces):
         if len(traces) == 1:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=True)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=True, subtitle=subtitle)
         elif index == 0:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=False)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=False, subtitle=subtitle)
         elif index < len(traces) - 1:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show=False)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show=False, subtitle=subtitle)
         else:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show=True)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show=True, subtitle=subtitle)
 
-    print(colored(f"Showing location of {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    print(colored(f"Showing location of {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds.\n", "yellow"))
 
 
 def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=False, show_trace_id=True, show_trace_range=True):
@@ -86,10 +88,10 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     title = f'Scatter plot of detections of individual agents over time.'
     if subtitle:
         assert isinstance(subtitle, str)
-        plt.title(title + "\n" + subtitle)
+        plt.title(title + "\n" + subtitle + f" {len(traces)} traces.")
     else:
-        plt.title(title)
-        plt.show()
+        plt.title(title + f"\n{len(traces)} traces.")
+    plt.show()
 
 
 def show_overlaps(traces, whole_frame_range, subtitle=False, silent=False, debug=False):

@@ -12,7 +12,7 @@ from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals,
 from trace import Trace, merge_two_traces_with_gap, merge_two_overlapping_traces
 from scipy.interpolate import InterpolatedUnivariateSpline
 
-from visualise import scatter_detection, show_all_traces
+from visualise import scatter_detection, show_plot_locations
 
 
 def get_whole_frame_range(traces):
@@ -494,6 +494,7 @@ def track_reappearance(traces, show=True, debug=False):
         plt.title(f'Histogram of times to reappear.')
         plt.show()
 
+    print()
     return time_to_reappear
 
 
@@ -535,10 +536,11 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
     print()
 
 
-def merge_overlapping_traces(traces, population_size, silent=False, debug=False, show=False):
+def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=False, debug=False, show=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
+        :arg whole_frame_range: [int, int]: frame range of the whole video
         :arg population_size (int) expected number of agents
         :arg silent (bool) if True no output is shown
         :arg debug (bool) if True extensive output is shown
@@ -556,10 +558,10 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
         number_of_traces = len(traces)
         if len(traces) <= 1:
             if len(traces) == 1:
-                print(colored("Cannot merge a single trace.", "red"))
+                print(colored("Cannot merge a single trace. \n", "red"))
                 return
             if len(traces) == 0:
-                print(colored("Cannot merge no trace.", "red"))
+                print(colored("Cannot merge no trace. \n", "red"))
                 return
         # Find overlapping pairs
         dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
@@ -666,7 +668,7 @@ def merge_overlapping_traces(traces, population_size, silent=False, debug=False,
                 go_next = False
             if show:
                 try:
-                    scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}")
+                    scatter_detection(traces, whole_frame_range, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}")
                 except UnboundLocalError:
                     pass
 
@@ -697,7 +699,7 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     start_time = time()
 
     if show_all_plots:
-        show_all_traces([trace1, trace2])
+        show_plot_locations([trace1, trace2])
         scatter_detection([trace1, trace2], subtitle=False)
 
     if not silent:
