@@ -41,8 +41,13 @@ In the `dave.py` there are individual lines loading and parsing individual `_nn.
 >> python dave.py
 ```
 ## WHAT DAVE DOES
+MAIN
 1. deleting traces of 0 length in x,y
-2. merging traces while there is not enough traces (in case study according to population_size) 
-3. deleting traces with overlap over enough traces (in case study according to population_size) 
-4. visualisations
-5. comparison of traces (under construction)
+2. smoothening traces with jumps there and back (when a trace jumps (long range in few steps) somewhere and in a short frame range it gets to a point close to the start)
+3. tracking of swapped traces
+4. deleting traces with overlap over enough traces (according to population_size) 
+5. merging traces with a gap
+6. merging traces with overlap
+AUXILARY
+7. visualisations
+8. comparison of traces (under construction)
