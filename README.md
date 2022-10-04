@@ -48,6 +48,8 @@ MAIN
 4. deleting traces with overlap over enough traces (according to population_size) 
 5. merging traces with a gap
 6. merging traces with overlap
+
 AUXILARY
+
 7. visualisations
 8. comparison of traces (under construction)
