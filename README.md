@@ -5,7 +5,9 @@ Fixing video tracking of the bees made by [loopy](http://loopbio.com/loopy/).
 1. install [Python 3.9](https://www.python.org/downloads/)
 
 ## HOW TO INSTALL
-As we use only python, the only installation are non included libraries, which you can simply install with command
+1. As we use only Python.  
+2. (Optional) We recommend using virtual eviroment (e.g. [conda](https://docs.conda.io/en/latest/), [pyenv](https://github.com/pyenv/pyenv)) before the following step
+3. get non-standard libraries, which you can simply install with command:
 
 `>> pip install -r requirements`
 
@@ -43,7 +45,7 @@ Now, edit `dave.py` (located in `src` folder) that the files you would like to a
 
 where the first argument is relative path to the file and 2 is the population size.
 
-### FIXING FRAME RANGES
+### (OPTIONAL) FIXING FRAME RANGES
 In our case studies the videos were trimmed and hence the first frame of the video was not recognised by loopy as first. 
 If you want to overcome this problem, put the files in one deeper folder `original` and edit `fix_ranges.py` in a similar way as `dave.py` e.g:
 
