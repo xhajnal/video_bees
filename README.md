@@ -33,6 +33,33 @@ x                  - position, horizontal axis, (0,0) is left bottom
 y                  - position, vertical axis, (0,0) is left bottom
 ```
 
+## HOW AND WHERE TO STORE INPUT
+Select a folder such as `data`. 
+Get your `*_nn.csv` files into this folder with/withouth your folder structure. 
+
+Now, edit `dave.py` (located in `src` folder) that the files you would like to analyse are in the main class and function `analyse` calls given file with `population_size` (Or simply edit the paths and population sizes of already given calls in the file.) e.g.:
+
+`analyse('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', 2)`
+
+where the first argument is relative path to the file and 2 is the population size.
+
+### FIXING FRAME RANGES
+In our case studies the videos were trimmed and hence the first frame of the video was not recognised by loopy as first. 
+If you want to overcome this problem, put the files in one deeper folder `original` and edit `fix_ranges.py` in a similar way as `dave.py` e.g:
+
+`fix_ranges('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', 2)`
+
+(Or simply edit the paths and population sizes of already given calls in the file.)
+
+Now run file `fix_ranges.py`
+```
+>> cd src
+>> python fix_ranges.py
+```
+it saves fixed frame ranges by editing `frame_number` column, while keeping column `frame_count` intact. 
+if these are same (in our case they were) you can now delete `original` folder, since all information is sotred in the new files. 
+
+
 ## HOW TO RUN
 In the `dave.py` there are individual lines loading and parsing individual `_nn.csv` file. Hence you can run the analysis of selected files by:
 
