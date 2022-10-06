@@ -286,6 +286,12 @@ class Trace:
         """ Verifies the consistency of the trace"""
         assert self.frame_range[0] <= self.frame_range[1]
 
+    def get_locations_from_frame_range(self, interval):
+        """ For a given frame range it results locations of the given range."""
+        start_index = self.frames_list.index(interval[0])
+        end_index = self.frames_list.index(interval[1])
+        return self.locations[start_index:end_index+1]
+
     def __str__(self):
         return f"trace_id:{self.trace_id} frame_range:{self.frame_range} number_of_frames_tracked:{self.number_of_frames_tracked} " \
                f"trace_length:{round(self.trace_length,3)} " \

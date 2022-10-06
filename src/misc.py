@@ -5,7 +5,22 @@ from interval import Interval
 from mpmath import mpi
 import pandas as pd
 from itertools import islice
+
+from scipy import spatial
 from termcolor import colored
+
+
+def calculate_cosine_distance(a, b):
+    return float(spatial.distance.cosine(a, b))
+
+
+def calculate_cosine_similarity(a, b):
+    return 1 - calculate_cosine_distance(a, b)
+
+
+def to_vect(point1, point2):
+    """ Returns a vector of two given points"""
+    return [y - x for x, y in zip(point1, point2)]
 
 
 def nice_range_print(interval):

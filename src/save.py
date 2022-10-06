@@ -1,5 +1,6 @@
 import os
 import pickle
+from pathlib import Path
 from time import time
 from _socket import gethostname
 from termcolor import colored
@@ -63,7 +64,7 @@ def save_traces(traces, file_name, silent=False, debug=False):
             message = f"{index},,,{frame},{frame},,object_{id},{id},BVIEW_tracked_object,{location[0]},{location[1]}\n"
             file.write(message)
 
-    print(colored(f"Saving {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+        print(colored(f"Saving {len(traces)} traces as csv in {os.path.abspath(f'../output/{file_name}')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
 
 def pickle_traces(traces, file_name, silent=False, debug=False):
@@ -88,4 +89,4 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
     with open(file, 'wb') as f:
         pickle.dump(traces, f)
 
-    print(colored(f"Saving pickled {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    print(colored(f"Saving pickled {len(traces)} traces in {os.path.abspath(file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))

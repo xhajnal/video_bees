@@ -8,7 +8,7 @@ from termcolor import colored
 from config import get_max_trace_gap, get_min_trace_length, get_bee_max_step_len, get_bee_max_step_len_per_frame, \
     get_max_step_distance_to_merge_overlapping_traces
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
-    get_overlap, range_len
+    get_overlap, range_len, to_vect, calculate_cosine_similarity
 from trace import Trace, merge_two_traces_with_gap, merge_two_overlapping_traces
 from scipy.interpolate import InterpolatedUnivariateSpline
 
@@ -30,12 +30,62 @@ def get_whole_frame_range(traces):
     return frame_range
 
 
+def track_swapping(traces, silent=False, debug=False):
+    """ Tracks the possible swapping traces of two bees in the run.
+
+    :param traces: (list): list of Traces
+    :param silent: (bool): if True no output is shown
+    :param debug: (bool): if True extensive output is shown
+    :return: traces: (list): list of trimmed Traces
+    """
+    print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
+    # obtain overlaps of pairs of traces
+    dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
+    print(dictionary)
+
+    # for each overlap, check frame by frame distance, if below 100 look at the movement vectors
+    for overlapping_range in dictionary.keys():
+        # get locations of the first pair
+        first_trace_locations = traces[overlapping_range[0]].get_locations_from_frame_range(dictionary[overlapping_range])
+        # print(len(first_locations))
+        # get locations of the second pair
+        second_trace_locations = traces[overlapping_range[1]].get_locations_from_frame_range(dictionary[overlapping_range])
+        # print(len(second_locations))
+
+        distances = []
+
+        for index in range(2, len(first_trace_locations)):
+            dist = math.dist(first_trace_locations[index], second_trace_locations[index])
+            distances.append(dist)
+            if dist < 100:  ## TODO find the right value
+                if debug:
+                    print(f"In pair {overlapping_range}, on frame {dictionary[overlapping_range][0]+index}, the distance is {dist}")
+                vector1 = to_vect(first_trace_locations[index-2], first_trace_locations[index-1])
+                vector2 = to_vect(second_trace_locations[index-2], second_trace_locations[index-1])
+                vector1_next = to_vect(first_trace_locations[index-1], first_trace_locations[index])
+                vector2_next = to_vect(second_trace_locations[index-1], second_trace_locations[index])
+                if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next):
+                    print(f"pair {overlapping_range}")
+                    print(f"first_trace_locations[index] {first_trace_locations[index]}")
+                    print(f"second_trace_locations[index] {second_trace_locations[index]}")
+                    print(colored(f"It seem the traces are swapped in frame {dictionary[overlapping_range][0]+index}", "red"))
+                    print(f"{calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
+                    print(f"{calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
+                elif calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next):
+                    if debug:
+                        print(colored(f"vector2_next {vector2_next} is more similar to vector1 {vector1} than vector1_next {vector1_next}", "yellow"))
+                elif calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next):
+                    if debug:
+                        print(colored(f"vector1_next {vector1_next} is more similar to vector2 {vector2} than vector2_next {vector2_next}", "yellow"))
+    raise Exception
+
+
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
     :arg traces: (list): list of Traces
     :arg population_size: (int): expected number of agents
-    :arg silent (bool) if True no output is shown
+    :arg silent: (bool): if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns: traces: (list): list of trimmed Traces
     """
@@ -395,7 +445,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     if dist_of_traces_in_frames > get_max_trace_gap()/10:
                         reason = "long gap too distant"
                         if dist_of_traces_in_xy > get_bee_max_step_len()*3:
-                            print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance.")
+                            print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
                             to_merge = False
                         else:
                             if debug:
@@ -403,7 +453,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     else:
                         reason = "short gap too distant"
                         if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
-                            print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance.")
+                            print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
                             to_merge = False
                         else:
                             if debug:

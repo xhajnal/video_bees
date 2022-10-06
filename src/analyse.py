@@ -10,9 +10,9 @@ from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth
 from cross_traces import put_traces_together, track_reappearance, cross_trace_analyse, \
-    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range
+    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, track_swapping
 from parse import parse_traces
-from save import pickle_traces
+from save import pickle_traces, save_traces
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
 global silent
@@ -124,21 +124,25 @@ def analyse(file_path, population_size):
     ## CROSS-TRACE ANALYSIS
     cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
 
+    ### CHECK FOR SWAPPING THE BEES
+    show_overlaps(traces, whole_frame_range)
+    track_swapping(traces, silent=silent, debug=debug)
+
     ## ALL TRACES SHOW
     if show_plots:
         show_plot_locations(traces, whole_frame_range)
 
-    ## TRIM TRACES AND PUT NOT OVERLAPPING ONES TOGETHER
+    ## TRIM REDUNDANT OVERLAPPING TRACES AND PUT NOT OVERLAPPING ONES TOGETHER
     before_number_of_traces = len(traces)
     after_number_of_traces = 0
     while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
         before_number_of_traces = len(traces)
         traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
         if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="After trimming.")
+            scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
         traces = put_traces_together(traces, population_size, silent=silent, debug=debug)
         if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="After putting traces together.")
+            scatter_detection(traces, whole_frame_range, subtitle="After putting non-overlapping traces together.")
         after_number_of_traces = len(traces)
 
     if not silent:
@@ -160,8 +164,6 @@ def analyse(file_path, population_size):
     ## ALL TRACES SHOW
     if show_plots:
         show_plot_locations(traces, whole_frame_range)
-
-    if show_plots:
         track_reappearance(traces, show=debug)
 
     ## MERGE OVERLAPPING TRACES
@@ -170,7 +172,7 @@ def analyse(file_path, population_size):
     after_number_of_traces = -9
     while before_number_of_traces != after_number_of_traces:
         before_number_of_traces = len(traces)
-        merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_plots)
+        merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=False)
         after_number_of_traces = len(traces)
 
     # QA of `merge_overlapping_traces`
@@ -189,13 +191,13 @@ def analyse(file_path, population_size):
     ## VISUALISATIONS
     if show_plots:
         track_reappearance(traces, show=True)
-        scatter_detection(traces, whole_frame_range, subtitle="after merging overlapping traces")
+        scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
         show_overlaps(traces, whole_frame_range)
         show_gaps(traces, whole_frame_range)
         show_plot_locations(traces, whole_frame_range)
 
     ## SAVE RESULTS
-    # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+    save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     raise Exception
     ### ANNOTATE THE VIDEO

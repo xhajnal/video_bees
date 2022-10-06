@@ -14,6 +14,11 @@ class MyTestCase(unittest.TestCase):
     #         print("hello")
     #         traces = parse_traces(csv_file)
     def test_misc(self):
+        self.assertEqual(to_vect([5], [3]), [-2])
+        self.assertEqual(to_vect([8, 5], [7, 3]), [-1, -2])
+        self.assertEqual(to_vect([5, 8, 5], [10, 7, 3]), [5, -1, -2])
+
+
         self.assertEqual(nice_range_print([605, 610]), "605-10")
         self.assertEqual(nice_range_print([605, 710]), "605 - 710")
         self.assertEqual(nice_range_print([605, 1710]), "605 - 1710")
