@@ -339,14 +339,14 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
             video_range[0] = trace.frame_range[0]
         if trace.frame_range[1] > video_range[1]:
             video_range[1] = trace.frame_range[1]
-
     if debug:
         print(video_range)
 
+    # Going through the video
     step_to = video_range[0]
     do_skip = False
     while step_to <= video_range[1]:
-        next_steps_to = []
+        next_steps_to = []  # list of end of ranges to go to
         indices_in = []
         for index, trace in enumerate(traces):
             if index in trace_indices_to_trim:
