@@ -10,7 +10,7 @@ from config import get_max_trace_gap, get_min_trace_length, get_bee_max_step_len
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
     get_overlap, range_len, to_vect, calculate_cosine_similarity
 
-from trace import Trace, swap_traces
+from trace import Trace
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
@@ -32,10 +32,25 @@ def get_whole_frame_range(traces):
     return frame_range
 
 
-def track_swapping(traces, silent=False, debug=False):
+def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=False):
+    """ runs track_swapping while no swap is available
+
+        :param traces: (list): list of Traces
+        :param automatically_swap: (bool): if True swaps without asking
+        :param silent: (bool): if True no output is shown
+        :param debug: (bool): if True extensive output is shown
+        :return: traces: (list): list of trimmed Traces
+    """
+    keep_looking = True
+    while keep_looking:
+        keep_looking = track_swapping(traces, automatically_swap=automatically_swap, silent=silent, debug=debug)
+
+
+def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
     :param traces: (list): list of Traces
+    :param automatically_swap: (bool): if True swaps without asking
     :param silent: (bool): if True no output is shown
     :param debug: (bool): if True extensive output is shown
     :return: traces: (list): list of trimmed Traces
@@ -49,10 +64,8 @@ def track_swapping(traces, silent=False, debug=False):
     for overlapping_pair_of_traces in dictionary.keys():
         # get locations of the first pair
         first_trace_locations = traces[overlapping_pair_of_traces[0]].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
-        # print(len(first_locations))
         # get locations of the second pair
         second_trace_locations = traces[overlapping_pair_of_traces[1]].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
-        # print(len(second_locations))
 
         distances = []
 
@@ -73,21 +86,26 @@ def track_swapping(traces, silent=False, debug=False):
                     print(f"first_trace_locations[index:={index}] {first_trace_locations[index]}")
                     print(f"second_trace_locations[index:={index}] {second_trace_locations[index]}")
                     print(colored(f"It seem the traces are swapped in frame {dictionary[overlapping_pair_of_traces][0]+index}", "red"))
-                    print(f"{calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
-                    print(f"{calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
-                    print(f"{math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
+                    print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
+                    print(f"cosine_similarity(vector2, vector1_next) > cosine_similarity(vector2, vector2_next): {calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
+                    print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
 
-                    answer = input("Is this right? (yes or no)")
+                    if automatically_swap:
+                        answer = "yes"
+                    else:
+                        answer = input("Is this right? (yes or no)")
                     if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye']):
-                        swap_two_overlapping_traces(traces[overlapping_pair_of_traces[0]], traces[overlapping_pair_of_traces[0]], dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
-
+                        print(colored("Swapping the traces.", "blue"))
+                        a, b = swap_two_overlapping_traces(traces[overlapping_pair_of_traces[0]], traces[overlapping_pair_of_traces[1]], dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
+                        traces[overlapping_pair_of_traces[0]], traces[overlapping_pair_of_traces[1]] = a, b
+                        return True
                 elif calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next):
                     if debug:
                         print(colored(f"vector2_next {vector2_next} is more similar to vector1 {vector1} than vector1_next {vector1_next}", "yellow"))
                 elif calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next):
                     if debug:
                         print(colored(f"vector1_next {vector1_next} is more similar to vector2 {vector2} than vector2_next {vector2_next}", "yellow"))
-    raise Exception
+    return False
 
 
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):

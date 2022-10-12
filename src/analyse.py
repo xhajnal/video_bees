@@ -10,7 +10,8 @@ from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth
 from cross_traces import put_traces_together, track_reappearance, cross_trace_analyse, \
-    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, track_swapping
+    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, track_swapping, \
+    track_swapping_loop
 from parse import parse_traces
 from save import pickle_traces, save_traces
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
@@ -126,7 +127,9 @@ def analyse(file_path, population_size):
 
     ### CHECK FOR SWAPPING THE BEES
     show_overlaps(traces, whole_frame_range)
-    track_swapping(traces, silent=silent, debug=debug)
+    track_swapping_loop(traces, automatically_swap=False, silent=silent, debug=debug)
+    show_plot_locations(traces, whole_frame_range, subtitle="After swapping.")
+    scatter_detection(traces, whole_frame_range, subtitle="After swapping")
 
     ## ALL TRACES SHOW
     if show_plots:

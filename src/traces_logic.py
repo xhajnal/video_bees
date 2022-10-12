@@ -250,8 +250,6 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
 
     :returns: trace1: (Trace): merged trace of two given traces
     """
-    ## TODO delete this
-
     # CHECK
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
@@ -344,3 +342,5 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
     # precondition: Swap locations
     trace1.recalculate_trace_lengths(recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True)
     trace2.recalculate_trace_lengths(recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True)
+
+    return trace1, trace2
