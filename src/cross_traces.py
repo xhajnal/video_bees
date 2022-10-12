@@ -4,7 +4,7 @@ from time import time
 from _socket import gethostname
 from matplotlib import pyplot as plt
 from termcolor import colored
-
+from operator import countOf
 from config import get_max_trace_gap, get_min_trace_length, get_bee_max_step_len, get_bee_max_step_len_per_frame, \
     get_max_step_distance_to_merge_overlapping_traces
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
@@ -50,7 +50,7 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
     :param traces: (list): list of Traces
-    :param automatically_swap: (bool): if True swaps without asking
+    :param automatically_swap: (bool or list of int): if True swaps all without asking, if list it contains frames to autopass
     :param silent: (bool): if True no output is shown
     :param debug: (bool): if True extensive output is shown
     :return: traces: (list): list of trimmed Traces
@@ -58,7 +58,8 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
     # obtain overlaps of pairs of traces
     dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
-    print(dictionary)
+    if debug:
+        print("overlapping pairs:", dictionary)
 
     # for each overlap, check frame by frame distance, if below 100 look at the movement vectors
     for overlapping_pair_of_traces in dictionary.keys():
@@ -67,11 +68,12 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
         # get locations of the second pair
         second_trace_locations = traces[overlapping_pair_of_traces[1]].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
 
-        distances = []
+        # maybe use in future to store distances of points of the two traces
+        # distances = []
 
         for index in range(2, len(first_trace_locations)):
             dist = math.dist(first_trace_locations[index], second_trace_locations[index])
-            distances.append(dist)
+            # distances.append(dist)
             if dist < 100:  ## TODO find the right value
                 if debug:
                     print(f"In pair {overlapping_pair_of_traces}, on frame {dictionary[overlapping_pair_of_traces][0]+index}, the distance is {dist}")
@@ -82,15 +84,16 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
                 if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) \
                         and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next) \
                         and math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
-                    print(f"pair {overlapping_pair_of_traces}")
-                    print(f"first_trace_locations[index:={index}] {first_trace_locations[index]}")
-                    print(f"second_trace_locations[index:={index}] {second_trace_locations[index]}")
-                    print(colored(f"It seem the traces are swapped in frame {dictionary[overlapping_pair_of_traces][0]+index}", "red"))
+                    print(colored(f"It seem the traces {overlapping_pair_of_traces} are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}","yellow"))
+                    print(f"first_trace_location {first_trace_locations[index]}")
+                    print(f"second_trace_location {second_trace_locations[index]}")
                     print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
                     print(f"cosine_similarity(vector2, vector1_next) > cosine_similarity(vector2, vector2_next): {calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
                     print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
 
-                    if automatically_swap:
+                    if automatically_swap is True:
+                        answer = "yes"
+                    elif dictionary[overlapping_pair_of_traces][0] + index in automatically_swap:
                         answer = "yes"
                     else:
                         answer = input("Is this right? (yes or no)")
@@ -99,12 +102,16 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
                         a, b = swap_two_overlapping_traces(traces[overlapping_pair_of_traces[0]], traces[overlapping_pair_of_traces[1]], dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
                         traces[overlapping_pair_of_traces[0]], traces[overlapping_pair_of_traces[1]] = a, b
                         return True
-                elif calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next):
-                    if debug:
-                        print(colored(f"vector2_next {vector2_next} is more similar to vector1 {vector1} than vector1_next {vector1_next}", "yellow"))
-                elif calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next):
-                    if debug:
-                        print(colored(f"vector1_next {vector1_next} is more similar to vector2 {vector2} than vector2_next {vector2_next}", "yellow"))
+                else:
+                    if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next):
+                        if debug:
+                            print(colored(f"vector2_next {vector2_next} is more similar to vector1 {vector1} than to vector1_next {vector1_next}", "yellow"))
+                    if calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next):
+                        if debug:
+                            print(colored(f"vector1_next {vector1_next} is more similar to vector2 {vector2} than to vector2_next {vector2_next}", "yellow"))
+                    if math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
+                        if debug:
+                            print(colored(f"trace 1 previous point {first_trace_locations[index-1]} is closer to next point of trace2 {second_trace_locations[index]} than to next point of this trace {first_trace_locations[index]}", "yellow"))
     return False
 
 
@@ -504,8 +511,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     print(colored(msg, "yellow" if to_merge else "red"))
 
                 if to_merge:
+                    print(colored(f"Merging traces {trace1.trace_id} and {trace2.trace_id}", "yellow"))
                     trace = merge_two_traces_with_gap(trace1, trace2)
-                    trace1 = trace
                     if debug:
                         print(trace)
                     trace_indices_to_trim.append(index2)
@@ -642,9 +649,9 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 print(colored("Cannot merge no trace. \n", "red"))
                 return
         # Find overlapping pairs
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=True)
         if dictionary == {}:
-            print(colored("Cannot merge any trace as there is no overlap of two traces.", "red"))
+            print(colored("Cannot merge any trace as there is no partial overlap of two traces.", "red"))
             print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                           f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
             return
@@ -661,16 +668,14 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
             counts = {}
 
             # Count occurrences of trace indices in overlapping pairs
-            from operator import countOf
             for item in set(keys):
                 counts[item] = countOf(keys, item)
             if debug:
                 print("keys", keys)
                 print("counts", counts)
 
-            count_one = []
-
             # Find traces with single occurrence (within the pairs of overlapping traces)
+            count_one = []
             for key in counts.keys():
                 # Check there is no interval with 3 or more overlaps - hence cannot easily merge
                 # if counts[key] >= 3:
@@ -681,7 +686,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 print("count_one", count_one)
 
             if len(count_one) == 0:
-                print(colored("Cannot merge these traces.", "red"))
+                print(colored("Cannot merge these traces. No trace with a single overlap found.", "red"))
                 print("dictionary", dictionary)
                 for trace in traces:
                     if debug:

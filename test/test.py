@@ -106,6 +106,9 @@ class MyTestCase(unittest.TestCase):
 
         # m = 2
         self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)]), {(0, 2): [7, 8], (1, 2): [9, 10]})
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)], skip_whole_in=True), {(0, 2): [7, 8], (1, 2): [9, 10]})
+
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 10), (7, 10)], skip_whole_in=True), {(0, 2): [7, 8]})
 
         self.assertTrue(np.array_equal(matrix_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)]),
                                        [[None, False, list([7, 8])],

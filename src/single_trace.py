@@ -1,3 +1,4 @@
+import copy
 import csv
 import math
 from time import time
@@ -8,6 +9,30 @@ from termcolor import colored
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices
 from trace import Trace
+
+
+def remove_full_traces(traces, real_whole_frame_range, population_size, silent=False, debug=False):
+    """ Removes traces of full range
+
+        :arg traces: (list): a list of Traces
+        :arg real_whole_frame_range: [int, int]: frame range of the whole video
+        :arg silent (bool) if True no output is shown
+        :arg debug (bool) if True extensive output is shown
+        :returns traces: (list): a list of truncated Traces
+        :returns traces: (list): a list of old Traces
+        :returns new_population_size: (int): population size of new traces
+        """
+    print(colored("REMOVING TRACES OF FULL RANGE", "blue"))
+    deleted = 0
+    old_traces = copy.copy(traces)
+    for index, trace in enumerate(traces):
+        if trace.frame_range == real_whole_frame_range:
+            print(colored(f"Removing trace {trace.trace_id}", "blue"))
+            del traces[index]
+            deleted = deleted + 1
+
+    print()
+    return traces, old_traces, population_size - deleted
 
 
 def single_trace_checker(traces, silent=False, debug=False):

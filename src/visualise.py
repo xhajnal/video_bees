@@ -94,11 +94,12 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     plt.show()
 
 
-def show_overlaps(traces, whole_frame_range, subtitle=False, silent=False, debug=False):
+def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False, silent=False, debug=False):
     """ Creates a scatter plot of overlaps of traces.
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg skip_whole_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg subtitle: (string): subtitle of the plot
     :arg silent (bool) if True no output is shown
     :arg debug (bool) if True extensive output is shown
@@ -108,7 +109,7 @@ def show_overlaps(traces, whole_frame_range, subtitle=False, silent=False, debug
 
     if len(traces) >= 2:
         # get dictionary of overlaps of two traces: pair of traces indices -> overlap frame range
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=skip_whole_in)
         overlaps = list(dictionary.keys())
         if debug:
             print("dictionary", dictionary)

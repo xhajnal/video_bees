@@ -3,24 +3,32 @@ from analyse import analyse
 
 if __name__ == "__main__":
     ## SINGLE BEE xxxx22
-    # already done
+    # already done and SAVED
     # 1
     analyse('../data/Video_tracking/190822/20190822_111607344_1BEE_generated_20210430_080914_nn.csv', 1)
+
     # 156 -> 87 -> 11 -> 1
+    # 156 -> 69 -> 9 -> 1 (4/10/22)
+    # done and SAVED
     analyse('../data/Video_tracking/190822/20190822_141925574_1bee_generated_20210504_081658_nn.csv', 1)
 
     ## xxxx23
-    # hardcore, not merging traces
-    # 15 -> 9 -> 1 done
+    # 15 -> 9 -> 1 done and SAVED
     # 1 jump back and forth
     analyse('../data/Video_tracking/190823/20190823_114450691_1BEE_generated_20210506_100518_nn.csv', 1)
-    # 6 -> 3 -> 1 done
+
+    # 6 -> 3 -> 1
+    # done and SAVED
     analyse('../data/Video_tracking/190823/20190823_153007029_1BEE_generated_20210507_091854_nn.csv', 1)
 
     ## TWO BEES xxxx22
     # 65 -> 56 -> 34
+    # 65 -> 56 -> 36 (4/10/22)
     # a lot of jump back and forth
-    analyse('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', 2)
+    # one swap of traces
+    # 65 -> 56 -> 25 (12/10/22)
+    analyse('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', 2, [41159])
+
     # 79 -> 70 -> 28
     # 1 jump back and forth
     analyse('../data/Video_tracking/190822/20190822_143216366_2bees_generated_20210504_064410_nn.csv', 2)
