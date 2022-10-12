@@ -1,5 +1,8 @@
+import math
+
 from src.parse import parse_traces
 from trace import merge_two_traces_with_gap, Trace
+from traces_logic import swap_two_overlapping_traces
 import unittest
 import matplotlib.pyplot as plt
 from misc import *
@@ -166,7 +169,7 @@ class MyTestCase(unittest.TestCase):
             print(trace0)
             self.assertEqual(trace0.trace_id, 0)
             self.assertEqual(trace0.frame_range, [1620, 1622])
-            self.assertEqual(trace0.number_of_frames_tracked, 3)
+            self.assertEqual(trace0.get_number_of_frames_tracked(), 3)
             self.assertEqual(trace0.frame_range_len, 2)
             self.assertAlmostEqual(trace0.trace_length, 4.242640687119286)
             self.assertAlmostEqual(trace0.max_step_len, 2.8284271247461903)
@@ -180,7 +183,7 @@ class MyTestCase(unittest.TestCase):
             trace1 = Trace(traces[1], 1)
             self.assertEqual(trace1.trace_id, 1)
             self.assertEqual(trace1.frame_range, [1620, 1622])
-            self.assertEqual(trace1.number_of_frames_tracked, 3)
+            self.assertEqual(trace1.get_number_of_frames_tracked(), 3)
             self.assertEqual(trace1.frame_range_len, 2)
             self.assertAlmostEqual(trace1.trace_length, 7.6212327846342935)
             self.assertAlmostEqual(trace1.max_step_len, 5.385164807134505)
@@ -210,7 +213,8 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(merged_trace.trace_id, 0)
             self.assertIsInstance(merged_trace, Trace)
             self.assertEqual(merged_trace.frame_range, [1620, 1625])
-            self.assertEqual(merged_trace.number_of_frames_tracked, 6)
+            self.assertEqual(merged_trace.gap_frames, [])
+            self.assertEqual(merged_trace.get_number_of_frames_tracked(), 6)
             self.assertEqual(merged_trace.frame_range_len, 5)
             self.assertAlmostEqual(merged_trace.trace_length, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
             self.assertAlmostEqual(merged_trace.max_step_len, 5.3851648071)
@@ -231,7 +235,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(merged_trace.trace_id, 0)
             self.assertIsInstance(merged_trace, Trace)
             self.assertEqual(merged_trace.frame_range, [1620, 1635])
-            self.assertEqual(merged_trace.number_of_frames_tracked, 6)
+            self.assertEqual(merged_trace.get_number_of_frames_tracked(), 6)
             self.assertEqual(merged_trace.frame_range_len, 15)
             self.assertAlmostEqual(merged_trace.trace_length, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
             self.assertAlmostEqual(merged_trace.max_step_len, 5.3851648071)
@@ -257,6 +261,95 @@ class MyTestCase(unittest.TestCase):
             spam.extend([[-sys.maxsize, -sys.maxsize]] * 502)
             spam.extend([[0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
             self.assertEqual(merged_trace.locations, spam)
+
+    def testSwapTraces(self):
+        with open('../test/test.csv', newline='') as csv_file:
+            traces = parse_traces(csv_file)
+            traces_lengths = []
+            for index, trace in enumerate(traces.keys()):
+                traces_lengths.append(Trace(traces[trace], index))
+
+            # test swap_two_overlapping_traces
+            trace0 = Trace(traces[6], 0)
+            trace1 = Trace(traces[7], 1)
+
+            swap_two_overlapping_traces(trace0, trace1, 1621, debug=True)
+
+            self.assertEqual(trace0.trace_id, 0)
+            self.assertEqual(trace0.frame_range, [1620, 1623])
+            self.assertEqual(trace0.gap_frames, [])
+            self.assertEqual(trace0.overlap_frames, [])
+            self.assertEqual(trace0.frames_list, [1620, 1621, 1622, 1623])
+            self.assertEqual(trace0.get_number_of_frames_tracked(), 4)
+            self.assertEqual(trace0.frame_range_len, 3)
+            self.assertEqual(trace0.locations, [[0.0, 0.0], [2.0, 5.0], [3.0, 7.0], [3.0, 4.0]])
+            self.assertAlmostEqual(trace0.trace_length, sum([math.dist([0.0, 0.0], [2.0, 5.0]), math.dist([2.0, 5.0], [3.0, 7.0]), math.dist([3.0, 7.0], [3.0, 4.0])]))
+            # 5.385164807134504, 2.23606797749979, 3.0
+            self.assertAlmostEqual(trace0.max_step_len, max([math.dist([0.0, 0.0], [2.0, 5.0]), math.dist([2.0, 5.0], [3.0, 7.0]), math.dist([3.0, 7.0], [3.0, 4.0])]))
+            self.assertEqual(trace0.max_step_len_step_index, 0)
+            self.assertEqual(trace0.max_step_len_line, None)
+            self.assertEqual(trace0.max_step_len_frame_number, 1620)
+            self.assertEqual(trace0.trace_lengths, {5.385165: 1, 2.236068: 1, 3:1})
+
+
+            self.assertEqual(trace1.trace_id, 1)
+            self.assertEqual(trace1.frame_range, [1620, 1622])
+            self.assertEqual(trace1.gap_frames, [])
+            self.assertEqual(trace1.overlap_frames, [])
+            self.assertEqual(trace1.frames_list, [1620, 1621, 1622])
+            self.assertEqual(trace1.get_number_of_frames_tracked(), 3)
+            self.assertEqual(trace1.frame_range_len, 2)
+            self.assertEqual(trace1.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0]])
+            self.assertAlmostEqual(trace1.trace_length, sum([math.dist([0.0, 0.0], [1.0, 1.0]), math.dist([1.0, 1.0], [3.0, 3.0])]))
+            self.assertAlmostEqual(trace1.max_step_len, max([math.dist([0.0, 0.0], [1.0, 1.0]), math.dist([1.0, 1.0], [3.0, 3.0])]))
+            self.assertEqual(trace1.max_step_len_step_index, 1)
+            self.assertEqual(trace1.max_step_len_line, None)
+            self.assertEqual(trace1.max_step_len_frame_number, 1621)
+            self.assertDictEqual(trace1.trace_lengths, {1.414214: 1, 2.828427: 1})
+
+            # test 2 of swap_two_overlapping_traces
+            trace0 = Trace(traces[6], 0)
+            trace1 = Trace(traces[7], 1)
+
+            swap_two_overlapping_traces(trace0, trace1, 1622, debug=True)
+
+            self.assertEqual(trace0.trace_id, 0)
+            self.assertEqual(trace0.frame_range, [1620, 1623])
+            self.assertEqual(trace0.gap_frames, [])
+            self.assertEqual(trace0.overlap_frames, [])
+            self.assertEqual(trace0.frames_list, [1620, 1621, 1622, 1623])
+            self.assertEqual(trace0.get_number_of_frames_tracked(), 4)
+            self.assertEqual(trace0.frame_range_len, 3)
+            self.assertEqual(trace0.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 7.0], [3.0, 4.0]])
+            self.assertAlmostEqual(trace0.trace_length,
+                                   sum([math.dist([0.0, 0.0], [1.0, 1.0]), math.dist([1.0, 1.0], [3.0, 7.0]),
+                                        math.dist([3.0, 7.0], [3.0, 4.0])]))
+            # [1.4142135623730951, 6.324555320336759, 3.0]
+            self.assertAlmostEqual(trace0.max_step_len,
+                                   max([math.dist([0.0, 0.0], [1.0, 1.0]), math.dist([1.0, 1.0], [3.0, 7.0]),
+                                        math.dist([3.0, 7.0], [3.0, 4.0])]))
+            self.assertEqual(trace0.max_step_len_step_index, 1)
+            self.assertEqual(trace0.max_step_len_line, None)
+            self.assertEqual(trace0.max_step_len_frame_number, 1621)
+            self.assertEqual(trace0.trace_lengths, {1.414214: 1, 6.324555: 1, 3: 1})
+
+            self.assertEqual(trace1.trace_id, 1)
+            self.assertEqual(trace1.frame_range, [1620, 1622])
+            self.assertEqual(trace1.gap_frames, [])
+            self.assertEqual(trace1.overlap_frames, [])
+            self.assertEqual(trace1.frames_list, [1620, 1621, 1622])
+            self.assertEqual(trace1.get_number_of_frames_tracked(), 3)
+            self.assertEqual(trace1.frame_range_len, 2)
+            self.assertEqual(trace1.locations, [[0.0, 0.0], [2.0, 5.0], [3.0, 3.0]])
+            self.assertAlmostEqual(trace1.trace_length,
+                                   sum([math.dist([0.0, 0.0], [2.0, 5.0]), math.dist([2.0, 5.0], [3.0, 3.0])]))
+            self.assertAlmostEqual(trace1.max_step_len,
+                                   max([math.dist([0.0, 0.0], [2.0, 5.0]), math.dist([2.0, 5.0], [3.0, 3.0])]))
+            # [5.385164807134504, 2.23606797749979]
+            self.assertEqual(trace1.max_step_len_step_index, 0)
+            self.assertEqual(trace1.max_step_len_line, 17)
+            self.assertEqual(trace1.max_step_len_frame_number, 1620)
+            self.assertDictEqual(trace1.trace_lengths, {5.385165: 1, 2.236068: 1})
 
 
 if __name__ == '__main__':
