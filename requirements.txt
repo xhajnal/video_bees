@@ -5,3 +5,5 @@ termcolor~=1.1.0
 matplotlib~=3.5.2
 numpy~=1.23.1
 scipy~=1.9.0
+distinctipy~=1.2.2
+opencv-contrib-python
