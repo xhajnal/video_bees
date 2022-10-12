@@ -10,10 +10,10 @@ from config import get_max_trace_gap, get_min_trace_length, get_bee_max_step_len
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
     get_overlap, range_len, to_vect, calculate_cosine_similarity
 
-from trace import Trace, merge_two_traces_with_gap, merge_two_overlapping_traces, swap_traces
+from trace import Trace, swap_traces
 from scipy.interpolate import InterpolatedUnivariateSpline
 
-from traces_logic import swap_two_overlapping_traces
+from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
 from visualise import scatter_detection, show_plot_locations
 
 

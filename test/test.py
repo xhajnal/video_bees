@@ -1,8 +1,8 @@
 import math
 
 from src.parse import parse_traces
-from trace import merge_two_traces_with_gap, Trace
-from traces_logic import swap_two_overlapping_traces
+from trace import Trace
+from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap
 import unittest
 import matplotlib.pyplot as plt
 from misc import *
