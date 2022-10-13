@@ -9,7 +9,7 @@ from annotate2 import annotate_video
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
-from cross_traces import put_traces_together, track_reappearance, cross_trace_analyse, \
+from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, track_swapping, \
     track_swapping_loop
 from parse import parse_traces
@@ -104,16 +104,19 @@ def analyse(file_path, population_size, swaps=False):
     # FIND TRACES OUTSIDE OF THE ARENA
     ##################################
     check_inside_of_arena(traces)
-    if show_plots:
-        show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
-        scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
+
+    ## TODO uncomment the following
+    # if show_plots:
+    #     show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
+    #     scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
     ########################################
     # FIND TRACES OF ZERO LENGTH, TRACE INFO
     ########################################
     single_trace_checker(traces, silent=silent, debug=debug)
-    if show_plots:
-        scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
+    ## TODO uncomment the following
+    # if show_plots:
+    #     scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
 
     ############################
     # TRACK JUMPS BACK AND FORTH
@@ -139,18 +142,21 @@ def analyse(file_path, population_size, swaps=False):
     #############################
     # CHECK FOR SWAPPING THE BEES
     #############################
-    show_overlaps(traces, whole_frame_range)
+    ## TODO uncomment the following
+    # if show_plots:
+    #     show_overlaps(traces, whole_frame_range)
+    
     track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
-    show_plot_locations(traces, whole_frame_range, subtitle="After swapping.")
-    scatter_detection(traces, whole_frame_range, subtitle="After swapping.")
 
-    ## ALL TRACES SHOW
-    if show_plots:
-        show_plot_locations(traces, whole_frame_range)
+    ## TODO uncomment the following
+    # ## ALL TRACES SHOW
+    # if show_plots:
+    #     show_plot_locations(traces, whole_frame_range, subtitle="After swapping.")
+    #     scatter_detection(traces, whole_frame_range, subtitle="After swapping.")
 
-    #########################################################################
-    # TRIM REDUNDANT OVERLAPPING TRACES AND PUT NOT OVERLAPPING ONES TOGETHER
-    #########################################################################
+    ##################################################################
+    # TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
+    ##################################################################
     before_number_of_traces = len(traces)
     after_number_of_traces = 0
     while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
@@ -158,9 +164,9 @@ def analyse(file_path, population_size, swaps=False):
         traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
-        traces = put_traces_together(traces, population_size, silent=silent, debug=debug)
+        traces = put_gaping_traces_together(traces, population_size, silent=silent, debug=debug)
         if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="After putting non-overlapping traces together.")
+            scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
         after_number_of_traces = len(traces)
 
     if not silent:
@@ -169,7 +175,7 @@ def analyse(file_path, population_size, swaps=False):
             print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
 
     if show_plots:
-        scatter_detection(traces, whole_frame_range)
+        # scatter_detection(traces, whole_frame_range)
         show_gaps(traces, whole_frame_range)
         show_overlaps(traces, whole_frame_range)
 
@@ -212,8 +218,8 @@ def analyse(file_path, population_size, swaps=False):
     traces, old_traces, population_size = remove_full_traces(traces, real_whole_frame_range, population_size)
     scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
 
-    print("SECOND put_traces_together")
-    traces = put_traces_together(traces, population_size, silent=silent, debug=debug)
+    print("SECOND Gaping traces analysis")
+    traces = put_gaping_traces_together(traces, population_size, silent=silent, debug=debug)
 
     ## VISUALISATIONS
     if show_plots:

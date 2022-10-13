@@ -346,8 +346,8 @@ def trim_out_additional_agents_over_long_traces_old(traces, population_size, sil
     return traces
 
 
-def put_traces_together(traces, population_size, silent=False, debug=False):
-    """ Puts traces together such that all the agents but one is being tracked.
+def put_gaping_traces_together(traces, population_size, silent=False, debug=False):
+    """ Puts gaping traces together iff all the agents but one is being tracked.
 
     :arg traces (list) list of traces
     :arg population_size (int) expected number of agents
@@ -507,7 +507,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
-                msg = f"{'' if to_merge else 'NOT '}MERGING TRACES ({reason}) {index} {trace1.frame_range} " \
+                msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES ({reason}) {index} {trace1.frame_range} " \
                       f"of {trace1.frame_range_len} frames and " \
                       f"trace {index2} {trace2.frame_range} of " \
                       f"{int(trace2.frame_range_len)} frames| " \
@@ -520,8 +520,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     print(colored(msg, "yellow" if to_merge else "red"))
 
                 if to_merge:
-                    # print(colored(f"Merging traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id}", "yellow"))
-                    print(colored(f"Merging traces {index} and {index2} ","yellow"))
+                    # print(colored(f"Merging gaping traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id}", "yellow"))
+                    print(colored(f"Merging gaping traces {index} and {index2} ","yellow"))
                     trace = merge_two_traces_with_gap(trace1, trace2)
                     if debug:
                         print(trace)
@@ -540,7 +540,7 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
         print(f"Gonna delete the following traces as we have merged them: {trace_indices_to_trim}")
     traces = delete_indices(trace_indices_to_trim, traces)
 
-    print(colored(f"put_traces_together analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    print(colored(f"GAPING TRACES analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"Returning traces of length {len(traces)}, {len(trace_indices_to_trim)} shorter than in previous iteration.", "green"))
     print()
     return traces
