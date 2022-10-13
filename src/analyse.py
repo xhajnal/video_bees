@@ -142,7 +142,7 @@ def analyse(file_path, population_size, swaps=False):
     show_overlaps(traces, whole_frame_range)
     track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
     show_plot_locations(traces, whole_frame_range, subtitle="After swapping.")
-    scatter_detection(traces, whole_frame_range, subtitle="After swapping")
+    scatter_detection(traces, whole_frame_range, subtitle="After swapping.")
 
     ## ALL TRACES SHOW
     if show_plots:
@@ -174,8 +174,8 @@ def analyse(file_path, population_size, swaps=False):
         show_overlaps(traces, whole_frame_range)
 
     if not silent:
-        for trace in traces:
-            print("trace", trace.trace_id, trace.frame_range)
+        for index, trace in enumerate(traces):
+            print(f"trace {index} with id {trace.trace_id}, {trace.frame_range}")
 
     # show_gaps(traces, whole_frame_range)
 

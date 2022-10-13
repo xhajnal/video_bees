@@ -164,11 +164,13 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
     return trace1
 
 
-def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, silent=False, debug=False):
+def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, trace2_index,  silent=False, debug=False):
     """ Puts two overlapping traces together.
 
     :arg trace1: (Trace): a Trace to be merged with the following trace
     :arg trace2: (Trace): a Trace to be merged with the following trace
+    :arg trace1_index: (int): auxiliary information of index in list of traces of the first trace
+    :arg trace2_index: (int): auxiliary information of index in list of traces of the second trace
     :arg silent (bool) if True no output is shown
     :arg debug (bool) if True extensive output is shown
 
@@ -202,7 +204,7 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, silent=False, deb
     if dist1 < dist2:
         # Cutting trace1
         if not silent:
-            print(colored(f"Cutting first trace of the pair of id {trace1.trace_id}.", "yellow"))
+            print(colored(f"Cutting first trace of the pair {trace1_index} of id {trace1.trace_id}.", "yellow"))
         # trim
         trace1.frames_list = trace1.frames_list[:index1_overlap_start]
         trace1.locations = trace1.locations[:index1_overlap_start]
@@ -210,7 +212,7 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, silent=False, deb
         # Cutting trace2
         # trim
         if not silent:
-            print(colored(f"Cutting second trace of the pair of id {trace2.trace_id}.", "yellow"))
+            print(colored(f"Cutting second trace of the pair {trace2_index} of id {trace2.trace_id}.", "yellow"))
         trace2.frames_list = trace2.frames_list[index2_overlap_end + 1:]
         trace2.locations = trace2.locations[index2_overlap_end + 1:]
 

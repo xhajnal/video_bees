@@ -27,7 +27,8 @@ def remove_full_traces(traces, real_whole_frame_range, population_size, silent=F
     old_traces = copy.copy(traces)
     for index, trace in enumerate(traces):
         if trace.frame_range == real_whole_frame_range:
-            print(colored(f"Removing trace {trace.trace_id}", "blue"))
+            # print(colored(f"Removing trace {trace.trace_id}", "blue"))
+            print(colored(f"Removing trace {index} **", "blue"))
             del traces[index]
             deleted = deleted + 1
 
@@ -120,7 +121,8 @@ def check_inside_of_arena(traces, silent=False, debug=False):
         for location in trace.locations:
             if (location[0] - mid_x)**2 + (location[1] - mid_y)**2 > (diam/2 + get_distance_from_calculated_arena())**2:
                 traces_to_be_deleted.append(index)
-                print(colored(f"checking trace {trace.trace_id} location {location} seems to be outside of the arena! Gonna delete this trace!", "red"))
+                # print(colored(f"checking trace {trace.trace_id} location {location} seems to be outside of the arena! Gonna delete this trace!", "red"))
+                print(colored(f"checking trace {index} ** location {location} seems to be outside of the arena! Gonna delete this trace!", "red"))
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)
@@ -165,7 +167,7 @@ def track_jump_back_and_forth(trace, whole_frame_range, show_plots=False, silent
     """
     assert isinstance(trace, Trace)
     if not silent:
-        print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace {trace.trace_id}", "blue"))
+        print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace id {trace.trace_id}", "blue"))
     start_time = time()
 
     number_of_jump_detected = 0

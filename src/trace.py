@@ -168,7 +168,7 @@ class Trace:
         # plt.bar(list(self.trace_lengths.keys()), self.trace_lengths.values(), color='g')
         # plt.xlabel('Step size')
         # plt.ylabel('Count of steps')
-        # plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
+        # plt.title(f'Histogram of step lengths. Trace id {self.trace_id}.')
         # plt.show()
 
         spam = []
@@ -185,7 +185,7 @@ class Trace:
         plt.hist(spam, color='g', bins=bins)
         plt.xlabel('Step size')
         plt.ylabel('Count of steps')
-        plt.title(f'Histogram of step lengths. Trace {self.trace_id}.')
+        plt.title(f'Histogram of step lengths. Trace id {self.trace_id}.')
         plt.show()
 
     def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True, subtitle="", silent=False, debug=False):
@@ -268,7 +268,7 @@ class Trace:
         if where:
             ax1.set_title(f'Traces in x-axis.'+ ("\n"+subtitle if subtitle else ""))
         else:
-            ax1.set_title(f'Trace {self.trace_id} in x-axis.'+ ("\n"+subtitle if subtitle else ""))
+            ax1.set_title(f'Trace id {self.trace_id} in x-axis.'+ ("\n"+subtitle if subtitle else ""))
         if show:
             fig1.show()
 
@@ -293,7 +293,7 @@ class Trace:
         if where:
             ax2.set_title(f'Traces in y-axis.'+ ("\n"+subtitle if subtitle else ""))
         else:
-            ax2.set_title(f'Trace {self.trace_id} in y-axis.'+ ("\n"+subtitle if subtitle else ""))
+            ax2.set_title(f'Trace id {self.trace_id} in y-axis.'+ ("\n"+subtitle if subtitle else ""))
         if show:
             fig2.show()
 
@@ -327,7 +327,7 @@ class Trace:
         if where:
             ax3.set_title(f'Traces "phase" space.'+ ("\n"+subtitle if subtitle else ""))
         else:
-            ax3.set_title(f'Trace {self.trace_id} "phase" space.'+ ("\n"+subtitle if subtitle else ""))
+            ax3.set_title(f'Trace id {self.trace_id} "phase" space.'+ ("\n"+subtitle if subtitle else ""))
         if show:
             fig3.show()
 

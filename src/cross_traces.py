@@ -56,17 +56,21 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
     :return: traces: (list): list of trimmed Traces
     """
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
-    # obtain overlaps of pairs of traces
+    # obtain overlaps of pairs of traces - pair of indices -> frame range
     dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
     if debug:
         print("overlapping pairs:", dictionary)
 
     # for each overlap, check frame by frame distance, if below 100 look at the movement vectors
     for overlapping_pair_of_traces in dictionary.keys():
+        # Get trace indices
+        trace1_index = overlapping_pair_of_traces[0]
+        trace2_index = overlapping_pair_of_traces[1]
+
         # get locations of the first pair
-        first_trace_locations = traces[overlapping_pair_of_traces[0]].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
+        first_trace_locations = traces[trace1_index].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
         # get locations of the second pair
-        second_trace_locations = traces[overlapping_pair_of_traces[1]].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
+        second_trace_locations = traces[trace2_index].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
 
         # maybe use in future to store distances of points of the two traces
         # distances = []
@@ -98,9 +102,9 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
                     else:
                         answer = input("Is this right? (yes or no)")
                     if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye']):
-                        print(colored("Swapping the traces.", "blue"))
-                        a, b = swap_two_overlapping_traces(traces[overlapping_pair_of_traces[0]], traces[overlapping_pair_of_traces[1]], dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
-                        traces[overlapping_pair_of_traces[0]], traces[overlapping_pair_of_traces[1]] = a, b
+                        print(colored(f"Swapping the traces {trace1_index, trace2_index} on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
+                        a, b = swap_two_overlapping_traces(traces[trace1_index], traces[trace2_index], dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
+                        traces[trace1_index], traces[trace2_index] = a, b
                         return True
                 else:
                     if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next):
@@ -384,12 +388,14 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
             assert isinstance(trace, Trace)
             if trace.frame_range[0] <= step_to < trace.frame_range[1]:
                 if debug:
-                    print(colored(f"adding trace {trace.trace_id} of {trace.frame_range} to in between", "yellow"))
+                    # print(colored(f"adding trace {index} with id {trace.trace_id} of {trace.frame_range} to in between", "yellow"))
+                    print(colored(f"adding trace {index} of {trace.frame_range} to in between", "yellow"))
                 next_steps_to.append(trace.frame_range[1])
                 indices_in.append(index)
             else:
                 if debug:
-                    print(colored(f"skipping trace {trace.trace_id} of {trace.frame_range}", "red"))
+                    # print(colored(f"skipping trace {index} with id {trace.trace_id} of {trace.frame_range}", "red"))
+                    print(colored(f"skipping trace {index} of {trace.frame_range}", "red"))
                 continue
         if debug:
             print(colored(f"finished first cycle with next_steps_to:{next_steps_to}", "blue"))
@@ -446,7 +452,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     continue
                 if trace2.frame_range[0] < step_to:
                     if debug:
-                        print(colored(f"skipping trace {trace2.trace_id} which starts in {trace2.frame_range[0]}", "green"))
+                        # print(colored(f"skipping trace {index2} with id {trace2.trace_id} which starts in {trace2.frame_range[0]}", "green"))
+                        print(colored(f"skipping trace {index2} which starts in {trace2.frame_range[0]}", "green"))
                     continue
 
                 trace1 = traces[index_to_go]
@@ -480,7 +487,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     if dist_of_traces_in_frames > get_max_trace_gap()/10:
                         reason = "long gap too distant"
                         if dist_of_traces_in_xy > get_bee_max_step_len()*3:
-                            print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
+                            # print(f" hell, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
+                            print(f" hell, we do not merge traces {index} and {index2} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
                             to_merge = False
                         else:
                             if debug:
@@ -488,7 +496,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     else:
                         reason = "short gap too distant"
                         if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
-                            print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
+                            # print(f" hell2, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
+                            print(f" hell2, we do not merge traces {index} and {index2} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
                             to_merge = False
                         else:
                             if debug:
@@ -498,9 +507,9 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
-                msg = f"{'' if to_merge else 'NOT '}MERGING TRACES ({reason}) {trace1.trace_id} {trace1.frame_range} " \
+                msg = f"{'' if to_merge else 'NOT '}MERGING TRACES ({reason}) {index} {trace1.frame_range} " \
                       f"of {trace1.frame_range_len} frames and " \
-                      f"trace {trace2.trace_id} {trace2.frame_range} of " \
+                      f"trace {index2} {trace2.frame_range} of " \
                       f"{int(trace2.frame_range_len)} frames| " \
                       f"{dist_of_traces_in_frames} frames apart, x,y-distance {round(dist_of_traces_in_xy, 3)} which is " \
                       f"{round(distance_per_frame, 3) if distance_per_frame is not None else None}/frame. " \
@@ -511,7 +520,8 @@ def put_traces_together(traces, population_size, silent=False, debug=False):
                     print(colored(msg, "yellow" if to_merge else "red"))
 
                 if to_merge:
-                    print(colored(f"Merging traces {trace1.trace_id} and {trace2.trace_id}", "yellow"))
+                    # print(colored(f"Merging traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id}", "yellow"))
+                    print(colored(f"Merging traces {index} and {index2} ","yellow"))
                     trace = merge_two_traces_with_gap(trace1, trace2)
                     if debug:
                         print(trace)
@@ -606,7 +616,8 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
                 # print(traces[index2][str(trace2.frame_range[0])][1])
                 point_distance = math.dist(list(map(float, (scraped_traces[trace.trace_id][trace.frame_range[1]][1]))),
                                            list(map(float, (scraped_traces[trace2.trace_id][trace2.frame_range[0]][1]))))
-                message = f"The beginning of trace {trace2.trace_id} is close to end of trace {trace.trace_id} " \
+                # message = f"The beginning of trace {trace2.trace_id} is close to end of trace {trace.trace_id} " \
+                message = f"The beginning of trace {index} is close to end of trace {index2} " \
                           f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} while the x,y distance is " \
                           f"{round(point_distance,3)}. Consider joining them."
                 if not silent:
@@ -660,8 +671,8 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
         while go_next:
             if debug:
                 print("dictionary", dictionary)
-                for trace in traces:
-                    print("trace.trace_id", trace.trace_id, "trace.frame_range", trace.frame_range)
+                for trace_index, trace in enumerate(traces):
+                    print(f"trace {trace_index} with id {trace.trace_id} of frame range {trace.frame_range}")
                 print()
             # Flattened indices of overlapping pairs of traces
             keys = flatten(tuple(dictionary.keys()))
@@ -688,9 +699,9 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
             if len(count_one) == 0:
                 print(colored("Cannot merge these traces. No trace with a single overlap found.", "red"))
                 print("dictionary", dictionary)
-                for trace in traces:
+                for trace_index, trace in enumerate(traces):
                     if debug:
-                        print(f"trace {trace.trace_id} of range {trace.frame_range}")
+                        print(f"trace {trace_index} of range {trace.frame_range}")
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                               f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
                 return
@@ -730,7 +741,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 showw = False
             else:
                 showw = None
-            distances = compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug, show_all_plots=showw)
+            distances = compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], pick_key2[0], pick_key2[1], silent=silent, debug=debug, show_all_plots=showw)
             # Check the distances of overlap for a big difference
 
             if distances is not None and any(list(map(lambda x: x > get_max_step_distance_to_merge_overlapping_traces(), distances))):
@@ -739,12 +750,13 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 del dictionary[pick_key2]
             else:
                 # Merge these two traces
-                merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], silent=silent, debug=debug)
+                merge_two_overlapping_traces(traces[pick_key2[0]], traces[pick_key2[1]], pick_key2[0], pick_key2[1], silent=silent, debug=debug)
                 # Save the id of the merged trace before it is removed
                 trace2_id = traces[pick_key2[1]].trace_id
                 # Remove the merged trace
                 if debug:
-                    print(colored(f"Gonna delete trace {trace2_id}.", "blue"))
+                    # print(colored(f"Gonna delete trace {trace2_id}.", "blue"))
+                    print(colored(f"Gonna delete trace {pick_key2[1]} **.", "blue"))
                 print()
                 traces = delete_indices([pick_key2[1]], traces)
                 # Show scatter plot of traces having two traces merged
@@ -760,11 +772,13 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
     return traces
 
 
-def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots=False):
+def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False, debug=False, show_all_plots=False):
     """ Compares two traces.
 
-    :arg trace1: Trace: first trace to be compared
-    :arg trace2: Trace: second trace to be compared
+    :arg trace1: (Trace): first trace to be compared
+    :arg trace2: (Trace): second trace to be compared
+    :arg trace1_index: (int): auxiliary information of index in list of traces of the first trace
+    :arg trace2_index: (int): auxiliary information of index in list of traces of the second trace
     :arg silent (bool) if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     :arg show_all_plots: (bool): if True show all the plots
@@ -778,7 +792,8 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
     else:
         show = True
 
-    print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
+    # print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
+    print(colored(f"COMPARE TWO TRACES - {trace1_index},{trace2_index}", "blue"))
     start_time = time()
 
     if show_all_plots:
@@ -797,7 +812,8 @@ def compare_two_traces(trace1, trace2, silent=False, debug=False, show_all_plots
 
     if overlapping_range is False:
         if not silent:
-            print(colored(f"There is no overlap of trace {trace1.trace_id} and trace {trace2.trace_id}"))
+            # print(colored(f"There is no overlap of trace {trace1.trace_id} and trace {trace2.trace_id}"))
+            print(colored(f"There is no overlap of trace {trace1_index} and trace {trace2_index}"))
         return None
 
     if range_len(overlapping_range) >= range_len(trace1.frame_range):

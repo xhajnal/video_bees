@@ -32,14 +32,14 @@ def show_plot_locations(traces, whole_frame_range, from_to_frame=False, subtitle
     print(colored(f"Showing location of {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds.\n", "yellow"))
 
 
-def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=False, show_trace_id=True, show_trace_range=True):
+def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=False, show_trace_index=True, show_trace_range=True):
     """ Creates a scatter plot of detected traces of each agent.
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg from_to_frame: (list): if set, showing only frames in given range
     :arg subtitle: (string): subtitle of the plot
-    :arg show_trace_id: (bool): if True trace id is shown above the trace
+    :arg show_trace_index: (bool): if True trace index is shown above the trace
     :arg show_trace_range: (bool): if True frame number of beginning af the trace and end of the trace is shown above the trace
     """
     fig = plt.figure()
@@ -60,11 +60,13 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
         x = trace.frames_list
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
-        if show_trace_id:
+        if show_trace_index:
             if len(traces) > 5:
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
+                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.5, index, fontsize=fontsize)
             else:
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
+                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), index, fontsize=fontsize)
         if show_trace_range:
             if trace.frame_range_len < 5000:
                 ax1.text(trace.frame_range[0], y[0], nice_range_print(trace.frame_range), fontsize=fontsize)
