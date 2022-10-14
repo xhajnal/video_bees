@@ -10,7 +10,7 @@ from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
-    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, track_swapping, \
+    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, \
     track_swapping_loop
 from parse import parse_traces
 from save import pickle_traces, save_traces
@@ -176,8 +176,8 @@ def analyse(file_path, population_size, swaps=False):
 
     if show_plots:
         # scatter_detection(traces, whole_frame_range)
-        show_gaps(traces, whole_frame_range)
-        show_overlaps(traces, whole_frame_range)
+        show_gaps(traces, whole_frame_range, silent=silent, debug=debug)
+        show_overlaps(traces, whole_frame_range, silent=silent, debug=debug)
 
     if not silent:
         for index, trace in enumerate(traces):
@@ -225,8 +225,8 @@ def analyse(file_path, population_size, swaps=False):
     if show_plots:
         track_reappearance(traces, show=True)
         scatter_detection(traces, whole_frame_range, subtitle="Final.")
-        show_overlaps(traces, whole_frame_range, subtitle="Final.")
-        show_gaps(traces, whole_frame_range, subtitle="Final.")
+        show_overlaps(traces, whole_frame_range, subtitle="Final.", silent=silent, debug=debug)
+        show_gaps(traces, whole_frame_range, subtitle="Final.", silent=silent, debug=debug)
         show_plot_locations(traces, whole_frame_range, subtitle="Final.")
 
     ## SAVE RESULTS

@@ -14,13 +14,13 @@ from trace import Trace
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
-from visualise import scatter_detection, show_plot_locations
+from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
 
 def get_whole_frame_range(traces):
     """ Returns frame range of the whole video.
 
-    :arg traces: (list): list of Traces
+        :arg traces: (list): list of Traces
     """
     # TODO use max int instead
     frame_range = [999999999999999, -9]
@@ -35,11 +35,11 @@ def get_whole_frame_range(traces):
 def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=False):
     """ runs track_swapping while no swap is available
 
-        :param traces: (list): list of Traces
-        :param automatically_swap: (bool): if True swaps without asking
-        :param silent: (bool): if True no output is shown
-        :param debug: (bool): if True extensive output is shown
-        :return: traces: (list): list of trimmed Traces
+        :arg traces: (list): list of Traces
+        :arg automatically_swap: (bool): if True swaps without asking
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :arg: traces: (list): list of trimmed Traces
     """
     keep_looking = True
     while keep_looking:
@@ -49,11 +49,11 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
 def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
-    :param traces: (list): list of Traces
-    :param automatically_swap: (bool or list of int): if True swaps all without asking, if list it contains frames to autopass
-    :param silent: (bool): if True no output is shown
-    :param debug: (bool): if True extensive output is shown
-    :return: traces: (list): list of trimmed Traces
+        :arg traces: (list): list of Traces
+        :arg automatically_swap: (bool or list of int): if True swaps all without asking, if list it contains frames to autopass
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :return: traces: (list): list of trimmed Traces
     """
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
     # obtain overlaps of pairs of traces - pair of indices -> frame range
@@ -80,7 +80,7 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
             # distances.append(dist)
             if dist < 100:  ## TODO find the right value
                 if debug:
-                    print(f"In pair {overlapping_pair_of_traces}, on frame {dictionary[overlapping_pair_of_traces][0]+index}, the distance is {dist}")
+                    print(f"In pair {trace1_index}({traces[trace1_index].trace_id}), {trace2_index}({traces[trace2_index].trace_id}), on frame {dictionary[overlapping_pair_of_traces][0]+index}, the distance is {dist}")
                 vector1 = to_vect(first_trace_locations[index-2], first_trace_locations[index-1])
                 vector2 = to_vect(second_trace_locations[index-2], second_trace_locations[index-1])
                 vector1_next = to_vect(first_trace_locations[index-1], first_trace_locations[index])
@@ -88,7 +88,7 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
                 if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) \
                         and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next) \
                         and math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
-                    print(colored(f"It seem the traces {overlapping_pair_of_traces} are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}","yellow"))
+                    print(colored(f"It seems the traces {trace1_index}({traces[trace1_index].trace_id}), {trace2_index}({traces[trace2_index].trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}","yellow"))
                     print(f"first_trace_location {first_trace_locations[index]}")
                     print(f"second_trace_location {second_trace_locations[index]}")
                     print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
@@ -96,13 +96,13 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
                     print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
 
                     if automatically_swap is True:
-                        answer = "yes"
+                        answer = "6"
                     elif dictionary[overlapping_pair_of_traces][0] + index in automatically_swap:
-                        answer = "yes"
+                        answer = "6"
                     else:
                         answer = input("Is this right? (yes or no)")
-                    if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye']):
-                        print(colored(f"Swapping the traces {trace1_index, trace2_index} on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
+                    if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
+                        print(colored(f"Swapping the traces {trace1_index}({traces[trace1_index].trace_id}), {trace2_index}({traces[trace2_index].trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
                         a, b = swap_two_overlapping_traces(traces[trace1_index], traces[trace2_index], dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
                         traces[trace1_index], traces[trace2_index] = a, b
                         return True
@@ -122,11 +122,11 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
 def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
-    :arg traces: (list): list of Traces
-    :arg population_size: (int): expected number of agents
-    :arg silent: (bool): if True no output is shown
-    :arg debug: (bool): if True extensive output is shown
-    :returns: traces: (list): list of trimmed Traces
+        :arg traces: (list): list of Traces
+        :arg population_size: (int): expected number of agents
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :returns: traces: (list): list of trimmed Traces
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES 3", "blue"))
     ranges = []
@@ -173,11 +173,11 @@ def trim_out_additional_agents_over_long_traces3(traces, population_size, silent
 def trim_out_additional_agents_over_long_traces2(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
-    :arg traces: (list): list of Traces
-    :arg population_size: (int): expected number of agents
-    :arg silent (bool) if True no output is shown
-    :arg debug: (bool): if True extensive output is shown
-    :returns: traces: (list): list of trimmed Traces
+        :arg traces: (list): list of Traces
+        :arg population_size: (int): expected number of agents
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :returns: traces: (list): list of trimmed Traces
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES", "blue"))
     start_time = time()
@@ -227,11 +227,11 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
 # deprecated
 def trim_out_additional_agents_over_long_traces_old(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
-
-    :arg population_size: (int): expected number of agents
-    :arg silent (bool) if True no output is shown
-    :arg debug: (bool): if True extensive output is shown
-    :returns: traces: (list): list of trimmed Traces
+    
+        :arg population_size: (int): expected number of agents
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :returns: traces: (list): list of trimmed Traces
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES OLD", "blue"))
     start_time = time()
@@ -349,11 +349,11 @@ def trim_out_additional_agents_over_long_traces_old(traces, population_size, sil
 def put_gaping_traces_together(traces, population_size, silent=False, debug=False):
     """ Puts gaping traces together iff all the agents but one is being tracked.
 
-    :arg traces (list) list of traces
-    :arg population_size (int) expected number of agents
-    :arg silent (bool) if True no output is shown
-    :arg debug (bool) if True extensive output is shown
-    :returns: traces: (list): list of concatenated Traces
+        :arg traces (list) list of traces
+        :arg population_size (int) expected number of agents
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :returns: traces: (list): list of concatenated Traces
     """
     print(colored("PUT TRACES TOGETHER", "blue"))
     start_time = time()
@@ -488,7 +488,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                         reason = "long gap too distant"
                         if dist_of_traces_in_xy > get_bee_max_step_len()*3:
                             # print(f" hell, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
-                            print(f" hell, we do not merge traces {index} and {index2} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
+                            print(f" hell, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
                             to_merge = False
                         else:
                             if debug:
@@ -497,7 +497,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                         reason = "short gap too distant"
                         if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
                             # print(f" hell2, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
-                            print(f" hell2, we do not merge traces {index} and {index2} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
+                            print(f" hell2, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
                             to_merge = False
                         else:
                             if debug:
@@ -507,9 +507,9 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
-                msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES ({reason}) {index} {trace1.frame_range} " \
+                msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES ({reason}) {index}({trace1.trace_id}) {trace1.frame_range} " \
                       f"of {trace1.frame_range_len} frames and " \
-                      f"trace {index2} {trace2.frame_range} of " \
+                      f"trace {index2}({trace2.trace_id}) {trace2.frame_range} of " \
                       f"{int(trace2.frame_range_len)} frames| " \
                       f"{dist_of_traces_in_frames} frames apart, x,y-distance {round(dist_of_traces_in_xy, 3)} which is " \
                       f"{round(distance_per_frame, 3) if distance_per_frame is not None else None}/frame. " \
@@ -520,8 +520,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     print(colored(msg, "yellow" if to_merge else "red"))
 
                 if to_merge:
-                    # print(colored(f"Merging gaping traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id}", "yellow"))
-                    print(colored(f"Merging gaping traces {index} and {index2} ","yellow"))
+                    print(colored(f"Merging gaping traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id})", "yellow"))
                     trace = merge_two_traces_with_gap(trace1, trace2)
                     if debug:
                         print(trace)
@@ -597,10 +596,10 @@ def track_reappearance(traces, show=True, debug=False):
 def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
     """ Checks traces against each other.
 
-    :arg traces: list: a list of Traces
-    :arg scraped_traces: list: a list of scraped traces obtained by parse_traces()
-    :arg silent (bool) if True no output is shown
-    :arg debug (bool) if True extensive output is shown
+    :arg traces: (list): a list of Traces
+    :arg scraped_traces: (list): a list of scraped traces obtained by parse_traces()
+    :arg silent: (bool): if True no output is shown
+    :arg debug: (bool): if True extensive output is shown
     """
     print(colored("CROSS-TRACE ANALYSIS", "blue"))
     start_time = time()
@@ -638,9 +637,9 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
         :arg traces (list) list of traces
         :arg whole_frame_range: [int, int]: frame range of the whole video
         :arg population_size (int) expected number of agents
-        :arg silent (bool) if True no output is shown
-        :arg debug (bool) if True extensive output is shown
-        :arg show (bool) if True plots are shown
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :arg show: (bool): if True plots are shown
         :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE OVERLAPPING TRACES", "blue"))
@@ -779,7 +778,7 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
     :arg trace2: (Trace): second trace to be compared
     :arg trace1_index: (int): auxiliary information of index in list of traces of the first trace
     :arg trace2_index: (int): auxiliary information of index in list of traces of the second trace
-    :arg silent (bool) if True no output is shown
+    :arg silent: (bool): if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     :arg show_all_plots: (bool): if True show all the plots
     """
@@ -793,7 +792,7 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
         show = True
 
     # print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
-    print(colored(f"COMPARE TWO TRACES - {trace1_index},{trace2_index}", "blue"))
+    print(colored(f"COMPARE TWO TRACES - {trace1_index}({trace1.trace_id}),{trace2_index}({trace2.trace_id})", "blue"))
     start_time = time()
 
     if show_all_plots:
@@ -880,26 +879,7 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
         x.append(trace1.frames_list[index])
 
     if show:
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-
-        y = distances
-        if debug:
-            print("distance len", len(distances))
-            print("x len", len(x))
-        ax1.scatter(x, y, alpha=0.5)
-        plt.xlabel('Overlapping frame numbers')
-        plt.ylabel('Distance of the two traces')
-        title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace {trace1.trace_id} (left red) \n or cutting trace {trace2.trace_id} (right red).'
-
-        distances2 = []
-        distances2.append(math.dist(trace1.locations[start_index1-1], trace2.locations[0]))
-        distances2.append(math.dist(trace1.locations[-1], trace2.locations[end_index2+1]))
-        ax1.scatter([x[0]-1, x[-1]+1], distances2, c="r")
-
-        plt.title(title)
-        plt.tight_layout()
-        plt.show()
+        show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index2, silent=silent, debug=debug)
 
     print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))

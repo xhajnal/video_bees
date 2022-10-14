@@ -1,3 +1,4 @@
+import math
 from time import time
 from _socket import gethostname
 from termcolor import colored
@@ -63,10 +64,10 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
         if show_trace_index:
             if len(traces) > 5:
                 # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.5, index, fontsize=fontsize)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.5, f"{index}({trace.trace_id})", fontsize=fontsize)
             else:
                 # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), index, fontsize=fontsize)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), f"{index}({trace.trace_id})", fontsize=fontsize)
         if show_trace_range:
             if trace.frame_range_len < 5000:
                 ax1.text(trace.frame_range[0], y[0], nice_range_print(trace.frame_range), fontsize=fontsize)
@@ -103,8 +104,8 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg skip_whole_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg subtitle: (string): subtitle of the plot
-    :arg silent (bool) if True no output is shown
-    :arg debug (bool) if True extensive output is shown
+    :arg silent: (bool): if True no output is shown
+    :arg debug: (bool): if True extensive output is shown
     """
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -134,7 +135,43 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
     plt.show()
 
 
-def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, debug=False):
+## TODO maybe make this more general
+def show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index2, silent=False, debug=False):
+    """ Shows a scatter plot of distances between two traces point-by-point including distance of two point merger -
+    when skipping the overlap of the first or the second trace.
+
+        :arg x: (list): x axis - frame list subset
+        :arg trace1: (Trace): the first trace to show
+        :arg trace2: (Trace): the second trace to show
+        :arg distances: (list of int): y-axis - list of distances of the two traces
+        :arg start_index1: (int): starting index of overlap/showing of the first trace frame list
+        :arg end_index2: (int): end index of overlap/showing of the second trace frame list
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+    """
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+
+    y = distances
+    if debug:
+        print("distance len", len(distances))
+        print("x len", len(x))
+    ax1.scatter(x, y, alpha=0.5)
+    plt.xlabel('Overlapping frame numbers')
+    plt.ylabel('Distance of the two traces')
+    title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace {trace1.trace_id} (left red) \n or cutting trace {trace2.trace_id} (right red).'
+
+    distances2 = []
+    distances2.append(math.dist(trace1.locations[start_index1 - 1], trace2.locations[0]))
+    distances2.append(math.dist(trace1.locations[-1], trace2.locations[end_index2 + 1]))
+    ax1.scatter([x[0] - 1, x[-1] + 1], distances2, c="r")
+
+    plt.title(title)
+    plt.tight_layout()
+    plt.show()
+
+
+def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, silent=False, debug=False):
     """ Creates a scatter plot of gaps of traces.
 
     :arg traces: (list): a list of Traces

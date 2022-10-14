@@ -60,8 +60,8 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
 
     :arg trace1: (Trace): a Trace to be merged with the following trace
     :arg trace2: (Trace): a Trace to be merged with the following trace
-    :arg silent (bool) if True no output is shown
-    :arg debug (bool) if True extensive output is shown
+    :arg silent: (bool): if True no output is shown
+    :arg debug: (bool): if True extensive output is shown
 
     :returns: trace1: (Trace): merged trace of two given traces
     """
@@ -171,8 +171,8 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
     :arg trace2: (Trace): a Trace to be merged with the following trace
     :arg trace1_index: (int): auxiliary information of index in list of traces of the first trace
     :arg trace2_index: (int): auxiliary information of index in list of traces of the second trace
-    :arg silent (bool) if True no output is shown
-    :arg debug (bool) if True extensive output is shown
+    :arg silent: (bool): if True no output is shown
+    :arg debug: (bool): if True extensive output is shown
 
     :returns: trace1: (Trace): merged trace of two given traces
     """
@@ -247,8 +247,8 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
     :arg trace1: (Trace): a Trace to be merged with the following trace
     :arg trace2: (Trace): a Trace to be merged with the following trace
     :arg frame_of_swap: (int): frame number to swap the traces
-    :arg silent (bool) if True no output is shown
-    :arg debug (bool) if True extensive output is shown
+    :arg silent: (bool): if True no output is shown
+    :arg debug: (bool): if True extensive output is shown
 
     :returns: trace1: (Trace): merged trace of two given traces
     """

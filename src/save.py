@@ -13,15 +13,15 @@ def save_traces(traces, file_name, silent=False, debug=False):
 
         :arg traces (list) list of traces
         :arg file_name (string) name of the file to be saved in "output" folder
-        :arg silent (bool) if True no output is shown
-        :arg debug (bool) if True extensive output is shown
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
     """
     print(colored("SAVE TRACES AS CSV", "blue"))
     start_time = time()
 
     try:
         os.mkdir("../output")
-    except Exception:
+    except OSError:
         pass
 
     trackings = []
@@ -72,8 +72,8 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
 
         :arg traces (list) list of traces
         :arg file_name (string) name of the file to be pickled in "output" folder
-        :arg silent (bool) if True no output is shown
-        :arg debug (bool) if True extensive output is shown
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
     """
     print(colored("SAVE TRACES AS PICKLE", "blue"))
     start_time = time()

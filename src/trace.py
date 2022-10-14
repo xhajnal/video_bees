@@ -266,9 +266,9 @@ class Trace:
             ax1.set_xlim(whole_frame_range)
 
         if where:
-            ax1.set_title(f'Traces in x-axis.'+ ("\n"+subtitle if subtitle else ""))
+            ax1.set_title(f'Traces in x-axis.' + ("\n"+subtitle if subtitle else ""))
         else:
-            ax1.set_title(f'Trace id {self.trace_id} in x-axis.'+ ("\n"+subtitle if subtitle else ""))
+            ax1.set_title(f'Trace id {self.trace_id} in x-axis.' + ("\n"+subtitle if subtitle else ""))
         if show:
             fig1.show()
 
@@ -291,9 +291,9 @@ class Trace:
             ax2.set_xlim(whole_frame_range)
 
         if where:
-            ax2.set_title(f'Traces in y-axis.'+ ("\n"+subtitle if subtitle else ""))
+            ax2.set_title(f'Traces in y-axis.' + ("\n"+subtitle if subtitle else ""))
         else:
-            ax2.set_title(f'Trace id {self.trace_id} in y-axis.'+ ("\n"+subtitle if subtitle else ""))
+            ax2.set_title(f'Trace id {self.trace_id} in y-axis.' + ("\n"+subtitle if subtitle else ""))
         if show:
             fig2.show()
 
@@ -325,9 +325,9 @@ class Trace:
             plt.ylim(max_position)
 
         if where:
-            ax3.set_title(f'Traces "phase" space.'+ ("\n"+subtitle if subtitle else ""))
+            ax3.set_title(f'Traces "phase" space.' + ("\n"+subtitle if subtitle else ""))
         else:
-            ax3.set_title(f'Trace id {self.trace_id} "phase" space.'+ ("\n"+subtitle if subtitle else ""))
+            ax3.set_title(f'Trace id {self.trace_id} "phase" space.' + ("\n"+subtitle if subtitle else ""))
         if show:
             fig3.show()
 
@@ -342,5 +342,3 @@ class Trace:
                f"max_step_len:{round(self.max_step_len,3)} max_step_len_step_index:{self.max_step_len_step_index} " \
                f"max_step_len_line:{self.max_step_len_line} max_step_len_frame_number:{self.max_step_len_frame_number} " \
                f"trace_lengths:{take(5, self.trace_lengths.items())}[ frames_list:{self.frames_list[:5]}... locations:{self.locations[:5]}... "
-
-

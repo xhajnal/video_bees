@@ -91,13 +91,13 @@ def flatten(data):
         return (data,)
 
 
-def range_len(range):
+def range_len(interval):
     """ Returns the length of the range.
 
-    :arg range: (tuple or list): range to compute its length
+    :arg interval: (tuple or list): range to compute its length
     """
-    assert len(range) == 2
-    return range[1] - range[0]
+    assert len(interval) == 2
+    return interval[1] - interval[0]
 
 
 def is_in(range1, range2, strict=False):
