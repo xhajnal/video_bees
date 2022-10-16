@@ -2,10 +2,10 @@ import copy
 import csv
 import math
 from time import time
-
 import numpy as np
 from _socket import gethostname
 from termcolor import colored
+
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices
 from trace import Trace

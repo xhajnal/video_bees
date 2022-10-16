@@ -1,7 +1,6 @@
 import copy
 import math
 import sys
-
 import numpy as np
 from termcolor import colored
 

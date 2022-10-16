@@ -5,7 +5,6 @@ from interval import Interval
 from mpmath import mpi
 import pandas as pd
 from itertools import islice
-
 from scipy import spatial
 from termcolor import colored
 

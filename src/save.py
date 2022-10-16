@@ -1,6 +1,5 @@
 import os
 import pickle
-from pathlib import Path
 from time import time
 from _socket import gethostname
 from termcolor import colored

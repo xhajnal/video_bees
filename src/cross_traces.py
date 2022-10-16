@@ -5,14 +5,12 @@ from _socket import gethostname
 from matplotlib import pyplot as plt
 from termcolor import colored
 from operator import countOf
-from config import get_max_trace_gap, get_min_trace_length, get_bee_max_step_len, get_bee_max_step_len_per_frame, \
-    get_max_step_distance_to_merge_overlapping_traces
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
-    get_overlap, range_len, to_vect, calculate_cosine_similarity
-
-from trace import Trace
 from scipy.interpolate import InterpolatedUnivariateSpline
 
+from config import *
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
+    get_overlap, range_len, to_vect, calculate_cosine_similarity
+from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
@@ -240,7 +238,7 @@ def trim_out_additional_agents_over_long_traces_old(traces, population_size, sil
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES OLD", "blue"))
     start_time = time()
-    ## Obtain the ranges with the size of frame more than 100 where all the agents are being tracked
+    # Obtain the ranges with the size of frame more than 100 where all the agents are being tracked
     ranges = []
     for index1, trace in enumerate(traces):
         assert isinstance(trace, Trace)
@@ -368,7 +366,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
         print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
         return traces
 
-    ## code
+    # Code
     reappearance = track_reappearance(traces, show=False)
     if debug:
         print(len(traces))
@@ -452,7 +450,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
             print("index_to_go", index_to_go)
 
         if len(next_steps_to) == population_size:
-            ## look for a mergeable trace
+            # Look for a mergeable trace
             if not silent:
                 print(colored(f"Gonna have a look for a mergeable traces from frame {step_to} till {next_step_to}.", "blue"))
             step_to = next_step_to
