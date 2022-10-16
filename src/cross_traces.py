@@ -56,6 +56,11 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
         :return: traces: (list): list of trimmed Traces
     """
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
+    # Check
+    if len(traces) < 2:
+        print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
+        return
+
     # obtain overlaps of pairs of traces - pair of indices -> frame range
     dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
     if debug:
@@ -358,6 +363,11 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
     print(colored("PUT TRACES TOGETHER", "blue"))
     start_time = time()
 
+    # Check
+    if len(traces) < 2:
+        print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
+        return traces
+
     ## code
     reappearance = track_reappearance(traces, show=False)
     if debug:
@@ -555,6 +565,12 @@ def track_reappearance(traces, show=True, debug=False):
     :returns: time_to_reappear (list): list of times for an agent to reappear after end of a trace
     """
     print(colored("TRACE REAPPEARANCE", "blue"))
+
+    # Check
+    if len(traces) < 2:
+        print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
+        return
+
     frames_of_loss = []
     for trace in traces:
         frames_of_loss.append(trace.frame_range[1])
@@ -653,10 +669,10 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
         number_of_traces = len(traces)
         if len(traces) <= 1:
             if len(traces) == 1:
-                print(colored("Cannot merge a single trace. \n", "red"))
+                print(colored("Cannot merge a single trace. Skipping the rest of this analysis.\n", "yellow"))
                 return
             if len(traces) == 0:
-                print(colored("Cannot merge no trace. \n", "red"))
+                print(colored("Cannot merge no trace. Skipping the rest of this analysis.\n", "yellow"))
                 return
         # Find overlapping pairs
         dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=True)

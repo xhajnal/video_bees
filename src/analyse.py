@@ -215,7 +215,9 @@ def analyse(file_path, population_size, swaps=False):
             print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
 
     ## TODO much of memory used here
-    traces, old_traces, population_size = remove_full_traces(traces, real_whole_frame_range, population_size)
+    if len(traces) > 1:
+        traces, old_traces, population_size = remove_full_traces(traces, real_whole_frame_range, population_size)
+
     scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
 
     print("SECOND Gaping traces analysis")

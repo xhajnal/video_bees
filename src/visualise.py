@@ -107,6 +107,11 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
     :arg silent: (bool): if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     """
+    # Check
+    if len(traces) < 2:
+        # print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
+        return
+
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
@@ -135,7 +140,7 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
     plt.show()
 
 
-## TODO maybe make this more general
+# TODO maybe make this more general
 def show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index2, silent=False, debug=False):
     """ Shows a scatter plot of distances between two traces point-by-point including distance of two point merger -
     when skipping the overlap of the first or the second trace.
@@ -180,6 +185,11 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     :arg subtitle: (string): subtitle of the plot
     :arg debug: (bool): if True extensive output is shown
     """
+    # Check
+    if len(traces) < 2:
+        # print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
+        return
+
     pairs_of_gaps = get_gaps_of_traces(traces, get_all_gaps=show_all_gaps)
 
     if debug:

@@ -65,7 +65,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
 
     :returns: trace1: (Trace): merged trace of two given traces
     """
-    ## CHECK
+    # Check
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
 
