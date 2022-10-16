@@ -221,7 +221,17 @@ def analyse(file_path, population_size, swaps=False):
     scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
 
     print("SECOND Gaping traces analysis")
-    traces = put_gaping_traces_together(traces, population_size, silent=silent, debug=debug)
+    before_number_of_traces = len(traces)
+    after_number_of_traces = 0
+    while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
+        before_number_of_traces = len(traces)
+        traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
+        if show_plots:
+            scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
+        traces = put_gaping_traces_together(traces, population_size, silent=silent, debug=debug)
+        if show_plots:
+            scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
+        after_number_of_traces = len(traces)
 
     ## VISUALISATIONS
     if show_plots:
