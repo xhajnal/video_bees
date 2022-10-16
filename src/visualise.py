@@ -70,10 +70,10 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
                 ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), f"{index}({trace.trace_id})", fontsize=fontsize)
         if show_trace_range:
             if trace.frame_range_len < 5000:
-                ax1.text(trace.frame_range[0], y[0], nice_range_print(trace.frame_range), fontsize=fontsize)
+                ax1.text(trace.frame_range[0], y[0], f"{nice_range_print(trace.frame_range)} [{trace.frame_range_len}]", fontsize=fontsize)
             else:
                 ax1.text(trace.frame_range[0], y[0], trace.frame_range[0], fontsize=fontsize)
-                ax1.text(trace.frame_range[1], y[0], trace.frame_range[1], fontsize=fontsize)
+                ax1.text(trace.frame_range[1], y[0], f"{trace.frame_range[1]} [{trace.frame_range_len}]", fontsize=fontsize)
         x = trace.overlap_frames
         y = [index] * len(x)
         ax1.scatter(x, y, c="black")

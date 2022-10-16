@@ -106,8 +106,8 @@ def analyse(file_path, population_size, swaps=False):
     check_inside_of_arena(traces)
 
     ## TODO uncomment the following
-    # if show_plots:
-    #     show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
+    if show_plots:
+        show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
     #     scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
     ########################################
@@ -124,8 +124,8 @@ def analyse(file_path, population_size, swaps=False):
     start_time = time()
     print(colored(f"TRACE JUMP BACK AND FORTH CHECKER", "blue"))
     number_of_jump_detected = 0
-    for trace in traces:
-        number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, whole_frame_range, show_plots=True, silent=silent, debug=debug)
+    for index, trace in enumerate(traces):
+        number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, index, whole_frame_range, show_plots=True, silent=silent, debug=debug)
     print(colored(f"We have found and fixed {number_of_jump_detected} jumps. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     # if show_plots:
     #     scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
@@ -172,7 +172,7 @@ def analyse(file_path, population_size, swaps=False):
     if not silent:
         print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
-            print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
+            print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
 
     if show_plots:
         # scatter_detection(traces, whole_frame_range)
@@ -181,7 +181,7 @@ def analyse(file_path, population_size, swaps=False):
 
     if not silent:
         for index, trace in enumerate(traces):
-            print(f"trace {index} with id {trace.trace_id}, {trace.frame_range}")
+            print(f"trace {index} ({trace.trace_id}), {trace.frame_range}")
 
     # show_gaps(traces, whole_frame_range)
 
@@ -212,7 +212,7 @@ def analyse(file_path, population_size, swaps=False):
     if not silent:
         print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
-            print(f"Trace {index} with id {trace.trace_id} of range {trace.frame_range}")
+            print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
 
     ## TODO much of memory used here
     if len(traces) > 1:

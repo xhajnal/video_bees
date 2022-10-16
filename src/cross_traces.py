@@ -102,7 +102,7 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
 
                     if automatically_swap is True:
                         answer = "6"
-                    elif dictionary[overlapping_pair_of_traces][0] + index in automatically_swap:
+                    elif isinstance(automatically_swap, list) and dictionary[overlapping_pair_of_traces][0] + index in automatically_swap:
                         answer = "6"
                     else:
                         answer = input("Is this right? (yes or no)")
@@ -220,7 +220,7 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
                 print(colored(f"Gonna delete range index {shortest_index}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(shortest_index)
 
-    if not silent:
+    if debug:
         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
 
@@ -360,7 +360,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
         :arg debug: (bool): if True extensive output is shown
         :returns: traces: (list): list of concatenated Traces
     """
-    print(colored("PUT TRACES TOGETHER", "blue"))
+    print(colored("PUT GAPING TRACES TOGETHER", "blue"))
     start_time = time()
 
     # Check
@@ -398,13 +398,13 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
             assert isinstance(trace, Trace)
             if trace.frame_range[0] <= step_to < trace.frame_range[1]:
                 if debug:
-                    # print(colored(f"adding trace {index} with id {trace.trace_id} of {trace.frame_range} to in between", "yellow"))
+                    # print(colored(f"adding trace {index} ({trace.trace_id}) of {trace.frame_range} to in between", "yellow"))
                     print(colored(f"adding trace {index} of {trace.frame_range} to in between", "yellow"))
                 next_steps_to.append(trace.frame_range[1])
                 indices_in.append(index)
             else:
                 if debug:
-                    # print(colored(f"skipping trace {index} with id {trace.trace_id} of {trace.frame_range}", "red"))
+                    # print(colored(f"skipping trace {index} ({trace.trace_id}) of {trace.frame_range}", "red"))
                     print(colored(f"skipping trace {index} of {trace.frame_range}", "red"))
                 continue
         if debug:
@@ -517,7 +517,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
-                msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES ({reason}) {index}({trace1.trace_id}) {trace1.frame_range} " \
+                msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES {'' if to_merge else '('+reason+') '}{index}({trace1.trace_id}) {trace1.frame_range} " \
                       f"of {trace1.frame_range_len} frames and " \
                       f"trace {index2}({trace2.trace_id}) {trace2.frame_range} of " \
                       f"{int(trace2.frame_range_len)} frames| " \
@@ -530,7 +530,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     print(colored(msg, "yellow" if to_merge else "red"))
 
                 if to_merge:
-                    print(colored(f"Merging gaping traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id})", "yellow"))
+                    # print(colored(f"Merging gaping traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id})", "yellow"))
                     trace = merge_two_traces_with_gap(trace1, trace2)
                     if debug:
                         print(trace)
@@ -599,8 +599,8 @@ def track_reappearance(traces, show=True, debug=False):
 
     if show:
         plt.hist(time_to_reappear, bins=20)
-        plt.xlabel('Step size')
-        plt.ylabel('Count of time to reappear')
+        plt.xlabel('Number of frames')
+        plt.ylabel('Count')
         plt.title(f'Histogram of times to reappear.')
         plt.show()
 
@@ -632,7 +632,7 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
                 point_distance = math.dist(list(map(float, (scraped_traces[trace.trace_id][trace.frame_range[1]][1]))),
                                            list(map(float, (scraped_traces[trace2.trace_id][trace2.frame_range[0]][1]))))
                 # message = f"The beginning of trace {trace2.trace_id} is close to end of trace {trace.trace_id} " \
-                message = f"The beginning of trace {index} is close to end of trace {index2} " \
+                message = f"The beginning of trace {index}({trace.trace_id}) is close to end of trace {index2}({trace2.trace_id}) " \
                           f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} while the x,y distance is " \
                           f"{round(point_distance,3)}. Consider joining them."
                 if not silent:
@@ -687,7 +687,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
             if debug:
                 print("dictionary", dictionary)
                 for trace_index, trace in enumerate(traces):
-                    print(f"trace {trace_index} with id {trace.trace_id} of frame range {trace.frame_range}")
+                    print(f"trace {trace_index} ({trace.trace_id}) of frame range {trace.frame_range}")
                 print()
             # Flattened indices of overlapping pairs of traces
             keys = flatten(tuple(dictionary.keys()))
@@ -771,7 +771,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 # Remove the merged trace
                 if debug:
                     # print(colored(f"Gonna delete trace {trace2_id}.", "blue"))
-                    print(colored(f"Gonna delete trace {pick_key2[1]} **.", "blue"))
+                    print(colored(f"Gonna delete trace {pick_key2[1]}({trace2_id}).", "blue"))
                 print()
                 traces = delete_indices([pick_key2[1]], traces)
                 # Show scatter plot of traces having two traces merged
