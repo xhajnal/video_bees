@@ -214,7 +214,7 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
 
     try:
         os.mkdir("../output")
-    except Exception:
+    except OSError:
         pass
 
     file_path = str(os.path.splitext(f"../output/{file_name}")[0])+".p"
