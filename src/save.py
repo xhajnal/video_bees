@@ -49,14 +49,14 @@ def save_setting(counts, file_name, silent=False, debug=False):
 
     # PARSE NEW ENTRY
     now = str(datetime.now())
-    new_entry = {"get_distance_from_calculated_arena": get_distance_from_calculated_arena(),
-                 "get_max_trace_gap": get_max_trace_gap(),
-                 "get_min_trace_length": get_min_trace_length(),
-                 "get_bee_max_step_len": get_bee_max_step_len(),
-                 "get_bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
-                 "get_max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
-                 "get_max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
-                 "get_screen_size": get_screen_size(),
+    new_entry = {"distance_from_calculated_arena": get_distance_from_calculated_arena(),
+                 "max_trace_gap": get_max_trace_gap(),
+                 "min_trace_length": get_min_trace_length(),
+                 "bee_max_step_len": get_bee_max_step_len(),
+                 "bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
+                 "max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
+                 "max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
+                 "screen_size": get_screen_size(),
                  "loaded": counts[0],
                  "inside arena": counts[1],
                  "jumps forth and back fixed": counts[2],
@@ -83,7 +83,48 @@ def save_setting(counts, file_name, silent=False, debug=False):
     #     print(setting)
     # print(setting)
 
-    print(colored(f"Updating the results using this run. Saved in {os.path.abspath(f'../output/results.p')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    print(colored(f"Updating the results using this run. Saved in {os.path.abspath(f'../output/results.txt')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+
+
+def convert_results_from_json_to_csv(silent=False, debug=False):
+    """ Stores the json results file as csv to show the results in a human-readable format.
+        :arg silent: (bool): if True no output is shown
+        :arg debug: (bool): if True extensive output is shown
+    """
+    print(colored("STORES THE JSON RESULTS FILE AS A CSV", "blue"))
+    start_time = time()
+
+    with open("../output/results.txt") as file:
+        results = json.load(file)
+        if debug:
+            print("results.txt", results)
+
+    with open("../output/results.csv", "w") as file:
+        # write header
+        file.write(f"track_file; timestamp; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
+                   f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
+                   f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded; inside arena; "
+                   f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
+                   f"after merging overlapping traces; after second gaps and redundant \n")
+        assert isinstance(results, dict)
+        for track_file in results.keys():
+            if debug:
+                print("track_file", track_file)
+            assert isinstance(results[track_file], dict)
+            for timestamp in results[track_file].keys():
+                if debug:
+                    print("timestamp", timestamp)
+                assert isinstance(results[track_file][timestamp], dict)
+                record = results[track_file][timestamp]
+                file.write(f"{track_file}; {timestamp}; {record['distance_from_calculated_arena']}; "
+                           f"{record['max_trace_gap']}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
+                           f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
+                           f"{record['max_step_distance_to_merge_overlapping_traces']}; {record['screen_size']}; "
+                           f"{record['loaded']}; {record['inside arena']}; {record['jumps forth and back fixed']};"
+                           f" {record['traces swapped']}; {record['after first gaps and redundant']};"
+                           f" {record['after merging overlapping traces']}; {record['after second gaps and redundant']}\n")
+
+    print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(f'../output/results.csv')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n","yellow"))
 
 
 def save_traces(traces, file_name, silent=False, debug=False):
@@ -168,3 +209,6 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
         pickle.dump(traces, file)
 
     print(colored(f"Saving pickled {len(traces)} traces in {os.path.abspath(file_path)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+
+# if __name__ == "__main__":
+#     convert_results_from_json_to_csv()

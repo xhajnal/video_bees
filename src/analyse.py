@@ -13,14 +13,14 @@ from cross_traces import put_gaping_traces_together, track_reappearance, cross_t
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, \
     track_swapping_loop
 from parse import parse_traces
-from save import pickle_traces, save_traces, save_setting
+from save import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
 global silent
 global debug
 global show_plots
 
-# USER - please setup the following three flags
+# USER - please set up the following three flags
 silent = True
 debug = False
 show_plots = True
@@ -46,7 +46,7 @@ def analyse(file_path, population_size, swaps=False):
 
     :arg file_path: (str): path to csv file
     :arg population_size: (int): expected number of agents
-    :arg swaps: (list of int): list of frame number of swaps to autopass
+    :arg swaps: (list of int): list of frame number of swaps to auto-pass
     """
     #################
     # Internal params
@@ -263,6 +263,7 @@ def analyse(file_path, population_size, swaps=False):
 
     ## SAVE RESULTS
     save_setting(counts, file_name=file_path, silent=silent, debug=debug)
+    convert_results_from_json_to_csv(silent=silent, debug=debug)
     save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     raise Exception
