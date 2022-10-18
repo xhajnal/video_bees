@@ -19,7 +19,7 @@ def save_setting(counts, file_name, silent=False, debug=False):
 
     :arg counts: (list of int): counts of traces after each analysis part
     :arg file_name: (string): name of the file loaded
-    :arg silent: (bool): if True no output is shown
+    :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))
@@ -33,19 +33,21 @@ def save_setting(counts, file_name, silent=False, debug=False):
     # check all counts are counted
     assert len(counts) == 7
 
-    ## LOAD SAVED RESULT TO UPDATE IT
+    ## LOAD SAVED RESULTS TO UPDATE IT
     try:
         # with open("../output/results.p", 'rb') as file:
-        #     setting = pickle.load(file)
-        #     print("SETTING", setting)
+        #     results = pickle.load(file)
+        #     if debug:
+        #         print("RESULTS", results)
         with open("../output/results.txt") as file:
-            setting = json.load(file)
-            print("SETTING", setting)
+            results = json.load(file)
+            if debug:
+                print("RESULTS", results)
     except FileNotFoundError as err:
         # f = open("../output/results.p", "a")
-        f = open("../output/results.txt", "a")
-        f.close()
-        setting = {}
+        file = open("../output/results.txt", "a")
+        file.close()
+        results = {}
 
     # PARSE NEW ENTRY
     now = str(datetime.now())
@@ -66,29 +68,38 @@ def save_setting(counts, file_name, silent=False, debug=False):
                  "after second gaps and redundant": counts[6]}
 
     ## UPDATE THE RESULTS
-    if file_name not in setting.keys():
-        setting[file_name] = {}
-        setting[file_name][now] = new_entry
-    else:
-        setting[file_name][now] = new_entry
+    if file_name not in results.keys():
+        results[file_name] = {}
+
+    ## Check whether there is no replicate
+    for timestamp in results[file_name]:
+        result = results[file_name][timestamp]
+        if debug:
+            print("possibly same result", result)
+        if result == new_entry:
+            print(colored(f"Already found the same result - not saving it. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+            return False
+
+    results[file_name][now] = new_entry
 
     ## SAVE THE RESULTS
     # with open("../output/results.p", 'wb') as file:
-    #     pickle.dump(setting, file)
+    #     pickle.dump(results, file)
 
     with open("../output/results.txt", 'w') as file:
-        file.write(json.dumps(setting))
+        file.write(json.dumps(results))
 
     # if debug:
-    #     print(setting)
-    # print(setting)
+    #     print(results)
+    # print(results)
 
     print(colored(f"Updating the results using this run. Saved in {os.path.abspath(f'../output/results.txt')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    return True
 
 
 def convert_results_from_json_to_csv(silent=False, debug=False):
     """ Stores the json results file as csv to show the results in a human-readable format.
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
     """
     print(colored("STORES THE JSON RESULTS FILE AS A CSV", "blue"))
@@ -99,30 +110,34 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
         if debug:
             print("results.txt", results)
 
-    with open("../output/results.csv", "w") as file:
-        # write header
-        file.write(f"track_file; timestamp; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
-                   f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
-                   f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded; inside arena; "
-                   f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
-                   f"after merging overlapping traces; after second gaps and redundant \n")
-        assert isinstance(results, dict)
-        for track_file in results.keys():
-            if debug:
-                print("track_file", track_file)
-            assert isinstance(results[track_file], dict)
-            for timestamp in results[track_file].keys():
+    try:
+        with open("../output/results.csv", "w") as file:
+            # write header
+            file.write(f"track_file; timestamp; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
+                       f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
+                       f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded; inside arena; "
+                       f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
+                       f"after merging overlapping traces; after second gaps and redundant \n")
+            assert isinstance(results, dict)
+            for track_file in results.keys():
                 if debug:
-                    print("timestamp", timestamp)
-                assert isinstance(results[track_file][timestamp], dict)
-                record = results[track_file][timestamp]
-                file.write(f"{track_file}; {timestamp}; {record['distance_from_calculated_arena']}; "
-                           f"{record['max_trace_gap']}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
-                           f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
-                           f"{record['max_step_distance_to_merge_overlapping_traces']}; {record['screen_size']}; "
-                           f"{record['loaded']}; {record['inside arena']}; {record['jumps forth and back fixed']};"
-                           f" {record['traces swapped']}; {record['after first gaps and redundant']};"
-                           f" {record['after merging overlapping traces']}; {record['after second gaps and redundant']}\n")
+                    print("track_file", track_file)
+                assert isinstance(results[track_file], dict)
+                for timestamp in results[track_file].keys():
+                    if debug:
+                        print("timestamp", timestamp)
+                    assert isinstance(results[track_file][timestamp], dict)
+                    record = results[track_file][timestamp]
+                    file.write(f"{track_file}; {timestamp}; {record['distance_from_calculated_arena']}; "
+                               f"{record['max_trace_gap']}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
+                               f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
+                               f"{record['max_step_distance_to_merge_overlapping_traces']}; {record['screen_size']}; "
+                               f"{record['loaded']}; {record['inside arena']}; {record['jumps forth and back fixed']};"
+                               f" {record['traces swapped']}; {record['after first gaps and redundant']};"
+                               f" {record['after merging overlapping traces']}; {record['after second gaps and redundant']}\n")
+    except OSError:
+        print(colored(f"Could not write into csv file! Try to close it first.", "red"))
+        return
 
     print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(f'../output/results.csv')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n","yellow"))
 
@@ -132,7 +147,7 @@ def save_traces(traces, file_name, silent=False, debug=False):
 
         :arg traces (list) list of traces
         :arg file_name: (string): name of the file to be saved in "output" folder
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
     """
     print(colored("SAVE TRACES AS CSV", "blue"))
@@ -191,7 +206,7 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
 
         :arg traces (list) list of traces
         :arg file_name (string) name of the file to be pickled in "output" folder
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
     """
     print(colored("SAVE TRACES AS PICKLE", "blue"))

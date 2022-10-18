@@ -17,7 +17,7 @@ def remove_full_traces(traces, real_whole_frame_range, population_size, silent=F
         :arg traces: (list): a list of Traces
         :arg real_whole_frame_range: [int, int]: frame range of the whole video
         :arg population_size: (int): population size of original traces
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns traces: (list): a list of truncated Traces
         :returns traces: (list): a list of old Traces
@@ -41,7 +41,7 @@ def single_trace_checker(traces, silent=False, debug=False):
     """ Checks a single trace.
 
     :arg traces: (list): a list of Traces
-    :arg silent: (bool): if True no output is shown
+    :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns traces: (list): a list of Traces
     """
@@ -72,7 +72,7 @@ def check_inside_of_arena(traces, silent=False, debug=False):
     """ Checks all traces whether each is inside the arena.
 
     :arg traces: (list): a list of Traces
-    :arg silent: (bool): if True no output is shown
+    :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns traces: (list): a list of Traces
     """
@@ -164,7 +164,7 @@ def track_jump_back_and_forth(trace, index, whole_frame_range, show_plots=False,
     :arg index: (int): auxiliary information of index in list of traces of the first trace
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg show_plots: (bool): a flag whether to show the jump in a plot
-    :arg silent: (bool): if True no output is shown
+    :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     assert isinstance(trace, Trace)

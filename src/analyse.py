@@ -262,8 +262,9 @@ def analyse(file_path, population_size, swaps=False):
         show_plot_locations(traces, whole_frame_range, subtitle="Final.")
 
     ## SAVE RESULTS
-    save_setting(counts, file_name=file_path, silent=silent, debug=debug)
-    convert_results_from_json_to_csv(silent=silent, debug=debug)
+    saved = save_setting(counts, file_name=file_path, silent=silent, debug=debug)
+    if saved:
+        convert_results_from_json_to_csv(silent=silent, debug=debug)
     save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     raise Exception

@@ -35,7 +35,7 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
 
         :arg traces: (list): list of Traces
         :arg automatically_swap: (bool): if True swaps without asking
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg: traces: (list): list of trimmed Traces
     """
@@ -55,7 +55,7 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
 
         :arg traces: (list): list of Traces
         :arg automatically_swap: (bool or list of int): if True swaps all without asking, if list it contains frames to autopass
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :return: traces: (list): list of trimmed Traces
     """
@@ -133,7 +133,7 @@ def trim_out_additional_agents_over_long_traces3(traces, population_size, silent
 
         :arg traces: (list): list of Traces
         :arg population_size: (int): expected number of agents
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns: traces: (list): list of trimmed Traces
     """
@@ -184,7 +184,7 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
 
         :arg traces: (list): list of Traces
         :arg population_size: (int): expected number of agents
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns: traces: (list): list of trimmed Traces
     """
@@ -238,7 +238,7 @@ def trim_out_additional_agents_over_long_traces_old(traces, population_size, sil
     """ Trims out additional appearance of an agent when long traces are over here.
     
         :arg population_size: (int): expected number of agents
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns: traces: (list): list of trimmed Traces
     """
@@ -360,7 +360,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
 
         :arg traces (list) list of traces
         :arg population_size (int) expected number of agents
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns: traces: (list): list of concatenated Traces
     """
@@ -618,7 +618,7 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
 
     :arg traces: (list): a list of Traces
     :arg scraped_traces: (list): a list of scraped traces obtained by parse_traces()
-    :arg silent: (bool): if True no output is shown
+    :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     print(colored("CROSS-TRACE ANALYSIS", "blue"))
@@ -657,7 +657,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
         :arg traces (list) list of traces
         :arg whole_frame_range: [int, int]: frame range of the whole video
         :arg population_size (int) expected number of agents
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
         :returns: traces: (list): list of concatenated Traces
@@ -798,7 +798,7 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
     :arg trace2: (Trace): second trace to be compared
     :arg trace1_index: (int): auxiliary information of index in list of traces of the first trace
     :arg trace2_index: (int): auxiliary information of index in list of traces of the second trace
-    :arg silent: (bool): if True no output is shown
+    :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :arg show_all_plots: (bool): if True show all the plots
     """

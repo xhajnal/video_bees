@@ -197,7 +197,7 @@ class Trace:
         :arg where: (list): is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
         :arg show: (bool): if True the plots are shown
         :arg subtitle: (string): a string to show under title
-        :arg silent: (bool) if True no output is shown
+        :arg silent: (bool) if True minimal output is shown
         :arg debug: (bool) if True extensive output is shown
         :returns: list of pairs [figure, axis] for each of three plots
         """

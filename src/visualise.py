@@ -104,7 +104,7 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg skip_whole_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg subtitle: (string): subtitle of the plot
-    :arg silent: (bool): if True no output is shown
+    :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     # Check
@@ -151,7 +151,7 @@ def show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index
         :arg distances: (list of int): y-axis - list of distances of the two traces
         :arg start_index1: (int): starting index of overlap/showing of the first trace frame list
         :arg end_index2: (int): end index of overlap/showing of the second trace frame list
-        :arg silent: (bool): if True no output is shown
+        :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
     """
     fig = plt.figure()
@@ -183,7 +183,7 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg show_all_gaps: (bool) if True shows all gaps
     :arg subtitle: (string): subtitle of the plot
-    :arg silent: (bool): if True no output is shown
+    :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     # Check
