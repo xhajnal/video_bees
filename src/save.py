@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 from time import time
@@ -5,13 +6,91 @@ from _socket import gethostname
 from termcolor import colored
 
 from trace import Trace
+from config import *
+from datetime import datetime
+
+
+def save_setting(counts, file_name, silent=False, debug=False):
+    """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
+     file_name -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
+
+     for exact enumeration have a look in the code.
+
+
+    :arg counts: (list of int): counts of traces after each analysis part
+    :arg file_name: (string): name of the file loaded
+    :arg silent: (bool): if True no output is shown
+    :arg debug: (bool): if True extensive output is shown
+    """
+    print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))
+    start_time = time()
+
+    ## CHECK
+    try:
+        os.mkdir("../output")
+    except OSError:
+        pass
+    # check all counts are counted
+    assert len(counts) == 7
+
+    ## LOAD SAVED RESULT TO UPDATE IT
+    try:
+        # with open("../output/results.p", 'rb') as file:
+        #     setting = pickle.load(file)
+        #     print("SETTING", setting)
+        with open("../output/results.txt") as file:
+            setting = json.load(file)
+            print("SETTING", setting)
+    except FileNotFoundError as err:
+        # f = open("../output/results.p", "a")
+        f = open("../output/results.txt", "a")
+        f.close()
+        setting = {}
+
+    # PARSE NEW ENTRY
+    now = str(datetime.now())
+    new_entry = {"get_distance_from_calculated_arena": get_distance_from_calculated_arena(),
+                 "get_max_trace_gap": get_max_trace_gap(),
+                 "get_min_trace_length": get_min_trace_length(),
+                 "get_bee_max_step_len": get_bee_max_step_len(),
+                 "get_bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
+                 "get_max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
+                 "get_max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
+                 "get_screen_size": get_screen_size(),
+                 "loaded": counts[0],
+                 "inside arena": counts[1],
+                 "jumps forth and back fixed": counts[2],
+                 "traces swapped": counts[3],
+                 "after first gaps and redundant": counts[4],
+                 "after merging overlapping traces": counts[5],
+                 "after second gaps and redundant": counts[6]}
+
+    ## UPDATE THE RESULTS
+    if file_name not in setting.keys():
+        setting[file_name] = {}
+        setting[file_name][now] = new_entry
+    else:
+        setting[file_name][now] = new_entry
+
+    ## SAVE THE RESULTS
+    # with open("../output/results.p", 'wb') as file:
+    #     pickle.dump(setting, file)
+
+    with open("../output/results.txt", 'w') as file:
+        file.write(json.dumps(setting))
+
+    # if debug:
+    #     print(setting)
+    # print(setting)
+
+    print(colored(f"Updating the results using this run. Saved in {os.path.abspath(f'../output/results.p')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
 
 def save_traces(traces, file_name, silent=False, debug=False):
     """ Saves the traces as csv file in loopy manner.
 
         :arg traces (list) list of traces
-        :arg file_name (string) name of the file to be saved in "output" folder
+        :arg file_name: (string): name of the file to be saved in "output" folder
         :arg silent: (bool): if True no output is shown
         :arg debug: (bool): if True extensive output is shown
     """
@@ -82,10 +161,10 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
     except Exception:
         pass
 
-    file = str(os.path.splitext(f"../output/{file_name}")[0])+".p"
+    file_path = str(os.path.splitext(f"../output/{file_name}")[0])+".p"
     if debug:
-        print("file", file)
-    with open(file, 'wb') as f:
-        pickle.dump(traces, f)
+        print("file", file_path)
+    with open(file_path, 'wb') as file:
+        pickle.dump(traces, file)
 
-    print(colored(f"Saving pickled {len(traces)} traces in {os.path.abspath(file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    print(colored(f"Saving pickled {len(traces)} traces in {os.path.abspath(file_path)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))

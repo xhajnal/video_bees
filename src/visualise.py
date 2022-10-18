@@ -183,6 +183,7 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg show_all_gaps: (bool) if True shows all gaps
     :arg subtitle: (string): subtitle of the plot
+    :arg silent: (bool): if True no output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     # Check

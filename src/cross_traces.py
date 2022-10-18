@@ -40,8 +40,14 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
         :arg: traces: (list): list of trimmed Traces
     """
     keep_looking = True
+    number_of_swaps = 0
+
     while keep_looking:
         keep_looking = track_swapping(traces, automatically_swap=automatically_swap, silent=silent, debug=debug)
+        if keep_looking:
+            number_of_swaps = number_of_swaps + 1
+
+    return number_of_swaps
 
 
 def track_swapping(traces, automatically_swap=False, silent=False, debug=False):

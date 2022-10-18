@@ -13,7 +13,7 @@ from cross_traces import put_gaping_traces_together, track_reappearance, cross_t
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, \
     track_swapping_loop
 from parse import parse_traces
-from save import pickle_traces, save_traces
+from save import pickle_traces, save_traces, save_setting
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
 global silent
@@ -48,6 +48,11 @@ def analyse(file_path, population_size, swaps=False):
     :arg population_size: (int): expected number of agents
     :arg swaps: (list of int): list of frame number of swaps to autopass
     """
+    #################
+    # Internal params
+    #################
+    counts = []
+
     ############
     # I/O stuff
     ############
@@ -89,6 +94,9 @@ def analyse(file_path, population_size, swaps=False):
         # print(scraped_traces[trace])
         traces.append(Trace(scraped_traces[trace], index))
 
+    # Storing the number of loaded traces
+    counts.append(len(traces))
+
     ### AUXILIARY COMPUTATION
     ## FRAME RANGE
     # obtain the frame range of the video
@@ -104,6 +112,8 @@ def analyse(file_path, population_size, swaps=False):
     # FIND TRACES OUTSIDE OF THE ARENA
     ##################################
     check_inside_of_arena(traces)
+    # Storing the number of traces inside of arena
+    counts.append(len(traces))
 
     ## TODO uncomment the following
     if show_plots:
@@ -129,6 +139,8 @@ def analyse(file_path, population_size, swaps=False):
     print(colored(f"We have found and fixed {number_of_jump_detected} jumps. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     # if show_plots:
     #     scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
+    # Storing the number of jumps detected
+    counts.append(number_of_jump_detected)
 
     if population_size > 1:
         ## CHOSEN TRACE SHOW - choose i, index of trace
@@ -146,7 +158,9 @@ def analyse(file_path, population_size, swaps=False):
     # if show_plots:
     #     show_overlaps(traces, whole_frame_range)
     
-    track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
+    number_of_swaps = track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
+    # Storing the number of swaps done
+    counts.append(number_of_swaps)
 
     ## TODO uncomment the following
     # ## ALL TRACES SHOW
@@ -169,6 +183,8 @@ def analyse(file_path, population_size, swaps=False):
             scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
         after_number_of_traces = len(traces)
 
+    # Storing the number of traces after TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
+    counts.append(len(traces))
     if not silent:
         print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
@@ -201,6 +217,8 @@ def analyse(file_path, population_size, swaps=False):
         merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=False)
         after_number_of_traces = len(traces)
 
+    # Storing the number of traces after MERGE OVERLAPPING TRACES
+    counts.append(len(traces))
     # QA of `merge_overlapping_traces`
     if len(traces) >= 2:
         if not silent:
@@ -233,6 +251,8 @@ def analyse(file_path, population_size, swaps=False):
             scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
         after_number_of_traces = len(traces)
 
+    # Storing the number of traces after second TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
+    counts.append(len(traces))
     ## VISUALISATIONS
     if show_plots:
         track_reappearance(traces, show=True)
@@ -242,6 +262,7 @@ def analyse(file_path, population_size, swaps=False):
         show_plot_locations(traces, whole_frame_range, subtitle="Final.")
 
     ## SAVE RESULTS
+    save_setting(counts, file_name=file_path, silent=silent, debug=debug)
     save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     raise Exception
