@@ -11,10 +11,11 @@ from misc import delete_indices
 from trace import Trace
 
 
-def remove_full_traces(traces, real_whole_frame_range, population_size, silent=False, debug=False):
+def remove_full_traces(traces, removed_traces, real_whole_frame_range, population_size, silent=False, debug=False):
     """ Removes traces of full range
 
         :arg traces: (list): a list of Traces
+        :arg removed_traces: (list): a list of already removed Traces
         :arg real_whole_frame_range: [int, int]: frame range of the whole video
         :arg population_size: (int): population size of original traces
         :arg silent: (bool): if True minimal output is shown
@@ -25,16 +26,16 @@ def remove_full_traces(traces, real_whole_frame_range, population_size, silent=F
         """
     print(colored("REMOVING TRACES OF FULL RANGE", "blue"))
     deleted = 0
-    old_traces = copy.copy(traces)
     for index, trace in enumerate(traces):
         if trace.frame_range == real_whole_frame_range:
             # print(colored(f"Removing trace {trace.trace_id}", "blue"))
             print(colored(f"Removing trace {index}({trace.trace_id}))", "blue"))
+            removed_traces.append(traces[index])
             del traces[index]
             deleted = deleted + 1
 
     print()
-    return traces, old_traces, population_size - deleted
+    return traces, removed_traces, population_size - deleted
 
 
 def single_trace_checker(traces, silent=False, debug=False):

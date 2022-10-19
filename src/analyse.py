@@ -52,6 +52,7 @@ def analyse(file_path, population_size, swaps=False):
     # Internal params
     #################
     counts = []
+    removed_traces = []
 
     ############
     # I/O stuff
@@ -95,7 +96,7 @@ def analyse(file_path, population_size, swaps=False):
         traces.append(Trace(scraped_traces[trace], index))
 
     # Storing the number of loaded traces
-    counts.append(len(traces))
+    counts.append(len(traces) + len(removed_traces))
 
     ### AUXILIARY COMPUTATION
     ## FRAME RANGE
@@ -113,7 +114,7 @@ def analyse(file_path, population_size, swaps=False):
     ##################################
     check_inside_of_arena(traces)
     # Storing the number of traces inside of arena
-    counts.append(len(traces))
+    counts.append(len(traces) + len(removed_traces))
 
     ## TODO uncomment the following
     if show_plots:
@@ -184,7 +185,7 @@ def analyse(file_path, population_size, swaps=False):
         after_number_of_traces = len(traces)
 
     # Storing the number of traces after TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
-    counts.append(len(traces))
+    counts.append(len(traces) + len(removed_traces))
     if not silent:
         print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
@@ -218,7 +219,7 @@ def analyse(file_path, population_size, swaps=False):
         after_number_of_traces = len(traces)
 
     # Storing the number of traces after MERGE OVERLAPPING TRACES
-    counts.append(len(traces))
+    counts.append(len(traces) + len(removed_traces))
     # QA of `merge_overlapping_traces`
     if len(traces) >= 2:
         if not silent:
@@ -232,9 +233,8 @@ def analyse(file_path, population_size, swaps=False):
         for index, trace in enumerate(traces):
             print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
 
-    ## TODO much of memory used here
     if len(traces) > 1:
-        traces, old_traces, population_size = remove_full_traces(traces, real_whole_frame_range, population_size)
+        traces, removed_traces, population_size = remove_full_traces(traces, removed_traces, real_whole_frame_range, population_size)
 
     scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
 
@@ -252,7 +252,8 @@ def analyse(file_path, population_size, swaps=False):
         after_number_of_traces = len(traces)
 
     # Storing the number of traces after second TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
-    counts.append(len(traces))
+    counts.append(len(traces) + len(removed_traces))
+
     ## VISUALISATIONS
     if show_plots:
         track_reappearance(traces, show=True)
