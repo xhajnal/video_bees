@@ -113,11 +113,12 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
     try:
         with open("../output/results.csv", "w") as file:
             # write header
-            file.write(f"track_file; timestamp; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
+            ## TODO parse the population size
+            file.write(f"track_file; timestamp of the run; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
                        f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
-                       f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded; inside arena; "
+                       f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded traces; inside arena; "
                        f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
-                       f"after merging overlapping traces; after second gaps and redundant \n")
+                       f"after merging overlapping traces; after second gaps and redundant; population size \n")
             assert isinstance(results, dict)
             for track_file in results.keys():
                 if debug:

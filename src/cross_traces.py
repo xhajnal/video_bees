@@ -20,8 +20,7 @@ def get_whole_frame_range(traces):
 
         :arg traces: (list): list of Traces
     """
-    # TODO use max int instead
-    frame_range = [999999999999999, -9]
+    frame_range = [sys.maxsize, -sys.maxsize]
     for trace in traces:
         if trace.frame_range[0] < frame_range[0]:
             frame_range[0] = trace.frame_range[0]
@@ -31,7 +30,7 @@ def get_whole_frame_range(traces):
 
 
 def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=False):
-    """ runs track_swapping while no swap is available
+    """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
         :arg automatically_swap: (bool): if True swaps without asking
@@ -39,6 +38,7 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
         :arg debug: (bool): if True extensive output is shown
         :arg: traces: (list): list of trimmed Traces
     """
+    start_time = time()
     keep_looking = True
     number_of_swaps = 0
 
@@ -47,6 +47,10 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
         if keep_looking:
             number_of_swaps = number_of_swaps + 1
 
+    if number_of_swaps == 0:
+        print(colored(f"There were no traces considerable of swapping. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
+    else:
+        print(colored(f"We swapped {number_of_swaps} pairs of traces. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return number_of_swaps
 
 
@@ -87,7 +91,7 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
         for index in range(2, len(first_trace_locations)):
             dist = math.dist(first_trace_locations[index], second_trace_locations[index])
             # distances.append(dist)
-            if dist < 100:  ## TODO find the right value
+            if dist < get_maximal_distance_to_check_for_trace_swapping():
                 if debug:
                     print(f"In pair {trace1_index}({traces[trace1_index].trace_id}), {trace2_index}({traces[trace2_index].trace_id}), on frame {dictionary[overlapping_pair_of_traces][0]+index}, the distance is {dist}")
                 vector1 = to_vect(first_trace_locations[index-2], first_trace_locations[index-1])
@@ -378,38 +382,32 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
         print(len(traces))
         print(len(reappearance))
 
-    trace_indices_to_trim = []
+    trace_indices_to_merge = []
 
-    video_range = [sys.maxsize, -sys.maxsize]
-
-    for trace in traces:
-        if trace.frame_range[0] < video_range[0]:
-            video_range[0] = trace.frame_range[0]
-        if trace.frame_range[1] > video_range[1]:
-            video_range[1] = trace.frame_range[1]
+    video_range = get_whole_frame_range(traces)
     if debug:
         print(video_range)
 
-    # Going through the video
+    # Going through the video, searching frames (from start to end)
     step_to = video_range[0]
     do_skip = False
-    while step_to <= video_range[1]:
+    while step_to <= video_range[1]:  # we are within the video range
         next_steps_to = []  # list of end of ranges to go to
-        indices_in = []
-        for index, trace in enumerate(traces):
-            if index in trace_indices_to_trim:
+        indices_in_between = []  # list of indices within selected window
+        for trace_index, trace in enumerate(traces):
+            if trace_index in trace_indices_to_merge:  # skipping the traces which we are gonna merge
                 continue
             assert isinstance(trace, Trace)
-            if trace.frame_range[0] <= step_to < trace.frame_range[1]:
+            if trace.frame_range[0] <= step_to < trace.frame_range[1]:  # if the window is inside of trace frame range
                 if debug:
                     # print(colored(f"adding trace {index} ({trace.trace_id}) of {trace.frame_range} to in between", "yellow"))
-                    print(colored(f"adding trace {index} of {trace.frame_range} to in between", "yellow"))
+                    print(colored(f"adding trace {trace_index} of {trace.frame_range} to 'in between'", "yellow"))
                 next_steps_to.append(trace.frame_range[1])
-                indices_in.append(index)
+                indices_in_between.append(trace_index)
             else:
                 if debug:
                     # print(colored(f"skipping trace {index} ({trace.trace_id}) of {trace.frame_range}", "red"))
-                    print(colored(f"skipping trace {index} of {trace.frame_range}", "red"))
+                    print(colored(f"skipping trace {trace_index} of {trace.frame_range}", "red"))
                 continue
         if debug:
             print(colored(f"finished first cycle with next_steps_to:{next_steps_to}", "blue"))
@@ -447,22 +445,21 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                 continue
 
         to_merge = next_steps_to.index(next_step_to)
-        index_to_go = indices_in[to_merge]
+        index_to_go = indices_in_between[to_merge]
         if debug:
             print("CHECKING")
             print("next_steps_to", next_steps_to)
-            print("indices_in", indices_in)
-            print("next_step_to", next_step_to)
+            print("indices_in_between", indices_in_between)
             print("index_to_go", index_to_go)
 
         if len(next_steps_to) == population_size:
             # Look for a mergeable trace
             if not silent:
-                print(colored(f"Gonna have a look for a mergeable traces from frame {step_to} till {next_step_to}.", "blue"))
+                print(colored(f"Gonna have a look for a second mergeable trace from frame {step_to} till {next_step_to}.", "blue"))
             step_to = next_step_to
             for index2, trace2 in enumerate(traces):
                 assert isinstance(trace2, Trace)
-                if index2 in trace_indices_to_trim:
+                if index2 in trace_indices_to_merge:
                     continue
                 if trace2.frame_range[0] < step_to:
                     if debug:
@@ -502,7 +499,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                         reason = "long gap too distant"
                         if dist_of_traces_in_xy > get_bee_max_step_len()*3:
                             # print(f" hell, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
-                            print(f" hell, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
+                            # print(f" hell, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
                             to_merge = False
                         else:
                             if debug:
@@ -511,7 +508,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                         reason = "short gap too distant"
                         if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
                             # print(f" hell2, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
-                            print(f" hell2, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
+                            # print(f" hell2, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
                             to_merge = False
                         else:
                             if debug:
@@ -521,7 +518,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
-                msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES {'' if to_merge else '('+reason+') '}{index}({trace1.trace_id}) {trace1.frame_range} " \
+                msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES {'' if to_merge else '('+reason+') '}{index_to_go}({trace1.trace_id}) {trace1.frame_range} " \
                       f"of {trace1.frame_range_len} frames and " \
                       f"trace {index2}({trace2.trace_id}) {trace2.frame_range} of " \
                       f"{int(trace2.frame_range_len)} frames| " \
@@ -538,11 +535,11 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     trace = merge_two_traces_with_gap(trace1, trace2)
                     if debug:
                         print(trace)
-                    trace_indices_to_trim.append(index2)
+                    trace_indices_to_merge.append(index2)
                     step_to = trace.frame_range[1]
                 elif reason == "gap long":
                     if not silent:
-                        print(colored("NOT CHECKING OTHER TRACES - they have to have longer gap", "red"))
+                        print(colored("SKIPPING OTHER TRACES - as they have even longer gap", "red"))
                     break
         else:
             step_to = next_step_to
@@ -550,11 +547,11 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
             print(colored(f"jumping to step {step_to}", "blue"))
 
     if debug:
-        print(f"Gonna delete the following traces as we have merged them: {trace_indices_to_trim}")
-    traces = delete_indices(trace_indices_to_trim, traces)
+        print(f"Gonna delete the following traces as we have merged them: {trace_indices_to_merge}")
+    traces = delete_indices(trace_indices_to_merge, traces)
 
     print(colored(f"GAPING TRACES analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
-    print(colored(f"Returning traces of length {len(traces)}, {len(trace_indices_to_trim)} shorter than in previous iteration.", "green"))
+    print(colored(f"Returning traces of length {len(traces)}, {len(trace_indices_to_merge)} shorter than in previous iteration.", "green"))
     print()
     return traces
 

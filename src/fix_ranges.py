@@ -23,7 +23,7 @@ def fix_ranges(file_path, autodelete=False, debug=False):
     header = []
 
     if os.path.isfile(new_file_path):
-        print(colored(f"file {new_file_path} already exist. We skip {file_path}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+        print(colored(f"file {new_file_path} already exist. We skip {file_path}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
         return
     else:
         with open(file_path, newline='') as input_csv_file:

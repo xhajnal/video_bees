@@ -124,7 +124,7 @@ def check_inside_of_arena(traces, silent=False, debug=False):
             if (location[0] - mid_x)**2 + (location[1] - mid_y)**2 > (diam/2 + get_distance_from_calculated_arena())**2:
                 traces_to_be_deleted.append(index)
                 # print(colored(f"checking trace {trace.trace_id} location {location} seems to be outside of the arena! Gonna delete this trace!", "red"))
-                print(colored(f"checking trace {index}({trace.trace_id}) location {location} seems to be outside of the arena! Gonna delete this trace!", "red"))
+                print(colored(f"checking trace {index}({trace.trace_id}) of {trace.frame_range_len} frames: location {location} seems to be outside of the arena! Gonna delete this trace!", "red"))
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)
@@ -158,19 +158,19 @@ def dummy_collision_finder(csv_file, size):
     return frame_numbers_of_collided_agents
 
 
-def track_jump_back_and_forth(trace, index, whole_frame_range, show_plots=False, silent=False, debug=False):
+def track_jump_back_and_forth(trace, trace_index, whole_frame_range, show_plots=False, silent=False, debug=False):
     """ Tracks when the tracking of the bee jumped at some place and then back quickly.
 
     :arg trace: (Trace): a Traces to check
-    :arg index: (int): auxiliary information of index in list of traces of the first trace
+    :arg trace_index: (int): auxiliary information of index in list of traces of the first trace
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg show_plots: (bool): a flag whether to show the jump in a plot
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     assert isinstance(trace, Trace)
-    if not silent:
-        print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace {index}({trace.trace_id})", "blue"))
+    # if not silent:
+    #     print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace {trace_index}({trace.trace_id})", "blue"))
     start_time = time()
 
     number_of_jump_detected = 0
@@ -184,43 +184,44 @@ def track_jump_back_and_forth(trace, index, whole_frame_range, show_plots=False,
     # define surrounding to jump back
     jump_back_dist = 10
 
-    index = 0
-    while index < len(trace.locations)-1:
+    location_index = 0
+    while location_index < len(trace.locations)-1:
         potential_jump_detected = False
-        for index2 in range(index + 1, index+frame_width+1):
+        for location_index2 in range(location_index + 1, location_index+frame_width+1):
             try:
-                a = trace.locations[index2]
+                a = trace.locations[location_index2]
             except IndexError:
                 break
-            if not potential_jump_detected and math.dist(trace.locations[index], trace.locations[index2]) >= jump_len:
+            if not potential_jump_detected and math.dist(trace.locations[location_index], trace.locations[location_index2]) >= jump_len:
                 potential_jump_detected = True
-                jump_to_index = index2
+                jump_to_index = location_index2
             if potential_jump_detected:
-                if math.dist(trace.locations[index], trace.locations[index2]) <= jump_back_dist:
+                if math.dist(trace.locations[location_index], trace.locations[location_index2]) <= jump_back_dist:
                     # a jump found
                     number_of_jump_detected = number_of_jump_detected + 1
                     if not silent:
-                        print(f" Jump back and forth detected, with start frame {trace.frames_list[index]}, while jump to"
+                        print(f" Jump back and forth detected trace {trace_index}({trace.trace_id}),"
+                              f" with start frame {trace.frames_list[location_index]}, while jump to"
                               f" frame {trace.frames_list[jump_to_index]}"
-                              f" with distance {math.dist(trace.locations[index], trace.locations[jump_to_index])}"
-                              f" and jumping back to frame {trace.frames_list[index2]} with distance to start"
-                              f" {math.dist(trace.locations[index], trace.locations[index2])}")
+                              f" with distance {math.dist(trace.locations[location_index], trace.locations[jump_to_index])}"
+                              f" and jumping back to frame {trace.frames_list[location_index2]} with distance to start"
+                              f" {math.dist(trace.locations[location_index], trace.locations[location_index2])}")
 
                     # show jump in plot
                     if show_plots and debug:
-                        trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[index]-2, trace.frames_list[index2]+2], show=True, subtitle=f" jump to {trace.frames_list[jump_to_index]}")
+                        trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[location_index]-2, trace.frames_list[location_index2]+2], show=True, subtitle=f" jump to {trace.frames_list[jump_to_index]}")
 
                     # smoothen the jump
-                    spam = np.linspace(trace.locations[index], trace.locations[index2], num=index2 - index + 1, endpoint=True)
-                    for index_index, location_index in enumerate(range(index, index2+1)):
+                    spam = np.linspace(trace.locations[location_index], trace.locations[location_index2], num=location_index2 - location_index + 1, endpoint=True)
+                    for index_index, location_index in enumerate(range(location_index, location_index2+1)):
                         trace.locations[location_index] = spam[index_index]
                     # if show_plots:
                     #     trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[index]-2, trace.frames_list[index2]+2], show=True, subtitle=f" Smoothened jump to {trace.frames_list[jump_to_index]}")
 
                     # move forth in frames
-                    index = index2
+                    location_index = location_index2
                     potential_jump_detected = False
-        index = index + 1
+        location_index = location_index + 1
 
     # print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return number_of_jump_detected

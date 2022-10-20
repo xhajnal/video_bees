@@ -21,7 +21,7 @@ global debug
 global show_plots
 
 # USER - please set up the following three flags
-silent = True
+silent = False
 debug = False
 show_plots = True
 
@@ -108,6 +108,7 @@ def analyse(file_path, population_size, swaps=False):
     ### ANALYSIS
     if show_plots:
         scatter_detection(traces, whole_frame_range, subtitle="Initial.")
+        show_plot_locations(traces, whole_frame_range, subtitle="Initial.")
 
     ##################################
     # FIND TRACES OUTSIDE OF THE ARENA
@@ -117,8 +118,8 @@ def analyse(file_path, population_size, swaps=False):
     counts.append(len(traces) + len(removed_traces))
 
     ## TODO uncomment the following
-    if show_plots:
-        show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
+    # if show_plots:
+    #     show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
     #     scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
     ########################################
@@ -172,6 +173,7 @@ def analyse(file_path, population_size, swaps=False):
     ##################################################################
     # TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
     ##################################################################
+    show_plot_locations(traces, whole_frame_range, subtitle="before TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER")
     before_number_of_traces = len(traces)
     after_number_of_traces = 0
     while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
@@ -189,16 +191,12 @@ def analyse(file_path, population_size, swaps=False):
     if not silent:
         print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
-            print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
+            print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range}")
 
     if show_plots:
         # scatter_detection(traces, whole_frame_range)
         show_gaps(traces, whole_frame_range, silent=silent, debug=debug)
         show_overlaps(traces, whole_frame_range, silent=silent, debug=debug)
-
-    if not silent:
-        for index, trace in enumerate(traces):
-            print(f"trace {index} ({trace.trace_id}), {trace.frame_range}")
 
     # show_gaps(traces, whole_frame_range)
 
