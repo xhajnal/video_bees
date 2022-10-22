@@ -10,7 +10,7 @@ from config import *
 from datetime import datetime
 
 
-def save_setting(counts, file_name, silent=False, debug=False):
+def save_setting(counts, file_name, population_size, silent=False, debug=False):
     """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
      file_name -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
 
@@ -19,6 +19,7 @@ def save_setting(counts, file_name, silent=False, debug=False):
 
     :arg counts: (list of int): counts of traces after each analysis part
     :arg file_name: (string): name of the file loaded
+    :arg population_size: (int): number of agents tracked
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
@@ -65,7 +66,8 @@ def save_setting(counts, file_name, silent=False, debug=False):
                  "traces swapped": counts[3],
                  "after first gaps and redundant": counts[4],
                  "after merging overlapping traces": counts[5],
-                 "after second gaps and redundant": counts[6]}
+                 "after second gaps and redundant": counts[6],
+                 "population_size": population_size}
 
     ## UPDATE THE RESULTS
     if file_name not in results.keys():
@@ -129,13 +131,26 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                         print("timestamp", timestamp)
                     assert isinstance(results[track_file][timestamp], dict)
                     record = results[track_file][timestamp]
+                    try:
+                        population_size = record['population_size']
+                    except KeyError as err:
+                        population_size = None
+                        spam = track_file.split('_')
+                        for item in spam:
+                            if "bee" in item.lower():
+                                population_size = ''.join([n for n in item if n.isdigit()])
+                                break
+                        if population_size is None:
+                            raise err
+
                     file.write(f"{track_file}; {timestamp}; {record['distance_from_calculated_arena']}; "
                                f"{record['max_trace_gap']}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
                                f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
                                f"{record['max_step_distance_to_merge_overlapping_traces']}; {record['screen_size']}; "
                                f"{record['loaded']}; {record['inside arena']}; {record['jumps forth and back fixed']};"
                                f" {record['traces swapped']}; {record['after first gaps and redundant']};"
-                               f" {record['after merging overlapping traces']}; {record['after second gaps and redundant']}\n")
+                               f" {record['after merging overlapping traces']}; "
+                               f"{record['after second gaps and redundant']}; {population_size}\n")
     except OSError:
         print(colored(f"Could not write into csv file! Try to close it first.", "red"))
         return

@@ -118,7 +118,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
         trace1.locations.extend(in_middle_points)
 
     else:
-        in_middle_point = [-sys.maxsize, -sys.maxsize]
+        in_middle_point = [-1, -1]
 
         # fill the gap location as the chosen point
         for frame in range(frame_gap_size):
