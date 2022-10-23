@@ -41,18 +41,22 @@ def set_debug(is_debug):
     debug = is_debug
 
 
-def analyse(file_path, population_size, swaps=False):
+def analyse(file_path, population_size, swaps=False, has_video=False, has_tracked_video=False):
     """ Runs the whole file analysis
 
     :arg file_path: (str): path to csv file
     :arg population_size: (int): expected number of agents
     :arg swaps: (list of int): list of frame number of swaps to auto-pass
+    :arg has_video: (bool): flag whether any video is available
+    :arg has_tracked_video: (bool): flag whether a video with tracking is available
     """
     #################
     # Internal params
     #################
     counts = []
     removed_traces = []
+
+    print(colored(f"Gonna analyse {file_path}", "magenta"))
 
     ############
     # I/O stuff
@@ -84,9 +88,13 @@ def analyse(file_path, population_size, swaps=False):
     ########
     # PARSER
     ########
-    with open(file_path, newline='') as csv_file:
-        # parse traces from csv file
-        scraped_traces = parse_traces(csv_file)
+    try:
+        with open(file_path, newline='') as csv_file:
+            # parse traces from csv file
+            scraped_traces = parse_traces(csv_file)
+    except FileNotFoundError:
+        print(colored(f"File not found!", "magenta"))
+        return
 
     # store traces as list of Traces
     traces = []
@@ -159,10 +167,13 @@ def analyse(file_path, population_size, swaps=False):
     ## TODO uncomment the following
     # if show_plots:
     #     show_overlaps(traces, whole_frame_range)
-    
-    number_of_swaps = track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
-    # Storing the number of swaps done
-    counts.append(number_of_swaps)
+
+    if has_video:
+        number_of_swaps = track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
+        # Storing the number of swaps done
+        counts.append(number_of_swaps)
+    else:
+        counts.append(0)
 
     ## TODO uncomment the following
     # ## ALL TRACES SHOW
@@ -261,11 +272,11 @@ def analyse(file_path, population_size, swaps=False):
         show_plot_locations(traces, whole_frame_range, subtitle="Final.")
 
     ## SAVE RESULTS
-    saved = save_setting(counts, file_name=file_path, population_size=population_size, silent=silent, debug=debug)
-    if saved:
+    is_new = save_setting(counts, file_name=file_path, population_size=population_size, silent=silent, debug=debug)
+    if is_new:
         convert_results_from_json_to_csv(silent=silent, debug=debug)
-    save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
-    pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
-    raise Exception
-    ### ANNOTATE THE VIDEO
-    annotate_video(video_file, output_video_file, traces, traces[0].frame_range[0])
+        save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+        pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+    # raise Exception
+    # ### ANNOTATE THE VIDEO
+    # annotate_video(video_file, output_video_file, traces, traces[0].frame_range[0])

@@ -22,6 +22,7 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
     :arg population_size: (int): number of agents tracked
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
+    :returns is_new: (bool): flag whether this result is new
     """
     print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))
     start_time = time()
