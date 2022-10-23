@@ -5,13 +5,12 @@ import glob
 from _socket import gethostname
 from termcolor import colored
 
-from annotate2 import annotate_video
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, \
-    track_swapping_loop
+    track_swapping_loop, get_video_whole_frame_range
 from parse import parse_traces
 from save import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
@@ -21,9 +20,9 @@ global debug
 global show_plots
 
 # USER - please set up the following three flags
-silent = False
+silent = True
 debug = False
-show_plots = True
+show_plots = False
 
 
 def set_show_plots(do_show_plots):
@@ -111,7 +110,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # obtain the frame range of the video
     real_whole_frame_range = get_whole_frame_range(traces)
     # compute frame range margins for visualisation
-    whole_frame_range = [real_whole_frame_range[0] - 2000, real_whole_frame_range[1] + 2000]
+    whole_frame_range = get_video_whole_frame_range(traces)
 
     ### ANALYSIS
     if show_plots:
@@ -168,8 +167,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # if show_plots:
     #     show_overlaps(traces, whole_frame_range)
 
-    if has_video:
-        number_of_swaps = track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
+    if has_tracked_video:
+        number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, silent=silent, debug=debug)
         # Storing the number of swaps done
         counts.append(number_of_swaps)
     else:
@@ -184,7 +183,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     ##################################################################
     # TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
     ##################################################################
-    show_plot_locations(traces, whole_frame_range, subtitle="before TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER")
+    if show_plots:
+        show_plot_locations(traces, whole_frame_range, subtitle="before TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER")
     before_number_of_traces = len(traces)
     after_number_of_traces = 0
     while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
@@ -245,7 +245,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     if len(traces) > 1:
         traces, removed_traces, population_size = remove_full_traces(traces, removed_traces, real_whole_frame_range, population_size)
 
-    scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
+    if show_plots:
+        scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
 
     print("SECOND Gaping traces analysis")
     before_number_of_traces = len(traces)

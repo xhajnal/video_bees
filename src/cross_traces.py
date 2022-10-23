@@ -29,7 +29,16 @@ def get_whole_frame_range(traces):
     return frame_range
 
 
-def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=False):
+def get_video_whole_frame_range(traces):
+    """ Returns frame range of the whole video for visualisation - adding margins.
+
+        :arg traces: (list): list of Traces
+    """
+    a = get_whole_frame_range(traces)
+    return [a[0] - 2000, a[1] + 2000]
+
+
+def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, silent=False, debug=False):
     """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
@@ -43,7 +52,7 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
     number_of_swaps = 0
 
     while keep_looking:
-        keep_looking = track_swapping(traces, automatically_swap=automatically_swap, silent=silent, debug=debug)
+        keep_looking = track_swapping(traces, whole_frame_range, automatically_swap=automatically_swap, silent=silent, debug=debug)
         if keep_looking:
             number_of_swaps = number_of_swaps + 1
 
@@ -54,7 +63,7 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
     return number_of_swaps
 
 
-def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
+def track_swapping(traces, whole_frame_range, automatically_swap=False, silent=False, debug=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
         :arg traces: (list): list of Traces
@@ -107,6 +116,9 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
                     print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
                     print(f"cosine_similarity(vector2, vector1_next) > cosine_similarity(vector2, vector2_next): {calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
                     print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
+
+                    scatter_detection([traces[trace1_index], traces[trace2_index]], get_video_whole_frame_range([traces[trace1_index], traces[trace2_index]]), subtitle="Traces to be swapped.")
+                    show_plot_locations([traces[trace1_index], traces[trace2_index]], [0,0], from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30], subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
 
                     if automatically_swap is True:
                         answer = "6"
