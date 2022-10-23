@@ -12,7 +12,7 @@ from cross_traces import put_gaping_traces_together, track_reappearance, cross_t
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, \
     track_swapping_loop, get_video_whole_frame_range
 from parse import parse_traces
-from save import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv
+from save import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv, is_new_config
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
 global silent
@@ -89,6 +89,11 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     ########
     try:
         with open(file_path, newline='') as csv_file:
+            #################
+            # Check whether this is new setting
+            #################
+            if not is_new_config(file_name=file_path):
+                return
             # parse traces from csv file
             scraped_traces = parse_traces(csv_file)
     except FileNotFoundError:

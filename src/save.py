@@ -10,6 +10,48 @@ from config import *
 from datetime import datetime
 
 
+def is_new_config(file_name):
+    """ Returns whether this config is new in the results."""
+
+    ## LOAD SAVED RESULTS
+    try:
+        with open("../output/results.txt") as file:
+            results = json.load(file)
+    except FileNotFoundError as err:
+        # f = open("../output/results.p", "a")
+        file = open("../output/results.txt", "a")
+        file.close()
+        results = {}
+
+    if file_name not in results.keys():
+        return True
+
+    # GET SETTING
+    setting = {"distance_from_calculated_arena": get_distance_from_calculated_arena(),
+               "max_trace_gap": get_max_trace_gap(),
+               "min_trace_length": get_min_trace_length(),
+               "bee_max_step_len": get_bee_max_step_len(),
+               "bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
+               "max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
+               "max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
+               "screen_size": get_screen_size()}
+
+    same_setting_found = False
+
+    for timestamp in results[file_name]:
+        result = results[file_name][timestamp]
+        if same_setting_found:
+            break
+        for key in setting.keys():
+            if setting[key] != result[key]:
+                break
+            same_setting_found = True
+
+    if same_setting_found:
+        print(colored(f"Already found the same setting - skipping this file. \n", "magenta"))
+    return not same_setting_found
+
+
 def save_setting(counts, file_name, population_size, silent=False, debug=False):
     """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
      file_name -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
@@ -80,7 +122,9 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
         if debug:
             print("possibly same result", result)
         if result == new_entry:
-            print(colored(f"Already found the same result - not saving it. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+            print(colored(
+                f"Already found the same result - not saving it. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n",
+                "yellow"))
             return False
 
     results[file_name][now] = new_entry
@@ -96,7 +140,9 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
     #     print(results)
     # print(results)
 
-    print(colored(f"Updating the results using this run. Saved in {os.path.abspath(f'../output/results.txt')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    print(colored(
+        f"Updating the results using this run. Saved in {os.path.abspath(f'../output/results.txt')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n",
+        "yellow"))
     return True
 
 
@@ -117,11 +163,12 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
         with open("../output/results.csv", "w") as file:
             # write header
             ## TODO parse the population size
-            file.write(f"track_file; timestamp of the run; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
-                       f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
-                       f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded traces; inside arena; "
-                       f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
-                       f"after merging overlapping traces; after second gaps and redundant; population size \n")
+            file.write(
+                f"track_file; timestamp of the run; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
+                f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
+                f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded traces; inside arena; "
+                f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
+                f"after merging overlapping traces; after second gaps and redundant; population size \n")
             assert isinstance(results, dict)
             for track_file in results.keys():
                 if debug:
@@ -234,7 +281,7 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
     except OSError:
         pass
 
-    file_path = str(os.path.splitext(f"../output/{file_name}")[0])+".p"
+    file_path = str(os.path.splitext(f"../output/{file_name}")[0]) + ".p"
     if debug:
         print("file", file_path)
     with open(file_path, 'wb') as file:
