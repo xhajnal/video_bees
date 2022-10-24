@@ -11,8 +11,8 @@ from single_trace import single_trace_checker, check_inside_of_arena, track_jump
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, \
     track_swapping_loop, get_video_whole_frame_range
-from parse import parse_traces
-from save import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv, is_new_config
+from dave_io import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv, is_new_config, parse_traces, \
+    get_video_path
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
 global silent
@@ -49,44 +49,22 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     :arg has_video: (bool): flag whether any video is available
     :arg has_tracked_video: (bool): flag whether a video with tracking is available
     """
+    print(colored(f"Gonna analyse {file_path}", "magenta"))
+
     #################
     # Internal params
     #################
     counts = []
     removed_traces = []
 
-    print(colored(f"Gonna analyse {file_path}", "magenta"))
-
     ############
     # I/O stuff
     ############
-    # get the name of the file without suffix
-    video_file = Path(file_path).stem
-    # get the stem of the filename - digital identifier
-    video_file = video_file.split("_")[:2]
-    video_file = "_".join(video_file)
-    # print(video_file)
+    video_file, output_video_file = get_video_path(file_path)
 
-    folder = os.path.dirname(Path(file_path))
-    # print(folder)
-
-    video_file = glob.glob(os.path.join(folder, f'*{video_file}*.mp4'))
-    if len(video_file) > 1:
-        raise Exception(f"There are more input videos with given identifier: {video_file}. We do not know which to pick.")
-    elif len(video_file) == 0:
-        video_file = ""
-        output_video_file = ""
-    else:
-        video_file = video_file[0]
-        output_video_file = os.path.join(folder, "Results", os.path.basename(video_file))
-    try:
-        os.mkdir(os.path.join(folder, "Results"))
-    except OSError:
-        pass
-
-    ########
-    # PARSER
-    ########
+    ####################
+    # PARSE CSV & CONFIG
+    ####################
     try:
         with open(file_path, newline='') as csv_file:
             #################
@@ -129,7 +107,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # Storing the number of traces inside of arena
     counts.append(len(traces) + len(removed_traces))
 
-    ## TODO uncomment the following
+    # TODO uncomment the following
     # if show_plots:
     #     show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
     #     scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
@@ -138,7 +116,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # FIND TRACES OF ZERO LENGTH, TRACE INFO
     ########################################
     single_trace_checker(traces, silent=silent, debug=debug)
-    ## TODO uncomment the following
+    # TODO uncomment the following
     # if show_plots:
     #     scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
 

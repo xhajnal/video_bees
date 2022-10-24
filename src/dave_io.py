@@ -1,18 +1,48 @@
+import csv
+import glob
 import json
 import os
 import pickle
+from pathlib import Path
 from time import time
 from _socket import gethostname
 from termcolor import colored
+from datetime import datetime
 
 from trace import Trace
 from config import *
-from datetime import datetime
+
+
+def get_video_path(file_path):
+    # get the name of the file without suffix
+    video_file = Path(file_path).stem
+    # get the stem of the filename - digital identifier
+    video_file = video_file.split("_")[:2]
+    video_file = "_".join(video_file)
+    # print(video_file)
+
+    folder = os.path.dirname(Path(file_path))
+    # print(folder)
+
+    video_file = glob.glob(os.path.join(folder, f'*{video_file}*.mp4'))
+    if len(video_file) > 1:
+        raise Exception(f"There are more input videos with given identifier: {video_file}. We do not know which to pick.")
+    elif len(video_file) == 0:
+        video_file = ""
+        output_video_file = ""
+    else:
+        video_file = video_file[0]
+        output_video_file = os.path.join(folder, "Results", os.path.basename(video_file))
+    try:
+        os.mkdir(os.path.join(folder, "Results"))
+    except OSError:
+        pass
+
+    return video_file, output_video_file
 
 
 def is_new_config(file_name):
     """ Returns whether this config is new in the results."""
-
     ## LOAD SAVED RESULTS
     try:
         with open("../output/results.txt") as file:
@@ -43,7 +73,10 @@ def is_new_config(file_name):
         if same_setting_found:
             break
         for key in setting.keys():
+            # print(f"setting[{key}]", setting[key])
+            # print(f"result[{key}]", result[key])
             if setting[key] != result[key]:
+                # same_setting_found = False
                 break
             same_setting_found = True
 
@@ -288,6 +321,44 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
         pickle.dump(traces, file)
 
     print(colored(f"Saving pickled {len(traces)} traces in {os.path.abspath(file_path)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+
+
+def pickle_load(file):
+    """ Returns loaded pickled data
+
+    Args:
+        file (string or Path): filename/filepath
+    """
+
+    filename, file_extension = os.path.splitext(file)
+
+    if file_extension == ".p":
+        with open(file, "rb") as f:
+            return pickle.load(f)
+    elif file_extension == "":
+        with open(str(file) + ".p", "rb") as f:
+            return pickle.load(f)
+    else:
+        raise Exception("File extension does not match", f"{file} does not seem to be pickle file!")
+
+
+def parse_traces(csv_file):
+    """ Parses a loopy csv file nn/ai and returns a dictionary of traces 'oid' -> 'frame_number' -> location [x,y]
+
+    :arg csv_file: (file): input file
+    :returns: traces (dic): dictionary of traces 'oid' -> 'frame_number' -> [line_id, location [x,y]]
+    """
+    start_time = time()
+    print(colored("PARSE TRACES", "blue"))
+    traces = dict()
+    reader = csv.DictReader(csv_file)
+    for row in reader:
+        if int(row['oid']) not in traces.keys():
+            # print("hello", row['oid'])
+            traces[int(row['oid'])] = dict()
+        traces[int(row['oid'])][int(row['frame_number'])] = [row[''], [float(row['x']), float(row['y'])]]
+    print(colored(f"Loaded {len(traces)} traces. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    return traces
 
 # if __name__ == "__main__":
 #     convert_results_from_json_to_csv()
