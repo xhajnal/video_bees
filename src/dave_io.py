@@ -14,6 +14,7 @@ from config import *
 
 
 def get_video_path(file_path):
+    """ Obtain the path of the video files. This may be case specific."""
     # get the name of the file without suffix
     video_file = Path(file_path).stem
     # get the stem of the filename - digital identifier
