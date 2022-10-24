@@ -76,7 +76,7 @@ def is_new_config(file_name):
             # print(f"setting[{key}]", setting[key])
             # print(f"result[{key}]", result[key])
             if setting[key] != result[key]:
-                # same_setting_found = False
+                same_setting_found = False
                 break
             same_setting_found = True
 
