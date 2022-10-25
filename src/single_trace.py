@@ -27,7 +27,7 @@ def remove_full_traces(traces, removed_traces, real_whole_frame_range, populatio
     print(colored("REMOVING TRACES OF FULL RANGE", "blue"))
     deleted = 0
     for index, trace in enumerate(traces):
-        if trace.frame_range == real_whole_frame_range:
+        if trace.check_whether_is_done(real_whole_frame_range):
             # print(colored(f"Removing trace {trace.trace_id}", "blue"))
             print(colored(f"Removing trace {index}({trace.trace_id}))", "blue"))
             removed_traces.append(traces[index])

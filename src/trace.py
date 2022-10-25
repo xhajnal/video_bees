@@ -22,6 +22,7 @@ class Trace:
         locations (list): list of pairs, locations in each frame
         gap_frames (list): list of frame_numbers of gap frames
         overlap_frames (list): list of frame_numbers of overlapping frames
+        is_done (bool): flag whether this trace has full length (computable using real_whole_range)
     Computable:
         number_of_frames_tracked (int): number of frames with tracked location
     """
@@ -39,6 +40,7 @@ class Trace:
         # print("frames", frames)
 
         self.frame_range = [frames[0], frames[-1]]
+        self.is_done = False
         # print(frame_range)
         self.frame_range_len = int(float(frames[-1]) - float(frames[0]))
         self.max_step_len = 0
@@ -92,7 +94,7 @@ class Trace:
                     raise err
 
     def get_gap_locations(self):
-        """ Returns a list of locations of gaps. """
+        """ Returns a list of locations of gaps."""
         gap_locations = []
         for frame in self.gap_frames:
             index = self.frames_list.index(frame)
@@ -101,7 +103,7 @@ class Trace:
         return gap_locations
 
     def get_overlap_locations(self):
-        """ Returns a list of locations of overlaps. """
+        """ Returns a list of locations of overlaps."""
         overlap_locations = []
         for frame in self.overlap_frames:
             index = self.frames_list.index(frame)
@@ -116,15 +118,24 @@ class Trace:
         return self.locations[start_index:end_index + 1]
 
     def get_number_of_frames_tracked(self):
-        """ Returns number of tracked frames. """
+        """ Returns number of tracked frames."""
         return len(self.frames_list) - len(self.gap_frames)
 
     def check_trace_consistency(self):
         """ Verifies the consistency of the trace."""
         assert self.frame_range[0] <= self.frame_range[1]
 
+    def check_whether_is_done(self, real_whole_frame_range):
+        """ Checks and stores whether this trace has its full length."""
+        if self.frame_range == real_whole_frame_range:
+            self.is_done = True
+            return True
+        else:
+            self.is_done = False
+            return False
+
     def recalculate_trace_lengths(self, recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True):
-        """ Recalculates trace length(s) based on locations. """
+        """ Recalculates trace length(s) based on locations."""
         # reset values
         if recalculate_length:
             self.trace_length = 0
@@ -163,7 +174,7 @@ class Trace:
                 self.max_step_len_frame_number = self.frames_list[max_step_index - 1]
 
     def show_step_lengths_hist(self, bins=100):
-        """ Histogram of lengths of a single step. """
+        """ Histogram of lengths of a single step."""
         # # print(self.trace_lengths)
         # plt.bar(list(self.trace_lengths.keys()), self.trace_lengths.values(), color='g')
         # plt.xlabel('Step size')
