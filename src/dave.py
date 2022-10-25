@@ -67,12 +67,6 @@ if __name__ == "__main__":
     # 12 -> 8 -> 2
     analyse('../data/Video_tracking/190917/20190917_152245969_1BEE_generated_20210903_103442_nn.csv', 1)
 
-    # -> ->
-    analyse("../data/Video_tracking/190917/20190917_162003041_1BEE-part1_generated_20210906_083806_nn.csv", 1)
-
-    # -> ->
-    analyse("../data/Video_tracking/190917/20190917_162117864_1BEE-part2_generated_20210906_083927_nn.csv", 1)
-
     # 79 -> 60 -> 3
     analyse("../data/Video_tracking/190918/20190918_111016982_1BEE_generated_20210910_081829_nn.csv", 1, has_video=True, has_tracked_video=True)
 
@@ -739,12 +733,6 @@ if __name__ == "__main__":
 
     ## 190919
     # -> ->
-    analyse("../data/Video_tracking/190919/20190919_113824418_7BEES-part1_generated_20210908_085930_nn.csv", 7)
-
-    # -> ->
-    analyse("../data/Video_tracking/190919/20190919_114444124_7BEES-part2_generated_20210908_090147_nn.csv", 7)
-
-    # -> ->
     analyse("../data/Video_tracking/190919/20190919_150757868_7BEES_generated_20210909_085206_nn.csv", 7)
 
     ## 190920
@@ -1124,12 +1112,6 @@ if __name__ == "__main__":
     ## 190919
     # -> ->
     analyse("../data/Video_tracking/190919/20190919_105145877_15BEES_generated_20210908_083852_nn.csv", 15)
-
-    # -> ->
-    analyse("../data/Video_tracking/190919/20190919_142230235_15BEES-part1_generated_20210908_100247_nn.csv", 15)
-
-    # -> ->
-    analyse("../data/Video_tracking/190919/20190919_142836359_15BEES-part2_generated_20210908_100633_nn.csv", 15)
 
     ## 190920
     # -> ->

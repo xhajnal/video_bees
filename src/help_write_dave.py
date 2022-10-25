@@ -15,6 +15,9 @@ for population_size in [1, 2, 5, 7, 10, 15]:
         print(f"# ## {item}")
         for file in glob(f"{path}/{item}/*_{population_size}BEE*_nn.csv", recursive=False):
 
+            if "part" in file:
+                continue
+
             file = file.replace("//", "/")
             file = file.replace("\\", "/")
             # folder = os.path.dirname(file)
