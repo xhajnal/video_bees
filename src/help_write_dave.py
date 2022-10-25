@@ -13,7 +13,7 @@ for population_size in [1, 2, 5, 7, 10, 15]:
         print(f"# ############################################# {population_size} BEES #######################################################")
     for item in a:
         print(f"# ## {item}")
-        for file in glob(f"{path}/{item}/*{population_size}BEE*_nn.csv", recursive=False):
+        for file in glob(f"{path}/{item}/*_{population_size}BEE*_nn.csv", recursive=False):
 
             file = file.replace("//", "/")
             file = file.replace("\\", "/")
