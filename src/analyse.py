@@ -18,11 +18,13 @@ from visualise import scatter_detection, show_plot_locations, show_overlaps, sho
 global silent
 global debug
 global show_plots
+global rerun
 
 # USER - please set up the following three flags
 silent = True
 debug = False
 show_plots = False
+rerun = False
 
 
 def set_show_plots(do_show_plots):
@@ -38,6 +40,11 @@ def set_silent(is_silent):
 def set_debug(is_debug):
     global debug
     debug = is_debug
+
+
+def set_rerun(do_rerun):
+    global rerun
+    rerun = do_rerun
 
 
 def analyse(file_path, population_size, swaps=False, has_video=False, has_tracked_video=False):
@@ -70,7 +77,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
             #################
             # Check whether this is new setting
             #################
-            if not is_new_config(file_name=file_path):
+            if not (is_new_config(file_name=file_path) or rerun):
                 return
             # parse traces from csv file
             scraped_traces = parse_traces(csv_file)
@@ -150,7 +157,6 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # if show_plots:
     #     show_overlaps(traces, whole_frame_range)
 
-    if has_tracked_video:
         number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, silent=silent, debug=debug)
         # Storing the number of swaps done
         counts.append(number_of_swaps)
@@ -261,8 +267,9 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     is_new = save_setting(counts, file_name=file_path, population_size=population_size, silent=silent, debug=debug)
     if is_new:
         convert_results_from_json_to_csv(silent=silent, debug=debug)
-        save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
-        pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+        # TODO uncomment the following
+        # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+        # pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     # raise Exception
     # ### ANNOTATE THE VIDEO
     # annotate_video(video_file, output_video_file, traces, traces[0].frame_range[0])
