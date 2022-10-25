@@ -41,7 +41,7 @@ def set_debug(is_debug):
 
 
 def analyse(file_path, population_size, swaps=False, has_video=False, has_tracked_video=False):
-    """ Runs the whole file analysis
+    """ Runs the whole file analysis.
 
     :arg file_path: (str): path to csv file
     :arg population_size: (int): expected number of agents
@@ -226,7 +226,9 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
             print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
 
     if len(traces) > 1:
-        traces, removed_traces, population_size = remove_full_traces(traces, removed_traces, real_whole_frame_range, population_size)
+        traces, removed_traces, new_population_size = remove_full_traces(traces, removed_traces, real_whole_frame_range, population_size)
+    else:
+        new_population_size = population_size
 
     if show_plots:
         scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
@@ -234,12 +236,12 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     print("SECOND Gaping traces analysis")
     before_number_of_traces = len(traces)
     after_number_of_traces = 0
-    while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
+    while (not before_number_of_traces == after_number_of_traces) and (len(traces) > new_population_size):
         before_number_of_traces = len(traces)
-        traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
+        traces = trim_out_additional_agents_over_long_traces2(traces, new_population_size, silent=silent, debug=debug)
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
-        traces = put_gaping_traces_together(traces, population_size, silent=silent, debug=debug)
+        traces = put_gaping_traces_together(traces, new_population_size, silent=silent, debug=debug)
         if show_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
         after_number_of_traces = len(traces)
