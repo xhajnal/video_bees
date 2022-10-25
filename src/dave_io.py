@@ -109,7 +109,7 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
     except OSError:
         pass
     # check all counts are counted
-    assert len(counts) == 7
+    assert len(counts) == 8
 
     ## LOAD SAVED RESULTS TO UPDATE IT
     try:
@@ -139,11 +139,12 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
                  "screen_size": get_screen_size(),
                  "loaded": counts[0],
                  "inside arena": counts[1],
-                 "jumps forth and back fixed": counts[2],
-                 "traces swapped": counts[3],
-                 "after first gaps and redundant": counts[4],
-                 "after merging overlapping traces": counts[5],
-                 "after second gaps and redundant": counts[6],
+                 "zero length": counts[2],
+                 "jumps forth and back fixed": counts[3],
+                 "traces swapped": counts[4],
+                 "after first gaps and redundant": counts[5],
+                 "after merging overlapping traces": counts[6],
+                 "after second gaps and redundant": counts[7],
                  "population_size": population_size}
 
     ## UPDATE THE RESULTS
@@ -200,7 +201,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
             file.write(
                 f"track_file; timestamp of the run; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
                 f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
-                f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded traces; inside arena; "
+                f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded traces; inside arena; zero length; "
                 f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
                 f"after merging overlapping traces; after second gaps and redundant; population size \n")
             assert isinstance(results, dict)
@@ -225,11 +226,16 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                         if population_size is None:
                             raise err
 
+                    try:
+                        zero_len = record['zero length']
+                    except KeyError as err:
+                        zero_len = ""
+
                     file.write(f"{track_file}; {timestamp}; {record['distance_from_calculated_arena']}; "
                                f"{record['max_trace_gap']}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
                                f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
                                f"{record['max_step_distance_to_merge_overlapping_traces']}; {record['screen_size']}; "
-                               f"{record['loaded']}; {record['inside arena']}; {record['jumps forth and back fixed']};"
+                               f"{record['loaded']}; {record['inside arena']}; {zero_len}; {record['jumps forth and back fixed']};"
                                f" {record['traces swapped']}; {record['after first gaps and redundant']};"
                                f" {record['after merging overlapping traces']}; "
                                f"{record['after second gaps and redundant']}; {population_size}\n")

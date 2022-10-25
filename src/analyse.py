@@ -77,8 +77,9 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
             #################
             # Check whether this is new setting
             #################
-            if not (is_new_config(file_name=file_path) or rerun):
-                return
+            if not rerun:
+                if not is_new_config(file_name=file_path):
+                    return
             # parse traces from csv file
             scraped_traces = parse_traces(csv_file)
     except FileNotFoundError:
@@ -123,6 +124,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # FIND TRACES OF ZERO LENGTH, TRACE INFO
     ########################################
     single_trace_checker(traces, silent=silent, debug=debug)
+    counts.append(len(traces) + len(removed_traces))
     # TODO uncomment the following
     # if show_plots:
     #     scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
