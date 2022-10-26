@@ -164,7 +164,7 @@ def show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index
     ax1.scatter(x, y, alpha=0.5)
     plt.xlabel('Overlapping frame numbers')
     plt.ylabel('Distance of the two traces')
-    title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace {trace1.trace_id} (left red) \n or cutting trace {trace2.trace_id} (right red).'
+    title = f'Scatter plot of the distance of the overlapping section (blue). \n Distance of two border frames when merged cutting trace ({trace1.trace_id}) (left red) \n or cutting trace ({trace2.trace_id}) (right red).'
 
     distances2 = []
     distances2.append(math.dist(trace1.locations[start_index1 - 1], trace2.locations[0]))

@@ -20,11 +20,11 @@ global debug
 global show_plots
 global rerun
 
-# USER - please set up the following three flags
-silent = True
-debug = False
-show_plots = False
-rerun = False
+# USER - please set up the following four flags
+silent = False          # minimal print
+debug = False           # maximal print
+show_plots = False      # showing plots
+rerun = False           # will execute also files with a setting which is already in the results
 
 
 def set_show_plots(do_show_plots):
@@ -105,6 +105,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
 
     ### ANALYSIS
     if show_plots:
+        # scatter_detection(traces, whole_frame_range, from_to_frame=[0, 2000], subtitle="Initial.")
+        # show_plot_locations(traces, whole_frame_range, from_to_frame=[0, 1800], subtitle="Initial.")
         scatter_detection(traces, whole_frame_range, subtitle="Initial.")
         show_plot_locations(traces, whole_frame_range, subtitle="Initial.")
 
@@ -215,7 +217,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     after_number_of_traces = -9
     while before_number_of_traces != after_number_of_traces:
         before_number_of_traces = len(traces)
-        merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=False)
+        merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_plots)
         after_number_of_traces = len(traces)
 
     # Storing the number of traces after MERGE OVERLAPPING TRACES

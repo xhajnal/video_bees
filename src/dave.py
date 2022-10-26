@@ -23,7 +23,7 @@ if __name__ == "__main__":
     analyse('../data/Video_tracking/190823/20190823_153007029_1BEE_generated_20210507_091854_nn.csv', 1)
 
     ## 190903
-    # -> ->
+    # 19 -> 7 -> 2
     analyse("../data/Video_tracking/190903/20190903_134034775_1BEE_generated_20210511_083234_nn.csv", 1)
 
     # -> ->
@@ -32,6 +32,7 @@ if __name__ == "__main__":
     ## 190904
     ## 3 -> 3 -> 1  Done
     analyse('../data/Video_tracking/190904/20190904_124852149_1BEE_generated_20210520_095527_nn.csv', 1)
+
     ## Already done
     analyse('../data/Video_tracking/190904/20190904_165817979_1BEE_generated_20210525_103941_nn.csv', 1)
 
