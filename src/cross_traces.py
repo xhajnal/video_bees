@@ -496,12 +496,26 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                 # COMPUTE WHETHER THE TWO TRACES ARE "ALIGNED"
                 to_merge = True
                 reason = ""
+
+                # Check for force_merge
+                gap_range = [trace1.frame_range[1], trace2.frame_range[0]]
+                force_merge = True
+                for trace in traces:
+                    if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
+                        continue
+                    if has_overlap(gap_range, [trace.frame_range[0] - get_force_merge_vicinity(), trace.frame_range[1] + get_force_merge_vicinity()]):
+                        force_merge = False
+                        break
+                if force_merge and not silent:
+                    # TODO switch colour to yellow
+                    print(colored("USING FORCED MERGE", "magenta"))
+
                 # the gap is wider than max_trace_gap
-                if trace2.frame_range[0] - step_to > get_max_trace_gap():
+                if not force_merge and trace2.frame_range[0] - step_to > get_max_trace_gap():
                     to_merge = False
                     reason = "gap long"
                 # length of the second trace is longer than a given number (100)
-                if trace2.frame_range_len < get_min_trace_length():
+                if not force_merge and trace2.frame_range_len < get_min_trace_length():
                     to_merge = False
                     reason = "2nd trace short"
                 # CHECK FOR DISTANCE OF TRACES IN X,Y
@@ -789,6 +803,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                     break
             if not there_is_overlap:
                 if not silent:
+                    # TODO switch colour to yellow
                     print(colored("USING FORCED MERGE", "magenta"))
                 force_merge = True
 
@@ -816,8 +831,9 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 # Show scatter plot of traces having two traces merged
                 go_next = False
 
-            msg = f"{'' if to_merge else 'NOT '}MERGING OVERLAPPING TRACES {'' if to_merge else '(' + reason + ') '}"
-            print(colored(msg, "yellow") if to_merge else colored(msg, "red"))
+            if not silent:
+                msg = f"{'' if to_merge else 'NOT '}MERGING OVERLAPPING TRACES {'' if to_merge else '(' + reason + ') '}"
+                print(colored(msg, "yellow") if to_merge else colored(msg, "red"))
 
             if show:
                 try:
@@ -850,8 +866,9 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
     else:
         show = True
 
-    # print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
-    print(colored(f"COMPARE TWO TRACES - {trace1_index}({trace1.trace_id}),{trace2_index}({trace2.trace_id})", "blue"))
+    if not silent:
+        # print(colored(f"COMPARE TWO TRACES - {trace1.trace_id},{trace2.trace_id}", "blue"))
+        print(colored(f"COMPARE TWO TRACES - {trace1_index}({trace1.trace_id}),{trace2_index}({trace2.trace_id})", "blue"))
     start_time = time()
 
     if show_all_plots:
@@ -940,7 +957,8 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
     if show:
         show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index2, silent=silent, debug=debug)
 
-    print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
-    print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
+    if not silent:
+        print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+        print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
 
     return distances
