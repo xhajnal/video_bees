@@ -784,16 +784,17 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 if key == pick_key2:
                     continue
                 searched_overlap = dictionary[key]
-                if has_overlap(picked_frame_range, [searched_overlap[0] - 200, searched_overlap[1] + 200]):
+                if has_overlap(picked_frame_range, [searched_overlap[0] - get_force_merge_vicinity(), searched_overlap[1] + get_force_merge_vicinity()]):
                     there_is_overlap = True
                     break
             if not there_is_overlap:
-                print(colored("USING FORCED MERGE", "magenta"))
+                if not silent:
+                    print(colored("USING FORCED MERGE", "magenta"))
                 force_merge = True
 
             #  Save the id of the merged trace before it is removed
             trace2_id = traces[pick_key2[1]].trace_id
-            if not force_merge or distances is not None and any(list(map(lambda x: x > get_max_step_distance_to_merge_overlapping_traces(), distances))):
+            if not force_merge and distances is not None and any(list(map(lambda x: x > get_max_step_distance_to_merge_overlapping_traces(), distances))):
                 go_next = True
                 to_merge = False
                 force_merge = False

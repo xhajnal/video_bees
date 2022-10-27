@@ -136,6 +136,7 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
                  "bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
                  "max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
                  "max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
+                 "force_merge_vicinity": get_force_merge_vicinity(),
                  "screen_size": get_screen_size(),
                  "loaded": counts[0],
                  "inside arena": counts[1],
@@ -201,7 +202,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
             file.write(
                 f"track_file; timestamp of the run; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
                 f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
-                f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded traces; inside arena; zero length; "
+                f"max_step_distance_to_merge_overlapping_traces; force_merge_vicinity; screen_size; loaded traces; inside arena; zero length; "
                 f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
                 f"after merging overlapping traces; population size \n")
             assert isinstance(results, dict)
@@ -231,12 +232,18 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                     except KeyError as err:
                         zero_len = ""
 
+                    try:
+                        force_merge_vicinity = record['force_merge_vicinity']
+                    except KeyError as err:
+                        force_merge_vicinity = ""
+
                     file.write(f"{track_file}; {timestamp}; {record['distance_from_calculated_arena']}; "
                                f"{record['max_trace_gap']}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
                                f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
-                               f"{record['max_step_distance_to_merge_overlapping_traces']}; {record['screen_size']}; "
-                               f"{record['loaded']}; {record['inside arena']}; {zero_len}; {record['jumps forth and back fixed']};"
-                               f" {record['traces swapped']}; {record['after first gaps and redundant']};"
+                               f"{record['max_step_distance_to_merge_overlapping_traces']}; {force_merge_vicinity}; "
+                               f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "
+                               f"{record['jumps forth and back fixed']}; {record['traces swapped']}; "
+                               f"{record['after first gaps and redundant']};"
                                f" {record['after merging overlapping traces']}; {population_size}\n")
     except OSError:
         print(colored(f"Could not write into csv file! Try to close it first.", "red"))

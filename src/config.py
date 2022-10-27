@@ -37,7 +37,7 @@ def get_max_trace_gap_to_interpolate_distance():
     """ Returns a maximal distance in frames so that the location of the bee is linearly interpolated based on border points. """
     # TODO check this
     # Usage: gaping traces, whether to calculate the location in the gap
-    return 100  ## 1 second (as frame rate is 100)
+    return 100  # 1 second (as frame rate is 100)
 
 
 def get_max_step_distance_to_merge_overlapping_traces():
@@ -47,15 +47,16 @@ def get_max_step_distance_to_merge_overlapping_traces():
     return 200
 
 
-def get_max_trace_gap_to_interpolate_distance():
-    """ Returns a maximal distance so that the location of the bee is linearly interpolated based on border points."""
-    # TODO check this
-    return 100
-
-
 def get_maximal_distance_to_check_for_trace_swapping():
     """ Returns a maximal distance in xy of two traces at a certain frame to check whether the traces are not swapped."""
     return 100
+
+
+def get_force_merge_vicinity():
+    """ Returns range for which there should be no overlap in order to force merge overlapping traces."""
+    # TODO apply this to gaping traces
+    # Usage: merge_overlapping_traces
+    return 200
 
 
 def get_screen_size():
