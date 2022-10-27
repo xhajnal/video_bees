@@ -144,7 +144,7 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
                  "traces swapped": counts[4],
                  "after first gaps and redundant": counts[5],
                  "after merging overlapping traces": counts[6],
-                 "after second gaps and redundant": counts[7],
+                 # "after second gaps and redundant": counts[7],
                  "population_size": population_size}
 
     ## UPDATE THE RESULTS
@@ -203,7 +203,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                 f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
                 f"max_step_distance_to_merge_overlapping_traces; screen_size; loaded traces; inside arena; zero length; "
                 f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
-                f"after merging overlapping traces; after second gaps and redundant; population size \n")
+                f"after merging overlapping traces; population size \n")
             assert isinstance(results, dict)
             for track_file in results.keys():
                 if debug:
@@ -237,8 +237,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                                f"{record['max_step_distance_to_merge_overlapping_traces']}; {record['screen_size']}; "
                                f"{record['loaded']}; {record['inside arena']}; {zero_len}; {record['jumps forth and back fixed']};"
                                f" {record['traces swapped']}; {record['after first gaps and redundant']};"
-                               f" {record['after merging overlapping traces']}; "
-                               f"{record['after second gaps and redundant']}; {population_size}\n")
+                               f" {record['after merging overlapping traces']}; {population_size}\n")
     except OSError:
         print(colored(f"Could not write into csv file! Try to close it first.", "red"))
         return

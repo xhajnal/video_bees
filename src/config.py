@@ -6,7 +6,9 @@ def get_distance_from_calculated_arena():
 
 
 def get_max_trace_gap():
-    """ Returns maximal distance between two traces in frames to be able to merge."""
+    """ Returns maximal distance between two traces in frames to be able to merge.
+        Effectively computes how long an agent can hide from being tracked (max_trace_gap / frame rate).
+    """
     # Usage: gaping trace - ABOVE
     return 150
 

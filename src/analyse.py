@@ -15,16 +15,18 @@ from dave_io import pickle_traces, save_traces, save_setting, convert_results_fr
     get_video_path
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
+global batch_run
 global silent
 global debug
 global show_plots
 global rerun
 
-# USER - please set up the following four flags
-silent = False          # minimal print
+# USER - please set up the following five flags
+batch_run = True       # sets silent, not debug, not show_plots, rerun
+silent = False           # minimal print
 debug = False           # maximal print
-show_plots = False      # showing plots
-rerun = False           # will execute also files with a setting which is already in the results
+show_plots = True      # showing plots
+rerun = True           # will execute also files with a setting which is already in the results
 
 
 def set_show_plots(do_show_plots):
@@ -59,10 +61,20 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     print(colored(f"Gonna analyse {file_path}", "magenta"))
 
     #################
+    # Set run setting
+    #################
+    if batch_run:  # sets silent, not debug, not show_plots, rerun
+        set_silent(True)
+        set_debug(False)
+        set_show_plots(False)
+        set_rerun(True)
+
+    #################
     # Internal params
     #################
     counts = []
     removed_traces = []
+    original_population_size = population_size
 
     ############
     # I/O stuff
@@ -240,24 +252,24 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     else:
         new_population_size = population_size
 
-    if show_plots:
-        scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
+    # if show_plots:
+    #     scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
 
-    print("SECOND Gaping traces analysis")
-    before_number_of_traces = len(traces)
-    after_number_of_traces = 0
-    while (not before_number_of_traces == after_number_of_traces) and (len(traces) > new_population_size):
-        before_number_of_traces = len(traces)
-        traces = trim_out_additional_agents_over_long_traces2(traces, new_population_size, silent=silent, debug=debug)
-        if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
-        traces = put_gaping_traces_together(traces, new_population_size, silent=silent, debug=debug)
-        if show_plots:
-            scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
-        after_number_of_traces = len(traces)
-
-    # Storing the number of traces after second TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
-    counts.append(len(traces) + len(removed_traces))
+    # print("SECOND Gaping traces analysis")
+    # before_number_of_traces = len(traces)
+    # after_number_of_traces = 0
+    # while (not before_number_of_traces == after_number_of_traces) and (len(traces) > new_population_size):
+    #     before_number_of_traces = len(traces)
+    #     traces = trim_out_additional_agents_over_long_traces2(traces, new_population_size, silent=silent, debug=debug)
+    #     if show_plots:
+    #         scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
+    #     traces = put_gaping_traces_together(traces, new_population_size, silent=silent, debug=debug)
+    #     if show_plots:
+    #         scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
+    #     after_number_of_traces = len(traces)
+    #
+    # # Storing the number of traces after second TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
+    # counts.append(len(traces) + len(removed_traces))
 
     ## VISUALISATIONS
     if show_plots:
@@ -268,7 +280,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         show_plot_locations(traces, whole_frame_range, subtitle="Final.")
 
     ## SAVE RESULTS
-    is_new = save_setting(counts, file_name=file_path, population_size=population_size, silent=silent, debug=debug)
+    is_new = save_setting(counts, file_name=file_path, population_size=original_population_size, silent=silent, debug=debug)
     if is_new:
         convert_results_from_json_to_csv(silent=silent, debug=debug)
         # TODO uncomment the following
