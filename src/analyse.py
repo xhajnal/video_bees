@@ -173,6 +173,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # if show_plots:
     #     show_overlaps(traces, whole_frame_range)
 
+    if has_tracked_video:
         number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, silent=silent, debug=debug)
         # Storing the number of swaps done
         counts.append(number_of_swaps)

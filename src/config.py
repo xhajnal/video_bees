@@ -1,4 +1,3 @@
-
 def get_distance_from_calculated_arena():
     """ Returns distance from the estimated arena circle to be assigned as outside of the arena."""
     # Usage: outside of arena
@@ -48,9 +47,14 @@ def get_max_step_distance_to_merge_overlapping_traces():
     return 200
 
 
+def get_max_trace_gap_to_interpolate_distance():
+    """ Returns a maximal distance so that the location of the bee is linearly interpolated based on border points."""
+    # TODO check this
+    return 100
+
+
 def get_maximal_distance_to_check_for_trace_swapping():
     """ Returns a maximal distance in xy of two traces at a certain frame to check whether the traces are not swapped."""
-    # TODO check this
     return 100
 
 
