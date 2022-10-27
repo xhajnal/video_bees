@@ -9,7 +9,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 
 from config import *
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
-    get_overlap, range_len, to_vect, calculate_cosine_similarity
+    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
@@ -496,7 +496,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                 # COMPUTE WHETHER THE TWO TRACES ARE "ALIGNED"
                 to_merge = True
                 reason = ""
-                # the gap is lower than a given number (500)
+                # the gap is wider than max_trace_gap
                 if trace2.frame_range[0] - step_to > get_max_trace_gap():
                     to_merge = False
                     reason = "gap long"
@@ -677,6 +677,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
 
     count_one = [-9]  # indices of traces which have only one occurrence
     number_of_traces = -9
+    force_merge = False
 
     while len(count_one) >= 1 or number_of_traces != len(traces):
         number_of_traces = len(traces)
@@ -746,10 +747,9 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
             for key in dictionary.keys():
                 if pick_key in key:
                     pick_key2 = key
+                    if debug:
+                        print("pick_key2", pick_key2)
                     break
-
-            if debug:
-                print("pick_key2", pick_key2)
 
             # if the picked traces are overlapping in whole range of one of the traces we delete it from the dictionary and move on
             if is_in(traces[pick_key2[0]].frame_range, traces[pick_key2[1]].frame_range) or is_in(traces[pick_key2[1]].frame_range, traces[pick_key2[0]].frame_range):
@@ -774,12 +774,29 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
 
             # Check the distances of overlap for a big difference
             distances = compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], pick_key2[0], pick_key2[1], silent=silent, debug=debug, show_all_plots=showw)
+
+            # Get frame_range
+            picked_frame_range = dictionary[pick_key2]
+
+            # check whether there is overlap of overlaps
+            there_is_overlap = False
+            for key in dictionary.keys():
+                if key == pick_key2:
+                    continue
+                searched_overlap = dictionary[key]
+                if has_overlap(picked_frame_range, [searched_overlap[0] - 200, searched_overlap[1] + 200]):
+                    there_is_overlap = True
+                    break
+            if not there_is_overlap:
+                print(colored("USING FORCED MERGE", "magenta"))
+                force_merge = True
+
             #  Save the id of the merged trace before it is removed
             trace2_id = traces[pick_key2[1]].trace_id
-            if distances is not None and any(list(map(lambda x: x > get_max_step_distance_to_merge_overlapping_traces(), distances))):
+            if not force_merge or distances is not None and any(list(map(lambda x: x > get_max_step_distance_to_merge_overlapping_traces(), distances))):
                 go_next = True
-
                 to_merge = False
+                force_merge = False
                 reason = f"single huge distance (>{get_max_step_distance_to_merge_overlapping_traces()})"
 
                 # the distance of the traces is greater than the given threshold, we move on
