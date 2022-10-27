@@ -9,26 +9,29 @@ from traces_logic import get_gaps_of_traces
 from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
 
 
-def show_plot_locations(traces, whole_frame_range, from_to_frame=False, subtitle=False):
+def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_middle_point=False, subtitle=False, silent=False, debug=False):
     """ Plots the traces in three plots, traces in x-axis and y-axis separately,
     time on horizontal axis in frame numbers. Last plot is the traces in x,y.
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video
     :arg from_to_frame: (list): if set, showing only frames in given range
+    :arg show_middle_point: (bool): if True, a point in the middle of the trace is highlighted
     :arg subtitle: (string): subtitle of the plot
+    :arg silent: (bool) if True minimal output is shown
+    :arg debug: (bool) if True extensive output is shown
     """
     print(colored("SHOW PLOT LOCATIONS", "blue"))
     start_time = time()
     for index, trace in enumerate(traces):
         if len(traces) == 1:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=True, subtitle=subtitle)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=True, show_middle_point=show_middle_point, subtitle=subtitle, silent=silent, debug=debug)
         elif index == 0:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=False, subtitle=subtitle)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=False, show_middle_point=show_middle_point, subtitle=subtitle, silent=silent, debug=debug)
         elif index < len(traces) - 1:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show=False, subtitle=subtitle)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show_middle_point=show_middle_point, show=False, subtitle=subtitle, silent=silent, debug=debug)
         else:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show=True, subtitle=subtitle)
+            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show_middle_point=show_middle_point, show=True, subtitle=subtitle, silent=silent, debug=debug)
 
     print(colored(f"Showing location of {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds.\n", "yellow"))
 

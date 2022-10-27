@@ -109,7 +109,7 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
     except OSError:
         pass
     # check all counts are counted
-    assert len(counts) == 8
+    assert len(counts) == 7
 
     ## LOAD SAVED RESULTS TO UPDATE IT
     try:

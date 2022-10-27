@@ -118,7 +118,7 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, silent=F
                     print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
 
                     scatter_detection([traces[trace1_index], traces[trace2_index]], get_video_whole_frame_range([traces[trace1_index], traces[trace2_index]]), subtitle="Traces to be swapped.")
-                    show_plot_locations([traces[trace1_index], traces[trace2_index]], [0, 0], from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30], subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
+                    show_plot_locations([traces[trace1_index], traces[trace2_index]], [0, 0], from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30], show_middle_point=True, subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
 
                     if automatically_swap is True:
                         answer = "6"

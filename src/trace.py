@@ -199,7 +199,8 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace id {self.trace_id}.')
         plt.show()
 
-    def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True, subtitle="", silent=False, debug=False):
+    def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True, subtitle="",
+                         show_middle_point=False, silent=False, debug=False):
         """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
 
@@ -207,7 +208,8 @@ class Trace:
         :arg from_to_frame: (list): if set, showing only frames in given range
         :arg where: (list): is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
         :arg show: (bool): if True the plots are shown
-        :arg subtitle: (string): a string to show under title
+        :arg subtitle: (string): a string to show under
+        :arg show_middle_point: (bool): if True, a point in the middle of the trace is highlighted
         :arg silent: (bool) if True minimal output is shown
         :arg debug: (bool) if True extensive output is shown
         :returns: list of pairs [figure, axis] for each of three plots
@@ -256,6 +258,14 @@ class Trace:
             print("gap_locations", gap_locations)
             print("list(map(lambda x: x[0], overlap_locations))", list(map(lambda x: x[0], gap_locations)))
 
+        if show_middle_point:
+            if from_to_frame:
+                middle_index = int(from_to_frame[0] + (from_to_frame[1] - from_to_frame[0])/2)
+            else:
+                middle_index = int(self.frame_range[0] + (self.frame_range[1] - self.frame_range[0])/2)
+            x_middle_pos = self.locations[middle_index - self.frame_range[0]][0]
+            y_middle_pos = self.locations[middle_index - self.frame_range[0]][1]
+
         ## MAKE AND SHOW PLOTS
         if where:
             assert isinstance(where, list)
@@ -266,6 +276,8 @@ class Trace:
 
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
         ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        if show_middle_point:
+                ax1.scatter([middle_index], [x_middle_pos], c="magenta", s=3)
         ax1.scatter(self.overlap_frames, list(map(lambda x: x[0], overlap_locations)), c="black")
         ax1.scatter(self.gap_frames, list(map(lambda x: x[0], gap_locations)), c="white", edgecolors="black")
         ax1.set_xlabel('Time')
@@ -292,6 +304,8 @@ class Trace:
 
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
         ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        if show_middle_point:
+            ax2.scatter([middle_index], [y_middle_pos], c="magenta", s=3)
         ax2.scatter(self.overlap_frames, list(map(lambda x: x[1], overlap_locations)), c="black")
         ax2.scatter(self.gap_frames, list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
         ax2.set_xlabel('Time')
@@ -319,6 +333,9 @@ class Trace:
         ys = list(map(lambda x: x[1], self.locations[from_index:to_index]))
         # ax3.scatter(xs, ys, alpha=0.5)
         ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        if show_middle_point:
+            ax3.scatter([x_middle_pos], [y_middle_pos], c="magenta", s=3)
+
         ax3.scatter(list(map(lambda x: x[0], overlap_locations)), list(map(lambda x: x[1], overlap_locations)), c="black")
         ax3.scatter(list(map(lambda x: x[0], gap_locations)), list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
         ax3.set_xlabel('x')
