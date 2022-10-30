@@ -9,6 +9,19 @@ from traces_logic import get_gaps_of_traces
 from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
 
 
+def get_fontsize(number_of_traces):
+    if number_of_traces > 100:
+        fontsize = 0
+    elif number_of_traces > 60:
+        fontsize = 5
+    elif number_of_traces > 30:
+        fontsize = 6
+    elif number_of_traces > 20:
+        fontsize = 8
+    else:
+        fontsize = 10
+
+
 def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_middle_point=False, subtitle=False, silent=False, debug=False):
     """ Plots the traces in three plots, traces in x-axis and y-axis separately,
     time on horizontal axis in frame numbers. Last plot is the traces in x,y.
@@ -49,16 +62,7 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
-    if len(traces) > 100:
-        fontsize = 0
-    elif len(traces) > 60:
-        fontsize = 5
-    elif len(traces) > 30:
-        fontsize = 6
-    elif len(traces) > 20:
-        fontsize = 8
-    else:
-        fontsize = 10
+    fontsize = get_fontsize(len(traces))
 
     for index, trace in enumerate(traces):
         x = trace.frames_list
@@ -73,7 +77,7 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
                 ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), f"{index}({trace.trace_id})", fontsize=fontsize)
         if show_trace_range:
             if trace.frame_range_len < 5000:
-                ax1.text(trace.frame_range[0], y[0], f"{nice_range_print(trace.frame_range)} [{trace.frame_range_len}]", fontsize=fontsize)
+                ax1.text(trace.frame_range[0] + 1500, y[0], f"{nice_range_print(trace.frame_range)} [{trace.frame_range_len}]", fontsize=fontsize)
             else:
                 ax1.text(trace.frame_range[0], y[0], trace.frame_range[0], fontsize=fontsize)
                 ax1.text(trace.frame_range[1], y[0], f"{trace.frame_range[1]} [{trace.frame_range_len}]", fontsize=fontsize)
@@ -100,7 +104,8 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     plt.show()
 
 
-def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False, silent=False, debug=False):
+def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False, silent=False, debug=False,
+                  show_overlap_indices=True, show_overlap_range=True):
     """ Creates a scatter plot of overlaps of traces.
 
     :arg traces: (list): a list of Traces
@@ -109,11 +114,15 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
     :arg subtitle: (string): subtitle of the plot
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
+    :arg show_overlap_indices: (bool): if True trace indices is shown above the overlap
+    :arg show_overlap_range: (bool): if True frame number of beginning af the overlap and end of the overlap is shown above the overlap
     """
     # Check
     if len(traces) < 2:
         # print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
         return
+
+    fontsize = get_fontsize(len(traces))
 
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -127,9 +136,32 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
             print("overlaps", overlaps)
 
         for index, overlap in enumerate(overlaps):
-            x = list(range(dictionary[overlap][0], dictionary[overlap][1]+1))
+            overlap_range = dictionary[overlap]
+            overlap_range_len = overlap_range[1] - overlap_range[0]
+
+            x = list(range(overlap_range[0], overlap_range[1]+1))
             y = [index] * len(x)
             ax1.scatter(x, y, alpha=0.5)
+
+            if show_overlap_indices:
+                if len(traces) > 5:
+                    # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
+                    ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - 0.5,
+                             f"{overlap[0]}({traces[overlap[0]].trace_id}), {overlap[1]}({traces[overlap[1]].trace_id})",
+                             fontsize=fontsize)
+                else:
+                    # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
+                    ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)),
+                             f"{overlap[0]}({traces[overlap[0]].trace_id}), {overlap[1]}({traces[overlap[1]].trace_id})",
+                             fontsize=fontsize)
+            if show_overlap_range:
+                if overlap_range_len < 5000:
+                    ax1.text(overlap_range[0] + 700, y[0], f"{nice_range_print(overlap_range)} [{overlap_range_len}]",
+                             fontsize=fontsize)
+                else:
+                    ax1.text(overlap_range[0], y[0], overlap_range[0], fontsize=fontsize)
+                    ax1.text(overlap_range[1], y[0], f"{overlap_range[1]} [{overlap_range_len}]", fontsize=fontsize)
+
     ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.set_xlim(whole_frame_range)
     plt.xlabel('Frame number')
@@ -179,7 +211,8 @@ def show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index
     plt.show()
 
 
-def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, silent=False, debug=False):
+def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, silent=False, debug=False,
+              show_gap_indices=True, show_gap_range=True):
     """ Creates a scatter plot of gaps of traces.
 
     :arg traces: (list): a list of Traces
@@ -188,25 +221,47 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     :arg subtitle: (string): subtitle of the plot
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
+    :arg show_gap_indices: (bool): if True trace indices is shown above the gap
+    :arg show_gap_range: (bool): if True frame number of beginning af the gap and end of the gap is shown above the gap
     """
     # Check
     if len(traces) < 2:
         # print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
         return
 
-    pairs_of_gaps = get_gaps_of_traces(traces, get_all_gaps=show_all_gaps)
+    dict_pairs_of_gaps = get_gaps_of_traces(traces, get_all_gaps=show_all_gaps)
 
     if debug:
-        print("pairs_of_gaps", pairs_of_gaps)
-    gaps = list(pairs_of_gaps.keys())
+        print("pairs_of_gaps", dict_pairs_of_gaps)
+    gaps = list(dict_pairs_of_gaps.keys())
 
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
+    fontsize = get_fontsize(len(traces))
+
     for index, gap in enumerate(gaps):
-        x = list(range(pairs_of_gaps[gap][0], pairs_of_gaps[gap][1]+1))
+        gap_range_len = dict_pairs_of_gaps[gap][1] - dict_pairs_of_gaps[gap][0]
+        gap_range = [dict_pairs_of_gaps[gap][0], dict_pairs_of_gaps[gap][1]]
+
+        x = list(range(gap_range[0], gap_range[1]+1))
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
+
+        if show_gap_indices:
+            if len(traces) > 5:
+                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
+                ax1.text((gap_range[0] + gap_range[1]) / 2, y[0] - 0.5, f"{gap[0]}({traces[gap[0]].trace_id}), {gap[1]}({traces[gap[1]].trace_id})", fontsize=fontsize)
+            else:
+                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
+                ax1.text((gap_range[0] + gap_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), f"{gap[0]}({traces[gap[0]].trace_id}), {gap[1]}({traces[gap[1]].trace_id})", fontsize=fontsize)
+        if show_gap_range:
+            if gap_range_len < 5000:
+                ax1.text(gap_range[0] + 700, y[0], f"{nice_range_print(gap_range)} [{gap_range_len}]", fontsize=fontsize)
+            else:
+                ax1.text(gap_range[0], y[0], gap_range[0], fontsize=fontsize)
+                ax1.text(gap_range[1], y[0], f"{gap_range[1]} [{gap_range_len}]", fontsize=fontsize)
+
     ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.set_xlim(whole_frame_range)
     plt.xlabel('Frame number')

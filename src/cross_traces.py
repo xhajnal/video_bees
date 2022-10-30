@@ -508,7 +508,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                         break
                 if force_merge and not silent:
                     # TODO switch colour to yellow
-                    print(colored("USING FORCED MERGE", "magenta"))
+                    print(colored("USING FORCED GAP MERGE", "magenta"))
 
                 # the gap is wider than max_trace_gap
                 if not force_merge and trace2.frame_range[0] - step_to > get_max_trace_gap():
@@ -787,7 +787,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 showw = None
 
             # Check the distances of overlap for a big difference
-            distances = compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], pick_key2[0], pick_key2[1], silent=silent, debug=debug, show_all_plots=showw)
+            distances = compare_two_traces(traces[pick_key2[0]], traces[pick_key2[1]], pick_key2[0], pick_key2[1], silent=silent, debug=debug, show_all_plots=None if force_merge else showw)
 
             # Get frame_range
             picked_frame_range = dictionary[pick_key2]
@@ -804,7 +804,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
             if not there_is_overlap:
                 if not silent:
                     # TODO switch colour to yellow
-                    print(colored("USING FORCED MERGE", "magenta"))
+                    print(colored("USING FORCED OVERLAP MERGE", "magenta"))
                 force_merge = True
 
             #  Save the id of the merged trace before it is removed
@@ -826,7 +826,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 if debug:
                     # print(colored(f"Gonna delete trace {trace2_id}.", "blue"))
                     print(colored(f"Gonna delete trace {pick_key2[1]}({trace2_id}).", "blue"))
-                print()
+                    print()
                 traces = delete_indices([pick_key2[1]], traces)
                 # Show scatter plot of traces having two traces merged
                 go_next = False
@@ -837,7 +837,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
 
             if show:
                 try:
-                    scatter_detection(traces, whole_frame_range, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}")
+                    scatter_detection(traces, whole_frame_range, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}.")
                 except UnboundLocalError:
                     pass
 
