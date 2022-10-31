@@ -510,35 +510,36 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     # TODO switch colour to yellow
                     print(colored("USING FORCED GAP MERGE", "magenta"))
 
-                # the gap is wider than max_trace_gap
-                if not force_merge and trace2.frame_range[0] - step_to > get_max_trace_gap():
-                    to_merge = False
-                    reason = "gap long"
-                # length of the second trace is longer than a given number (100)
-                if not force_merge and trace2.frame_range_len < get_min_trace_length():
-                    to_merge = False
-                    reason = "2nd trace short"
-                # CHECK FOR DISTANCE OF TRACES IN X,Y
-                # if the distance of traces in frames is high
-                if to_merge:
-                    if dist_of_traces_in_frames > get_max_trace_gap()/10:
-                        reason = "long gap too distant"
-                        if dist_of_traces_in_xy > get_bee_max_step_len()*3:
-                            # print(f" hell, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
-                            # print(f" hell, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
-                            to_merge = False
+                if not force_merge:
+                    # the gap is wider than max_trace_gap
+                    if trace2.frame_range[0] - step_to > get_max_trace_gap():
+                        to_merge = False
+                        reason = "gap long"
+                    # length of the second trace is longer than a given number (100)
+                    if force_merge and trace2.frame_range_len < get_min_trace_length():
+                        to_merge = False
+                        reason = "2nd trace short"
+                    # CHECK FOR DISTANCE OF TRACES IN X,Y
+                    # if the distance of traces in frames is high
+                    if to_merge:
+                        if dist_of_traces_in_frames > get_max_trace_gap()/10:
+                            reason = "long gap too distant"
+                            if dist_of_traces_in_xy > get_bee_max_step_len()*3:
+                                # print(f" hell, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
+                                # print(f" hell, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
+                                to_merge = False
+                            else:
+                                if debug:
+                                    print("heaven1")
                         else:
-                            if debug:
-                                print("heaven1")
-                    else:
-                        reason = "short gap too distant"
-                        if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
-                            # print(f" hell2, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
-                            # print(f" hell2, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
-                            to_merge = False
-                        else:
-                            if debug:
-                                print("heaven2")
+                            reason = "short gap too distant"
+                            if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
+                                # print(f" hell2, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
+                                # print(f" hell2, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
+                                to_merge = False
+                            else:
+                                if debug:
+                                    print("heaven2")
 
                 if trace2.frame_range[0] - trace1.frame_range[-1] == 0:
                     distance_per_frame = None
