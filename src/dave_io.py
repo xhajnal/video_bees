@@ -86,6 +86,23 @@ def is_new_config(file_name):
     return not same_setting_found
 
 
+def load_setting(file_name=None, time_stamp=None):
+    """ Load the setting or its part given parameters.
+
+    :arg file_name: (string): name of the file to be loaded, if None all file names are loaded
+    :arg time_stamp: (string): time stamp to load for a given file, if None all time stamps are loaded
+    """
+    with open("../output/results.txt") as file:
+        results = json.load(file)
+
+    if file_name is not None:
+        results = results[file_name]
+        if time_stamp is not None:
+            results = results[time_stamp]
+
+    return results
+
+
 def save_setting(counts, file_name, population_size, silent=False, debug=False):
     """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
      file_name -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}

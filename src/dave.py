@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # 19 -> 7 -> 2
     analyse("../data/Video_tracking/190903/20190903_134034775_1BEE_generated_20210511_083234_nn.csv", 1)
 
-    # -> ->
+    # 62 -> 29 -> 1 Done, video checked, passed
     analyse("../data/Video_tracking/190903/20190903_172942424_1BEE_generated_20210520_073610_nn.csv", 1, has_video=True, has_tracked_video=True)
 
     ## 190904
@@ -42,199 +42,197 @@ if __name__ == "__main__":
     analyse('../data/Video_tracking/190905/20190905_113138227_1BEE_generated_20210528_064758_nn.csv', 1)
 
     ## 190906
-    ## 2 -> 2 -> 1  Done
+    ## 2 -> 2 -> 1  Done, video checked, passed
     analyse("../data/Video_tracking/190906/20190906_152940727_1BEE_generated_20210607_101247_nn.csv", 1, has_video=True, has_tracked_video=True)
 
     ## 190916
-    # WTF 391 -> 291 -> 17
+    # WTF 391 -> 291 -> 3
     analyse('../data/Video_tracking/190916/20190916_122643082_1BEE_generated_20210608_090120_nn.csv', 1)
 
     # WTF 123 -> 35 -> 1  Done
     analyse('../data/Video_tracking/190916/20190916_160703748_1BEE_generated_20210611_111022_nn.csv', 1)
 
-    # WTF 748 -> 449 -> 7
+    # WTF 748 -> 449 -> 3
     analyse('../data/Video_tracking/190916/20190916_163119085_1BEE_generated_20210618_080129_nn.csv', 1)
 
     ## 190917
-    # 16 -> 6 -> 3
+    # 16 -> 6 -> 2
     analyse('../data/Video_tracking/190917/20190917_105812177_1BEE_generated_20210803_083548_nn.csv', 1)
-
-    # -> ->
-    analyse("../data/Video_tracking/190917/20190917_115622949_1BEE_generated_20210902_081924_nn.csv", 1)
-
+    #
     # 8 -> 8 -> 1
     analyse('../data/Video_tracking/190917/20190917_115622949_1BEE_generated_20210902_081924_nn.csv', 1)
-
+    #
     # 12 -> 8 -> 2
     analyse('../data/Video_tracking/190917/20190917_152245969_1BEE_generated_20210903_103442_nn.csv', 1)
-
+    #
     # 79 -> 60 -> 3
     analyse("../data/Video_tracking/190918/20190918_111016982_1BEE_generated_20210910_081829_nn.csv", 1, has_video=True, has_tracked_video=True)
-
+    #
     # 48 -> 22 -> 7
     analyse('../data/Video_tracking/190918/20190918_145147096_1BEE_generated_20210906_104220_nn.csv', 1)
-
+    #
     # 418 -> 360 -> 9
     analyse("../data/Video_tracking/190918/20190918_152011250_1BEE_generated_20210907_090200_nn.csv", 1)
 
     ## 190919
-    # 103 -> 81 -> 55
+    # 103 -> 81 -> 9
     analyse("../data/Video_tracking/190919/20190919_110353881_1BEE_generated_20210908_084510_nn.csv", 1)
-
+    #
     # 7 -> 5 -> 1 Done
     analyse("../data/Video_tracking/190919/20190919_143424171_1BEE_generated_20210908_103953_nn.csv", 1)
-
+    #
     # 39 -> 9 -> 1
     analyse("../data/Video_tracking/190919/20190919_153051804_1BEE_generated_20210909_090515_nn.csv", 1)
 
     ## 190920
     # 6 -> 6 -> 1
     analyse("../data/Video_tracking/190920/20190920_111833317_1BEE_generated_20210910_074102_nn.csv", 1)
-
-    #  999 -> 744 -> 35
+    #
+    # 999 -> 744 -> 35
     analyse("../data/Video_tracking/190920/20190920_145859333_1BEE_generated_20210910_083808_nn.csv", 1)
-
-    # -> ->
+    #
+    # 9 -> 8 -> 1
     analyse("../data/Video_tracking/190920/20190920_154830359_1BEE_generated_20210910_090500_nn.csv", 1)
 
     ## 190922
-    # -> ->
+    # 11 -> 2 -> 1
     analyse("../data/Video_tracking/190922/20190922_120740072_1BEE_generated_20210913_082513_nn.csv", 1)
-
-    # -> ->
+    #
+    # 25 -> 13 -> 1
     analyse("../data/Video_tracking/190922/20190922_155939352_1BEE_generated_20210913_100501_nn.csv", 1)
-
-    # -> ->
+    #
+    # 4 -> 3 -> 1
     analyse("../data/Video_tracking/190922/20190922_171602695_1BEE_generated_20210913_105305_nn.csv", 1)
-
+    #
     ## 190924
-    # -> ->
+    # 617 -> 422 ->
+    # WTF with larger force_merge_vicinity fewer traces
     analyse("../data/Video_tracking/190924/20190924_111059331_1BEE_generated_20210916_090912_nn.csv", 1, has_video=True, has_tracked_video=True)
-
-    # -> ->
+    #
+    # 44 -> 35 -> 1
     analyse("../data/Video_tracking/190924/20190924_153426086_1BEE_generated_20210914_093742_nn.csv", 1)
-
+    #
     ## 190925
-    # -> ->
+    # 922 -> 692 -> 45
     analyse("../data/Video_tracking/190925/20190925_101651861_1BEE_generated_20210921_073505_nn.csv", 1)
-
-    # -> ->
+    #
+    # 16 -> 6 -> 1
     analyse("../data/Video_tracking/190925/20190925_132615155_1BEE_generated_20210917_104344_nn.csv", 1)
 
     ## 190926
-    # -> ->
+    # 24 -> 10 -> 1
     analyse("../data/Video_tracking/190926/20190926_122135161_1BEE_generated_20210924_100636_nn.csv", 1, has_video=True, has_tracked_video=True)
-
-    # -> ->
+    #
+    # 499 -> 361 -> 17
     analyse("../data/Video_tracking/190926/20190926_153031662_1BEE_generated_20210927_090504_nn.csv", 1)
 
     ## 190927
-    # -> ->
+    # 5 -> 3 -> 1
     analyse("../data/Video_tracking/190927/20190927_110140688_1BEE_generated_20210929_105511_nn.csv", 1)
-
-    # -> ->
+    #
+    # 538 -> 371 -> 7
     analyse("../data/Video_tracking/190927/20190927_111245617_1BEE_generated_20210929_105817_nn.csv", 1)
-
-    # -> ->
+    #
+    # 88 -> 42 -> 1
     analyse("../data/Video_tracking/190927/20190927_142316901_1BEE_generated_20211006_092457_nn.csv", 1)
 
     ## 190928
-    # -> ->
+    # 3 -> 3 -> 1
     analyse("../data/Video_tracking/190928/20190928_163456673_1BEE_generated_20211011_071038_nn.csv", 1, has_video=True, has_tracked_video=True)
-
+    #
     ## 190929
-    # -> ->
+    # 88 -> 69 -> 1
     analyse("../data/Video_tracking/190929/20190929_124230212_1BEE_generated_20211012_095333_nn.csv", 1)
-
-    # -> ->
+    #
+    # 63 -> 40 -> 1
     analyse("../data/Video_tracking/190929/20190929_160530530_1BEE_generated_20211018_081442_nn.csv", 1, has_video=True, has_tracked_video=True)
-
+    #
     ## 190930
-    # -> ->
+    # 33 -> 22 -> 1
     analyse("../data/Video_tracking/190930/20190930_112905317_1BEE_generated_20211019_103540_nn.csv", 1, has_video=True, has_tracked_video=True)
-
-    # -> ->
+    #
+    # 378 -> 235 -> 1
     analyse("../data/Video_tracking/190930/20190930_115128061_1BEE_generated_20211020_072929_nn.csv", 1)
-
-    # -> ->
+    #
+    # 523 -> 390 -> 30
     analyse("../data/Video_tracking/190930/20190930_145350661_1BEE_generated_20211018_102533_nn.csv", 1)
-
+    #
     ## 191001
-    # -> ->
+    # 31 -> 21 -> 1
     analyse("../data/Video_tracking/191001/20191001_114401465_1BEE_generated_20211026_100501_nn.csv", 1)
-
-    # -> ->
+    #
+    # 3 -> 1 -> 1
     analyse("../data/Video_tracking/191001/20191001_143255621_1BEE_generated_20211029_082206_nn.csv", 1)
-
+    #
     ## 191002
-    # -> ->
+    # 281 -> 192 -> 1
     analyse("../data/Video_tracking/191002/20191002_104343446_1BEE_generated_20211220_113343_nn.csv", 1)
-
-    # -> ->
+    #
+    # 121 -> 66 -> 1
     analyse("../data/Video_tracking/191002/20191002_135837756_1BEE_generated_20211222_092214_nn.csv", 1)
-
+    #
     ## 191003
-    # -> ->
+    # 405 -> 328 -> 1
     analyse("../data/Video_tracking/191003/20191003_101739372_1BEE_generated_20211222_111933_nn.csv", 1)
-
-    # -> ->
+    #
+    # 5 -> 3 -> 1
     analyse("../data/Video_tracking/191003/20191003_131823429_1BEE_generated_20220103_114647_nn.csv", 1, has_video=True, has_tracked_video=True)
-
+    #
     ## 191007
-    # -> ->
+    # 8 -> 1 -> 1
     analyse("../data/Video_tracking/191007/20191007_143443948_1BEE_generated_20220104_115223_nn.csv", 1)
-
-    # -> ->
+    #
+    # 9 -> 8 -> 1
     analyse("../data/Video_tracking/191007/20191007_151826322_1BEE_generated_20220105_091320_nn.csv", 1, has_video=True, has_tracked_video=True)
-
+    #
     ## 191008
-    # -> ->
+    # 2 -> 2 -> 1
     analyse("../data/Video_tracking/191008/20191008_111526719_1BEE_generated_20220105_110112_nn.csv", 1)
-
-    # -> ->
+    #
+    # 349 -> 193 -> 1
     analyse("../data/Video_tracking/191008/20191008_124602433_1BEE_generated_20220107_072300_nn.csv", 1)
-
-    # -> ->
+    #
+    # 109 -> 55 -> 1
     analyse("../data/Video_tracking/191008/20191008_151959136_1BEE_generated_20220107_074215_nn.csv", 1, has_video=True, has_tracked_video=True)
-
-    # -> ->
+    #
+    # 37 -> 32 -> 1
     analyse("../data/Video_tracking/191008/20191008_162311875_1BEE_generated_20220107_085313_nn.csv", 1)
-
+    #
     ## 191011
-    # -> ->
+    # 60 -> 26 -> 1
     analyse("../data/Video_tracking/191011/20191011_140303626_1BEE_generated_20220107_094318_nn.csv", 1)
-
-    # -> ->
+    #
+    # 41 -> 23 -> 1
     analyse("../data/Video_tracking/191011/20191011_151039091_1BEE_generated_20220107_103850_nn.csv", 1)
-
+    #
     ## 191014
-    # -> ->
+    # 378 -> 290 -> 1
     analyse("../data/Video_tracking/191014/20191014_160829309_1BEE_generated_20220110_083510_nn.csv", 1, has_video=True, has_tracked_video=True)
-
-    # -> ->
+    #
+    # 7 -> 3 -> 1
     analyse("../data/Video_tracking/191014/20191014_171503396_1BEE_generated_20220111_102855_nn.csv", 1)
-
+    #
     ## 191016
-    # -> ->
+    # 7 -> 4 -> 1
     analyse("../data/Video_tracking/191016/20191016_120823730_1BEE_generated_20220111_120510_nn.csv", 1)
-
-    # -> ->
+    #
+    # 216 -> 156 -> 1
     analyse("../data/Video_tracking/191016/20191016_130021334_1BEE_generated_20220118_094841_nn.csv", 1)
-
+    #
     ## 191017
-    # -> ->
+    # 14 ->  10 -> 1
     analyse("../data/Video_tracking/191017/20191017_123055432_1BEE_generated_20220121_112104_nn.csv", 1)
-
-    # -> ->
+    #
+    # 80 -> 46 -> 1
     analyse("../data/Video_tracking/191017/20191017_131704603_1BEE_generated_20220121_114648_nn.csv", 1)
-
-    # -> ->
+    #
+    # 98 -> 49 -> 1
     analyse("../data/Video_tracking/191017/20191017_163619189_1BEE_generated_20220125_073904_nn.csv", 1)
-
+    #
     ## 191018
-    # -> ->
+    # 45 -> 25 -> 1
     analyse("../data/Video_tracking/191018/20191018_123336571_1BEE_generated_20220126_083927_nn.csv", 1)
-
+    #
     ############################################# 2 BEES #######################################################
     ## 190822
     # # a lot of jump back and forth
@@ -242,74 +240,75 @@ if __name__ == "__main__":
     # # 65 -> 56 -> 25 (12/10/22)
     # # 65 -> 56 -> 2 (16/10/22)
     analyse("../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv", 2, [41159], has_video=True, has_tracked_video=True)
-
+    #
     # 79 -> 70 -> 28
     # 79 -> 70 -> 43
     # 1 jump back and forth
     analyse("../data/Video_tracking/190822/20190822_143216366_2bees_generated_20210504_064410_nn.csv", 2)
-
+    #
     ## 190823
-    # -> ->
+    # 171 -> 66 -> 19
     analyse("../data/Video_tracking/190823/20190823_115857275_2BEES_generated_20210507_083510_nn.csv", 2)
 
-    # -> ->
+    # 55 -> 46 -> 21
     analyse("../data/Video_tracking/190823/20190823_154249666_2BEES_generated_20210510_095112_nn.csv", 2, has_video=True, has_tracked_video=True)
 
     ## 190903
-    # -> ->
+    # 1034 -> 650 -> 4
     analyse("../data/Video_tracking/190903/20190903_122246620_2BEES_generated_20210511_083802_nn.csv", 2)
 
-    # -> ->
+    # 187 -> 139 -> 89
     analyse("../data/Video_tracking/190903/20190903_162330843_2BEES_generated_20210520_072141_nn.csv", 2)
 
     ## 190904
-    # -> ->
+    # 1016 -> 748 -> 637
     analyse("../data/Video_tracking/190904/20190904_113737340_2BEES_generated_20210521_065405_nn.csv", 2, has_video=True, has_tracked_video=True)
 
-    # -> ->
+    # 475 -> 400 -> 35
     analyse("../data/Video_tracking/190904/20190904_155648360_2BEES_generated_20210521_104649_nn.csv", 2)
 
     ## 190905
-    # -> ->
+    # 11 -> 8 -> 2
     analyse("../data/Video_tracking/190905/20190905_115416146_2BEES_generated_20210528_065454_nn.csv", 2)
 
-    # -> ->
+    # 257 -> 162 -> 58
     analyse("../data/Video_tracking/190905/20190905_120614441_2BEES_generated_20210528_103143_nn.csv", 2, has_video=True, has_tracked_video=True)
 
     ## 190906
-    # -> ->
+    # 27 -> 20 -> 2
     analyse("../data/Video_tracking/190906/20190906_155121999_2BEES_generated_20210607_101833_nn.csv", 2)
 
     ## 190916
-    # -> ->
+    # 488 -> 321 -> 161
+    # 653 -> 493 -> 44
     analyse("../data/Video_tracking/190916/20190916_123747096_2BEES_generated_20210608_091639_nn.csv", 2, has_video=True, has_tracked_video=True)
 
-    # -> ->
+    # 28 -> 26 -> 8
     analyse("../data/Video_tracking/190916/20190916_161941067_2BEES_generated_20210618_075432_nn.csv", 2)
 
-    # -> ->
+    # 54 -> 38 -> 9
     analyse("../data/Video_tracking/190916/20190916_164302025_2BEES_generated_20210618_095944_nn.csv", 2)
 
     ## 190917
-    # -> ->
+    # 60 -> 56 -> 3
     analyse("../data/Video_tracking/190917/20190917_110943703_2BEES_generated_20210809_091448_nn.csv", 2)
 
     ## 190918
-    # -> ->
+    # 91 -> 76 -> 62
     analyse("../data/Video_tracking/190918/20190918_112137922_2BEES_generated_20210907_082919_nn.csv", 2)
 
     ## 190919
-    # -> ->
+    # 319 -> 189 -> 57
     analyse("../data/Video_tracking/190919/20190919_111450677_2BEES_generated_20210908_084940_nn.csv", 2)
 
-    # -> ->
+    # 747 -> 609 -> 4
     analyse("../data/Video_tracking/190919/20190919_144516547_2BEES_generated_20210909_084032_nn.csv", 2)
 
-    # -> ->
+    # 83 -> 65 -> 32
     analyse("../data/Video_tracking/190919/20190919_151934478_2BEES_generated_20210909_085536_nn.csv", 2)
 
     ## 190920
-    # -> ->
+    # 85 -> 77 -> 20
     analyse("../data/Video_tracking/190920/20190920_113115350_2BEES_generated_20210909_101941_nn.csv", 2)
 
     # -> ->
