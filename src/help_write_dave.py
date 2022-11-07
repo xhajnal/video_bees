@@ -16,9 +16,9 @@ def write_dave():
             print(f"# ############################################# SINGLE BEE #######################################################")
         else:
             print(f"# ############################################# {population_size} BEES #######################################################")
-        for item in a:
-            print(f"# ## {item}")
-            for file in glob(f"{path}/{item}/*_{population_size}BEE*_nn.csv", recursive=False):
+        for folder in a:
+            print(f"# ## {folder}")
+            for file in glob(f"{path}/{folder}/*_{population_size}BEE*_nn.csv", recursive=False):
 
                 if "part" in file:
                     continue
@@ -28,18 +28,19 @@ def write_dave():
                 # folder = os.path.dirname(file)
                 # print(folder)
 
-                orifinal_file = copy.copy(file)
+                original_file = copy.copy(file)
 
                 file2 = os.path.basename(file)
                 # print(file2)
                 file2 = str("_".join(file2.split("_")[:3]))
-                if glob(f"{path}/{item}/*{file2}*.mp4", recursive=False):
-                    if_video = " ## has video"
+                # print(file2)
+                if glob(f"{path}/{folder}/*{file2}*.mp4", recursive=False):
+                    if_video = ", has_video=True, has_tracked_video=True"
                 else:
                     if_video = ""
 
                 try:
-                    file_results = load_setting(file_name=f"{orifinal_file}")
+                    file_results = load_setting(file_name=f"{original_file}")
                     all_loaded = []
                     all_single = []
                     all_final = []
@@ -80,7 +81,7 @@ def write_dave():
                         except IndexError:
                             print(f"# # -> -> ")
 
-                print(f'# analyse("{file}", {population_size}) {if_video}')
+                print(f'# analyse("{file}", {population_size}{if_video})')
                 print("#")
 
 
