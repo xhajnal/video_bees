@@ -14,14 +14,14 @@ def annotate_video(input_video, output_video, traces, frame_offset):
     """
 
     ## TODO manage input and output
-    input_video = 'Resources/Cars.mp4'
-    output_video = 'Resources/output_video_from_file.mp4'
+    # input_video = 'Resources/Cars.mp4'
+    output_video = '../output/video/output_video_from_file.mp4'
 
     for trace in traces:
         assert isinstance(trace, Trace)
 
     # PARAMS
-    len_of_trace_shown_behind = 30
+    len_of_trace_shown_behind = 30  # number of frames the path is shown
 
     # Create a video capture object, in this case we are reading the video from a file
     vid_capture = cv2.VideoCapture(input_video)
@@ -53,7 +53,7 @@ def annotate_video(input_video, output_video, traces, frame_offset):
     locations_of_traces = []
     colors = distinctipy.get_colors(len(traces))
     colors = list(map(lambda x: [round(x[0]*255), round(x[1]*255), round(x[2]*255)], colors))
-    print(colors)
+    print("traces colours (R,G,B):", colors)
     for trace in traces:
         locations_of_traces.append([])
 
@@ -66,7 +66,8 @@ def annotate_video(input_video, output_video, traces, frame_offset):
         # print("frame_number", frame_number)
 
         if ret == True:
-            cv2.imshow('Frame', frame)
+            ## TODO, uncomment to see the frame
+            # cv2.imshow('Frame', frame)
 
             ## ANNOTATION
             # Round the position to whole pixels

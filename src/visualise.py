@@ -14,12 +14,15 @@ def get_fontsize(number_of_traces):
         fontsize = 0
     elif number_of_traces > 60:
         fontsize = 5
+    elif number_of_traces > 45:
+        fontsize = 5
     elif number_of_traces > 30:
         fontsize = 6
     elif number_of_traces > 20:
         fontsize = 8
     else:
         fontsize = 10
+    return fontsize
 
 
 def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_middle_point=False, subtitle=False, silent=False, debug=False):

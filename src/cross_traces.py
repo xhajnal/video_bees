@@ -480,18 +480,25 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     continue
 
                 trace1 = traces[index_to_go]
-                # EXTRAPOLATE TRACE
-                frames = trace1.frames_list[-50:]  # last 50 frames
-                x = list(map(lambda x: x[0], trace1.locations[-50:]))  # last 50 locations
-                y = list(map(lambda y: y[1], trace1.locations[-50:]))
-                splt_x = InterpolatedUnivariateSpline(frames, x, ext=0)  # extrapolator
-                splt_y = InterpolatedUnivariateSpline(frames, y, ext=0)
 
                 # COMPUTE DISTANCES AND REST
                 dist_of_traces_in_frames = trace2.frame_range[0] - trace1.frame_range[-1]
                 dist_of_traces_in_xy = math.dist(trace1.locations[-1], trace2.locations[0])
-                extrapolated_point = [splt_x(trace1.frames_list[-1] + dist_of_traces_in_frames), splt_y(trace1.frames_list[-1] + dist_of_traces_in_frames)]
-                dist_of_trace2_and_extrapolation = math.dist(extrapolated_point, trace2.locations[0])
+
+                # EXTRAPOLATE TRACE
+                try:
+                    last_50_frames = trace1.frames_list[-50:]  # last 50 frames
+                    x = list(map(lambda x: x[0], trace1.locations[-50:]))  # last 50 locations x,y respectively
+                    y = list(map(lambda y: y[1], trace1.locations[-50:]))
+                    splt_x = InterpolatedUnivariateSpline(last_50_frames, x, ext=0)  # extrapolator
+                    splt_y = InterpolatedUnivariateSpline(last_50_frames, y, ext=0)
+
+                    extrapolated_point = [splt_x(trace1.frames_list[-1] + dist_of_traces_in_frames),
+                                          splt_y(trace1.frames_list[-1] + dist_of_traces_in_frames)]
+                    dist_of_trace2_and_extrapolation = math.dist(extrapolated_point, trace2.locations[0])
+                except:
+                    extrapolated_point = None
+                    dist_of_trace2_and_extrapolation = -999999
 
                 # COMPUTE WHETHER THE TWO TRACES ARE "ALIGNED"
                 to_merge = True
@@ -514,37 +521,32 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                     # the gap is wider than max_trace_gap
                     if trace2.frame_range[0] - step_to > get_max_trace_gap():
                         to_merge = False
-                        reason = "gap long"
+                        reason = f"gap too long (> {get_max_trace_gap()})"
                     # length of the second trace is longer than a given number (100)
                     if force_merge and trace2.frame_range_len < get_min_trace_length():
                         to_merge = False
-                        reason = "2nd trace short"
+                        reason = f"2nd trace too short (< {get_min_trace_length()})"
                     # CHECK FOR DISTANCE OF TRACES IN X,Y
                     # if the distance of traces in frames is high
                     if to_merge:
                         if dist_of_traces_in_frames > get_max_trace_gap()/10:
-                            reason = "long gap too distant"
                             if dist_of_traces_in_xy > get_bee_max_step_len()*3:
+                                reason = f"long gap too distant (> {get_bee_max_step_len() * 3})"
                                 # print(f" hell, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
                                 # print(f" hell, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
                                 to_merge = False
-                            else:
-                                if debug:
-                                    print("heaven1")
                         else:
-                            reason = "short gap too distant"
                             if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
+                                reason = f"short gap too distant (> {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()})"
                                 # print(f" hell2, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
                                 # print(f" hell2, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
                                 to_merge = False
-                            else:
-                                if debug:
-                                    print("heaven2")
 
-                if trace2.frame_range[0] - trace1.frame_range[-1] == 0:
+                if trace2.frame_range[0] - trace1.frame_range[-1] == 0:  # fix distance of zero len gap
                     distance_per_frame = None
                 else:
                     distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
+
                 msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES {'' if to_merge else '('+reason+') '}{index_to_go}({trace1.trace_id}) {trace1.frame_range} " \
                       f"of {trace1.frame_range_len} frames and " \
                       f"trace {index2}({trace2.trace_id}) {trace2.frame_range} of " \
@@ -564,7 +566,7 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
                         print(trace)
                     trace_indices_to_merge.append(index2)
                     step_to = trace.frame_range[1]
-                elif reason == "gap long":
+                elif "gap too long" in reason:
                     if not silent:
                         print(colored("SKIPPING OTHER TRACES - as they have even longer gap", "red"))
                     break
@@ -661,7 +663,7 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
                                            list(map(float, (scraped_traces[trace2.trace_id][trace2.frame_range[0]][1]))))
                 # message = f"The beginning of trace {trace2.trace_id} is close to end of trace {trace.trace_id} " \
                 message = f"The beginning of trace {index}({trace.trace_id}) is close to end of trace {index2}({trace2.trace_id}) " \
-                          f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} while the x,y distance is " \
+                          f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} frames while the x,y distance is " \
                           f"{round(point_distance,3)}. Consider joining them."
                 if not silent:
                     if index2 == index + 1:
