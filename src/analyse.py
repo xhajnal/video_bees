@@ -5,6 +5,7 @@ import glob
 from _socket import gethostname
 from termcolor import colored
 
+from annotate import annotate_video
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
@@ -13,19 +14,22 @@ from cross_traces import put_gaping_traces_together, track_reappearance, cross_t
     track_swapping_loop, get_video_whole_frame_range
 from dave_io import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv, is_new_config, parse_traces, \
     get_video_path
+from triplets import merge_overlapping_triplets_of_traces
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
 global batch_run
 global silent
 global debug
 global show_plots
+global guided
 global rerun
 
-# USER - please set up the following five flags
-batch_run = True       # sets silent, not debug, not show_plots, rerun
+# USER - please set up the following 6 flags
+batch_run = False       # sets silent, not debug, not show_plots, rerun
 silent = False           # minimal print
 debug = False           # maximal print
 show_plots = True      # showing plots
+guided = False          # human guided version (in progress)
 rerun = True           # will execute also files with a setting which is already in the results
 
 
@@ -49,6 +53,11 @@ def set_rerun(do_rerun):
     rerun = do_rerun
 
 
+def set_guided(do_guided):
+    global guided
+    guided = do_guided
+
+
 def analyse(file_path, population_size, swaps=False, has_video=False, has_tracked_video=False):
     """ Runs the whole file analysis.
 
@@ -63,11 +72,14 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     #################
     # Set run setting
     #################
-    if batch_run:  # sets silent, not debug, not show_plots, rerun
+    if batch_run:  # sets silent, not debug, not show_plots, not guided, rerun
         set_silent(True)
         set_debug(False)
         set_show_plots(False)
         set_rerun(True)
+        set_guided(False)
+
+    set_show_plots(False)
 
     #################
     # Internal params
@@ -173,7 +185,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # if show_plots:
     #     show_overlaps(traces, whole_frame_range)
 
-    if has_tracked_video:
+    if has_tracked_video and guided:
         number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, silent=silent, debug=debug)
         # Storing the number of swaps done
         counts.append(number_of_swaps)
@@ -189,8 +201,9 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     ##################################################################
     # TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
     ##################################################################
-    if show_plots:
-        show_plot_locations(traces, whole_frame_range, subtitle="before TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER")
+    ## TODO uncomment the following if want the plot
+    # if show_plots:
+    #     show_plot_locations(traces, whole_frame_range, subtitle="before TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER")
     before_number_of_traces = len(traces)
     after_number_of_traces = 0
     while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
@@ -222,6 +235,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         show_plot_locations(traces, whole_frame_range)
         track_reappearance(traces, show=debug)
 
+    set_show_plots(True)
+
     ###########################
     ## MERGE OVERLAPPING TRACES
     ###########################
@@ -232,9 +247,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         before_number_of_traces = len(traces)
         merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_plots)
         after_number_of_traces = len(traces)
-
     # Storing the number of traces after MERGE OVERLAPPING TRACES
-    counts.append(len(traces) + len(removed_traces))
+    # counts.append(len(traces) + len(removed_traces))
     # QA of `merge_overlapping_traces`
     if len(traces) >= 2:
         if not silent:
@@ -248,6 +262,22 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         for index, trace in enumerate(traces):
             print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
 
+    #############################
+    ## MERGE OVERLAPPING TRIPLETS
+    #############################
+    before_number_of_traces = len(traces)
+    after_number_of_traces = -9
+    while before_number_of_traces != after_number_of_traces:
+        before_number_of_traces = len(traces)
+        merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided, silent=silent, debug=debug, show=show_plots)
+        after_number_of_traces = len(traces)
+    traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
+    # Storing the number of traces after MERGE OVERLAPPING TRACES and OVERLAPPING TRIPLETS
+    counts.append(len(traces) + len(removed_traces))
+
+    ############################
+    ## REMOVE TRACES OF FULL LEN
+    ############################
     if len(traces) > 1:
         traces, removed_traces, new_population_size = remove_full_traces(traces, removed_traces, real_whole_frame_range, population_size)
     else:
@@ -288,5 +318,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
         # pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
     # raise Exception
+
     # ### ANNOTATE THE VIDEO
-    # annotate_video(video_file, output_video_file, traces, traces[0].frame_range[0])
+    spam = removed_traces
+    spam.extend(traces)
+    annotate_video(video_file, output_video_file, spam, min(traces[0].frame_range[0], removed_traces[0].frame_range[0]))
