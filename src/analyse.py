@@ -240,15 +240,32 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     ###########################
     ## MERGE OVERLAPPING TRACES
     ###########################
-    # run `merge_overlapping_traces` until no traces are merged
-    before_number_of_traces = len(traces)
-    after_number_of_traces = -9
-    while before_number_of_traces != after_number_of_traces:
+    # run until no traces are merged
+    before_before_number_of_traces = len(traces)
+    after_after_number_of_traces = -9
+    while before_before_number_of_traces != after_after_number_of_traces:
+        before_before_number_of_traces = len(traces)
+        ## MERGE OVERLAPPING PAIRS
         before_number_of_traces = len(traces)
-        merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_plots)
-        after_number_of_traces = len(traces)
-    # Storing the number of traces after MERGE OVERLAPPING TRACES
-    # counts.append(len(traces) + len(removed_traces))
+        after_number_of_traces = -9
+        while before_number_of_traces != after_number_of_traces:
+            before_number_of_traces = len(traces)
+            merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_plots)
+            after_number_of_traces = len(traces)
+
+        ## MERGE OVERLAPPING TRIPLETS
+        before_number_of_traces = len(traces)
+        after_number_of_traces = -9
+        while before_number_of_traces != after_number_of_traces:
+            before_number_of_traces = len(traces)
+            merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided, silent=silent,
+                                                 debug=debug, show=show_plots)
+            after_number_of_traces = len(traces)
+        if len(traces) > population_size:
+            traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
+        ## RECOLLECT NUMBER OF TRACES
+        after_after_number_of_traces = len(traces)
+
     # QA of `merge_overlapping_traces`
     if len(traces) >= 2:
         if not silent:
@@ -262,16 +279,6 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         for index, trace in enumerate(traces):
             print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
 
-    #############################
-    ## MERGE OVERLAPPING TRIPLETS
-    #############################
-    before_number_of_traces = len(traces)
-    after_number_of_traces = -9
-    while before_number_of_traces != after_number_of_traces:
-        before_number_of_traces = len(traces)
-        merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided, silent=silent, debug=debug, show=show_plots)
-        after_number_of_traces = len(traces)
-    traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
     # Storing the number of traces after MERGE OVERLAPPING TRACES and OVERLAPPING TRIPLETS
     counts.append(len(traces) + len(removed_traces))
 
@@ -320,6 +327,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # raise Exception
 
     # ### ANNOTATE THE VIDEO
-    spam = removed_traces
-    spam.extend(traces)
-    annotate_video(video_file, output_video_file, spam, min(traces[0].frame_range[0], removed_traces[0].frame_range[0]))
+    if has_video or has_tracked_video:
+        pass
+        # spam = removed_traces
+        # spam.extend(traces)
+        # annotate_video(video_file, output_video_file, spam, min(traces[0].frame_range[0], removed_traces[0].frame_range[0]))
