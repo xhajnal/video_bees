@@ -204,7 +204,7 @@ class Trace:
         """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
 
-        :arg whole_frame_range: [int, int]: frame range of the whole video
+        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg from_to_frame: (list): if set, showing only frames in given range
         :arg where: (list): is set, a list of three plots [[fig1, ax1], [fig2, ax2], [fig3, ax3]] in format fig1, ax1 = plt.subplots()
         :arg show: (bool): if True the plots are shown

@@ -16,7 +16,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
-        :arg whole_frame_range: [int, int]: frame range of the whole video
+        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg population_size (int) expected number of agents
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
         :arg silent: (bool): if True minimal output is shown

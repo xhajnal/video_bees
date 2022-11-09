@@ -16,7 +16,7 @@ def remove_full_traces(traces, removed_traces, real_whole_frame_range, populatio
 
         :arg traces: (list): a list of Traces
         :arg removed_traces: (list): a list of already removed Traces
-        :arg real_whole_frame_range: [int, int]: frame range of the whole video
+        :arg real_whole_frame_range: [int, int]: real frame range of the whole video (without margins)
         :arg population_size: (int): population size of original traces
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
@@ -163,7 +163,7 @@ def track_jump_back_and_forth(trace, trace_index, whole_frame_range, show_plots=
 
     :arg trace: (Trace): a Traces to check
     :arg trace_index: (int): auxiliary information of index in list of traces of the first trace
-    :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
     :arg show_plots: (bool): a flag whether to show the jump in a plot
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown

@@ -79,6 +79,11 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         set_rerun(True)
         set_guided(False)
 
+    if guided:
+        set_rerun(True)
+        set_show_plots(True)
+        set_silent(False)
+
     set_show_plots(False)
 
     #################

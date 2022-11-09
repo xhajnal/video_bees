@@ -42,6 +42,7 @@ def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, sil
     """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
+        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg automatically_swap: (bool): if True swaps without asking
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
@@ -67,6 +68,7 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, silent=F
     """ Tracks the possible swapping traces of two bees in the run.
 
         :arg traces: (list): list of Traces
+        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg automatically_swap: (bool or list of int): if True swaps all without asking, if list it contains frames to autopass
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
@@ -681,7 +683,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
-        :arg whole_frame_range: [int, int]: frame range of the whole video
+        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg population_size (int) expected number of agents
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown

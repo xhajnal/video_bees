@@ -30,7 +30,7 @@ def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_mid
     time on horizontal axis in frame numbers. Last plot is the traces in x,y.
 
     :arg traces: (list): a list of Traces
-    :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg whole_frame_range: [int, int]: frame range of the whole video (with margins) 
     :arg from_to_frame: (list): if set, showing only frames in given range
     :arg show_middle_point: (bool): if True, a point in the middle of the trace is highlighted
     :arg subtitle: (string): subtitle of the plot
@@ -56,7 +56,7 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     """ Creates a scatter plot of detected traces of each agent.
 
     :arg traces: (list): a list of Traces
-    :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
     :arg from_to_frame: (list): if set, showing only frames in given range
     :arg subtitle: (string): subtitle of the plot
     :arg show_trace_index: (bool): if True trace index is shown above the trace
@@ -112,7 +112,7 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
     """ Creates a scatter plot of overlaps of traces.
 
     :arg traces: (list): a list of Traces
-    :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
     :arg skip_whole_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg subtitle: (string): subtitle of the plot
     :arg silent: (bool): if True minimal output is shown
@@ -219,7 +219,7 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     """ Creates a scatter plot of gaps of traces.
 
     :arg traces: (list): a list of Traces
-    :arg whole_frame_range: [int, int]: frame range of the whole video
+    :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
     :arg show_all_gaps: (bool) if True shows all gaps
     :arg subtitle: (string): subtitle of the plot
     :arg silent: (bool): if True minimal output is shown
