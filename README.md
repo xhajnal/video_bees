@@ -8,6 +8,8 @@ Fixing video tracking of the bees made by [loopy](http://loopbio.com/loopy/).
 | ----------------- | ---|----|----|--- |----|----|
 | # videos          | 68 | 68 | 60 | 56 | 52 | 48 |
 
+Skipping the runs which have multiple parts (3 occurences), where probably the camera was not recording for a moment. 
+
 ## PREREQUISITES
 1. install [Python 3.9](https://www.python.org/downloads/)
 
@@ -68,6 +70,16 @@ Now run file `fix_ranges.py`
 it saves fixed frame ranges by editing `frame_number` column, while keeping column `frame_count` intact. 
 if these are the same (in our case they were) you can now delete `original` folder, since all information is stored in the new files. 
 
+## SETUP THE RUN
+In the `analysis.py`, which dictates the sequence of the logic, visualisations, and I/O calls;
+there are 6 flags, `batch_run`, `silent`, `debug`, `show_plots`, `guided`, and `rerun`.
+These dictate global systematic settings such as the level of output, recalling a file with a known result as it was already run with the same setting, and user guided version. Documentation of individual flag is in the file.
+
+
+In the `config.py` there are some fixed values which alter boundaries and thresholds of the analysis. 
+Documentation of individual value is in the file.
+Changing these values may cause a diffent result of the analysis.
+In proncipe, the most important values are at the top. 
 
 ## HOW TO RUN
 In the `dave.py` there are individual lines loading and parsing individual `_nn.csv` file. Hence you can run the analysis of selected files by:
@@ -77,7 +89,6 @@ In the `dave.py` there are individual lines loading and parsing individual `_nn.
 >> python dave.py
 ```
 ## WHAT DAVE DOES
-MAIN
 1. deleting traces of 0 length in x,y [auto]
 2. deleting traces outside of arena [auto]
 3. smoothening traces with jumps there and back (when a trace jumps (long range in few steps) somewhere and in a short frame range it gets to a point close to the start)
