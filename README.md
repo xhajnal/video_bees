@@ -78,14 +78,21 @@ In the `dave.py` there are individual lines loading and parsing individual `_nn.
 ```
 ## WHAT DAVE DOES
 MAIN
-1. deleting traces of 0 length in x,y
-2. smoothening traces with jumps there and back (when a trace jumps (long range in few steps) somewhere and in a short frame range it gets to a point close to the start)
-3. tracking of swapped traces
-4. deleting traces with an overlap over enough traces (according to population_size) 
-5. merging traces with a gap
-6. merging traces with overlap
-
-AUXILARY
-
-7. visualisations
-8. comparison of traces (under construction)
+1. deleting traces of 0 length in x,y [auto]
+2. deleting traces outside of arena [auto]
+3. smoothening traces with jumps there and back (when a trace jumps (long range in few steps) somewhere and in a short frame range it gets to a point close to the start)
+4. tracking of swapped traces [auto, whitelist, or user guided version]
+5. deleting traces with an overlap over enough traces (according to population_size) [auto]
+6. merging traces with a gap [auto]
+7. merging traces with an overlap 
+    1. pairs of overlapping traces [auto until no trace with single overlap found]
+    2. triplets of overlapping traces [auto (shortest of triplet skipped) or user guided]
+8. saving the result as csv and pickle file - in `output` folder
+9. annotating a given video with the result - in `output/video` folder
+10. storing config and result as csv for each new result - in `output/result.csv`
+11. visualisations
+    1. plot of traces as lines showing their frame range
+    2. position of traces in 3 plots: x-axis in time, y-axis in time, and x/y phase space (no time)
+    3. overlaps and gaps of traces
+    4. histogram of time to reappear another trace (showing lenght of gaps)
+9. comparison of traces (under construction)
