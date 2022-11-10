@@ -52,7 +52,8 @@ def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_mid
     print(colored(f"Showing location of {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds.\n", "yellow"))
 
 
-def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=False, show_trace_index=True, show_trace_range=True):
+def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=False, show_trace_index=True,
+                      show_trace_id=True, show_trace_range=True):
     """ Creates a scatter plot of detected traces of each agent.
 
     :arg traces: (list): a list of Traces
@@ -60,6 +61,7 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     :arg from_to_frame: (list): if set, showing only frames in given range
     :arg subtitle: (string): subtitle of the plot
     :arg show_trace_index: (bool): if True trace index is shown above the trace
+    :arg show_trace_id: (bool): if True trace id is shown above the trace
     :arg show_trace_range: (bool): if True frame number of beginning af the trace and end of the trace is shown above the trace
     """
     fig = plt.figure()
@@ -71,13 +73,19 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
         x = trace.frames_list
         y = [index] * len(x)
         ax1.scatter(x, y, alpha=0.5)
-        if show_trace_index:
+        if show_trace_index or show_trace_id:
+            if show_trace_index and show_trace_id:
+                msg = f"{index}({trace.trace_id})"
+            elif show_trace_index and not show_trace_id:
+                msg = f"{index}"
+            else:
+                msg = f"({trace.trace_id})"
             if len(traces) > 5:
                 # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.5, f"{index}({trace.trace_id})", fontsize=fontsize)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.5, msg, fontsize=fontsize)
             else:
                 # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), f"{index}({trace.trace_id})", fontsize=fontsize)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), msg, fontsize=fontsize)
         if show_trace_range:
             if trace.frame_range_len < 5000:
                 ax1.text(trace.frame_range[0] + 1500, y[0], f"{nice_range_print(trace.frame_range)} [{trace.frame_range_len}]", fontsize=fontsize)
@@ -107,17 +115,19 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     plt.show()
 
 
-def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False, silent=False, debug=False,
-                  show_overlap_indices=True, show_overlap_range=True):
+def show_overlaps(traces, whole_frame_range, from_to_frame=False, skip_whole_in=False, subtitle=False, silent=False, debug=False,
+                  show_overlap_indices=True, show_overlap_ids=True, show_overlap_range=True):
     """ Creates a scatter plot of overlaps of traces.
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
+    :arg from_to_frame: (list): if set, showing only frames in given range
     :arg skip_whole_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg subtitle: (string): subtitle of the plot
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
-    :arg show_overlap_indices: (bool): if True trace indices is shown above the overlap
+    :arg show_overlap_indices: (bool): if True trace indices are shown above the overlap
+    :arg show_overlap_ids: (bool): if True trace id-s are shown above the overlap
     :arg show_overlap_range: (bool): if True frame number of beginning af the overlap and end of the overlap is shown above the overlap
     """
     # Check
@@ -132,41 +142,57 @@ def show_overlaps(traces, whole_frame_range, skip_whole_in=False, subtitle=False
 
     if len(traces) >= 2:
         # get dictionary of overlaps of two traces: pair of traces indices -> overlap frame range
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=skip_whole_in)
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda a: a.frame_range, traces)), skip_whole_in=skip_whole_in)
         overlaps = list(dictionary.keys())
+
+        # print(dictionary)
+        # print(dictionary.values())
+        whole_overlap_range = [min(map(lambda a: a[0], dictionary.values())), max(map(lambda a: a[1], dictionary.values()))]
+
         if debug:
             print("dictionary", dictionary)
             print("overlaps", overlaps)
 
         for index, overlap in enumerate(overlaps):
             overlap_range = dictionary[overlap]
-            overlap_range_len = overlap_range[1] - overlap_range[0]
+            overlap_range_len = overlap_range[1] - overlap_range[0] + 1
 
             x = list(range(overlap_range[0], overlap_range[1]+1))
             y = [index] * len(x)
             ax1.scatter(x, y, alpha=0.5)
 
-            if show_overlap_indices:
+            if show_overlap_indices or show_overlap_ids:
+                if show_overlap_indices and show_overlap_ids:
+                    msg = f"{overlap[0]}({traces[overlap[0]].trace_id}), {overlap[1]}({traces[overlap[1]].trace_id})"
+                elif show_overlap_indices and not show_overlap_ids:
+                    msg = f"{overlap[0]}, {overlap[1]}"
+                else:
+                    msg = f"({traces[overlap[0]].trace_id}), ({traces[overlap[1]].trace_id})"
+
                 if len(traces) > 5:
                     # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
-                    ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - 0.5,
-                             f"{overlap[0]}({traces[overlap[0]].trace_id}), {overlap[1]}({traces[overlap[1]].trace_id})",
-                             fontsize=fontsize)
+                    ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - 0.5, msg, fontsize=fontsize)
                 else:
                     # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
-                    ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)),
-                             f"{overlap[0]}({traces[overlap[0]].trace_id}), {overlap[1]}({traces[overlap[1]].trace_id})",
-                             fontsize=fontsize)
+                    ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), msg, fontsize=fontsize)
             if show_overlap_range:
                 if overlap_range_len < 5000:
-                    ax1.text(overlap_range[0] + 700, y[0], f"{nice_range_print(overlap_range)} [{overlap_range_len}]",
+                    ax1.text(overlap_range[0] + (overlap_range[1]-overlap_range[0])/2, y[0] + 0.1, f"{nice_range_print(overlap_range)} [{overlap_range_len}]",
                              fontsize=fontsize)
                 else:
                     ax1.text(overlap_range[0], y[0], overlap_range[0], fontsize=fontsize)
                     ax1.text(overlap_range[1], y[0], f"{overlap_range[1]} [{overlap_range_len}]", fontsize=fontsize)
 
+    if from_to_frame is not False:
+        if from_to_frame is True and len(traces) >= 2:
+            # print(whole_overlap_range)
+            ax1.set_xlim(whole_overlap_range)
+        else:
+            ax1.set_xlim(from_to_frame)
+    else:
+        ax1.set_xlim(whole_frame_range)
+
     ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax1.set_xlim(whole_frame_range)
     plt.xlabel('Frame number')
     plt.ylabel('Overlap id')
     title = f'Scatter plot of overlaps of two traces.'

@@ -141,13 +141,17 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 trace_index_to_omit = min_len_index
             else:
                 ## Version where these three traces would be shown so that user can handpick which to delete
-                print(colored(f"We have found a triplet of overlapping traces {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}. Please select a pair to merge.", "blue"))
+                print(colored(f"We have found a triplet of overlapping traces {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}). Please select a pair to merge.", "blue"))
+                ## compute the ranges
+                min_range = min([trace1.frame_range[0], trace2.frame_range[0], trace3.frame_range[0]])
+                max_range = max([trace1.frame_range[1], trace2.frame_range[1], trace3.frame_range[1]])
+
                 ## scatter plot of the triplet
-                scatter_detection([trace1, trace2, trace3], whole_frame_range, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                scatter_detection([trace1, trace2, trace3], [min_range - 200, max_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                 ## show position
-                show_plot_locations([trace1, trace2, trace3], whole_frame_range, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_range - 200, max_range + 200],  subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                 ## show the overlap
-                show_overlaps([trace1, trace2, trace3], whole_frame_range, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                show_overlaps([trace1, trace2, trace3], whole_frame_range, from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                 ## show frames of the video
                 ## TODO
 
@@ -157,9 +161,11 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     first_trace_to_merge = int(first_trace_to_merge)
                 except ValueError:
                     print(colored("Not selected any trace to be merged. Skipping this triplet.", "red"))
+                    del dictionary[pick_key2]
                     continue
                 if first_trace_to_merge not in pick_key2:
                     print(colored("Selected trace not in the triplet. Skipping it.", "red"))
+                    del dictionary[pick_key2]
                     continue
 
                 # Ask for the index of the second trace to be merged and verify it
@@ -173,10 +179,15 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     print(colored("Selected trace not in the triplet. Skipping it.", "red"))
                     continue
 
+                answer = input("Force merge these? Will not ask on the distance of the selected traces. (yes or no)")
+                if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
+                    force_merge = True
+
                 # Find the trace which is not to be merged (the one not picked)
                 for trace_index in pick_key2:
                     if trace_index != first_trace_to_merge and trace_index != second_trace_to_merge:
                         trace_index_to_omit = trace_index
+                trace_index_to_omit = pick_key2.index(trace_index_to_omit)
 
             ## Obtain the pair of traces and their indices
             duplet = [trace1, trace2, trace3]
@@ -200,10 +211,11 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
 
             #  Save the id of the merged trace before it is removed
             trace2_id = trace2.trace_id
-            if distances is not None and any(
+            if not force_merge and distances is not None and any(
                     list(map(lambda x: x > get_max_step_distance_to_merge_overlapping_traces(), distances))):
                 go_next = True
                 to_merge = False
+                force_merge = False
                 reason = f"single huge distance (>{get_max_step_distance_to_merge_overlapping_traces()})"
 
                 # the distance of the traces is greater than the given threshold, we move on
