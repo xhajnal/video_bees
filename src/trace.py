@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
 from config import *
-from misc import has_overlap, take
+from misc import has_overlap, take, is_in
 
 
 class Trace:
@@ -93,6 +93,13 @@ class Trace:
                     # print("Error:", str(err))
                     raise err
 
+    def get_gap_frame_range(self):
+        """ Returns the range of gaps."""
+        if self.gap_frames:
+            return (self.gap_frames[0], self.gap_frames[-1])
+        else:
+            return None
+
     def get_gap_locations(self):
         """ Returns a list of locations of gaps."""
         gap_locations = []
@@ -101,6 +108,13 @@ class Trace:
             gap_locations.append(self.locations[index])
 
         return gap_locations
+
+    def get_overlap_frame_range(self):
+        """ Returns the range of overlaps."""
+        if self.overlap_frames:
+            return (self.overlap_frames[0], self.overlap_frames[-1])
+        else:
+            return None
 
     def get_overlap_locations(self):
         """ Returns a list of locations of overlaps."""
@@ -217,6 +231,9 @@ class Trace:
         if subtitle is False:
             subtitle = ""
 
+        # print("self.gap_frames", self.gap_frames)
+        # print("self.overlap_frames", self.overlap_frames)
+
         # set boundaries for from_to_frame
         if from_to_frame is not False:
             assert isinstance(from_to_frame, list)
@@ -240,11 +257,63 @@ class Trace:
                     print(from_to_frame[1] < self.frame_range[1])
                     raise err
             else:
-                to_index = -1
+                to_index = len(self.locations)
 
+            ## GAPS
+            # from_to_frame is either before or after gaps
+            if self.gap_frames and has_overlap(from_to_frame, self.get_gap_frame_range()):
+                if self.gap_frames[0] < from_to_frame[0]:
+                    for index, gap_frame in enumerate(self.gap_frames):
+                        if from_to_frame[0] > gap_frame:
+                            from_gap_index = index
+                            break
+                else:
+                    from_gap_index = 0
+
+                if self.gap_frames and from_to_frame[1] < self.gap_frames[1]:
+                    for index, gap_frame in enumerate(self.gap_frames):
+                        to_gap_index = index
+                        if gap_frame > from_to_frame[1]:
+                            break
+                else:
+                    to_gap_index = len(self.gap_frames)
+            else:
+                from_gap_index = 0
+                to_gap_index = 0
+
+            ## OVERLAPS
+            # from_to_frame is either before or after overlaps
+            if self.overlap_frames and has_overlap(from_to_frame, self.get_overlap_frame_range()):
+                if self.overlap_frames and self.overlap_frames[0] < from_to_frame[0]:
+                    for index, overlap_frame in enumerate(self.overlap_frames):
+                        if from_to_frame[0] > overlap_frame:
+                            from_overlap_index = index
+                            break
+                else:
+                    from_overlap_index = 0
+
+                if self.overlap_frames and from_to_frame[1] < self.overlap_frames[1]:
+                    for index, overlap_frame in enumerate(self.overlap_frames):
+                        to_overlap_index = index
+                        if overlap_frame > from_to_frame[1]:
+                            break
+                else:
+                    to_overlap_index = len(self.overlap_frames)
+            else:
+                from_overlap_index = 0
+                to_overlap_index = 0
         else:
             from_index = 0
-            to_index = -1
+            to_index = len(self.locations)
+
+            from_gap_index = 0
+            to_gap_index = len(self.gap_frames)
+
+            from_overlap_index = 0
+            to_overlap_index = len(self.overlap_frames)
+
+        # print("self.gap_frames cut", self.gap_frames[from_gap_index:to_gap_index])
+        # print("self.overlap_frames cut", self.overlap_frames[from_overlap_index:to_overlap_index])
 
         # load locations for x and y-axis respectively
         xs = list(map(lambda x: x[0], self.locations))
@@ -275,11 +344,11 @@ class Trace:
             fig1, ax1 = plt.subplots()
 
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
-        ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        plot1 = ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         if show_middle_point:
                 ax1.scatter([middle_index], [x_middle_pos], c="magenta", s=3)
-        ax1.scatter(self.overlap_frames, list(map(lambda x: x[0], overlap_locations)), c="black")
-        ax1.scatter(self.gap_frames, list(map(lambda x: x[0], gap_locations)), c="white", edgecolors="black")
+        ax1.scatter(self.overlap_frames[from_overlap_index: to_overlap_index], list(map(lambda x: x[0], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
+        ax1.scatter(self.gap_frames[from_gap_index: to_gap_index], list(map(lambda x: x[0], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
         ax1.set_xlabel('Time')
         ax1.set_ylabel('x')
         
@@ -303,11 +372,11 @@ class Trace:
             fig2, ax2 = plt.subplots()
 
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
-        ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        plot2 = ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         if show_middle_point:
             ax2.scatter([middle_index], [y_middle_pos], c="magenta", s=3)
-        ax2.scatter(self.overlap_frames, list(map(lambda x: x[1], overlap_locations)), c="black")
-        ax2.scatter(self.gap_frames, list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
+        ax2.scatter(self.overlap_frames[from_overlap_index: to_overlap_index], list(map(lambda x: x[1], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
+        ax2.scatter(self.gap_frames[from_gap_index: to_gap_index], list(map(lambda x: x[1], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
         ax2.set_xlabel('Time')
         ax2.set_ylabel('y')
         if from_to_frame is not False:
@@ -332,12 +401,14 @@ class Trace:
         xs = list(map(lambda x: x[0], self.locations[from_index:to_index]))
         ys = list(map(lambda x: x[1], self.locations[from_index:to_index]))
         # ax3.scatter(xs, ys, alpha=0.5)
-        ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        plot3 = ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         if show_middle_point:
             ax3.scatter([x_middle_pos], [y_middle_pos], c="magenta", s=3)
 
-        ax3.scatter(list(map(lambda x: x[0], overlap_locations)), list(map(lambda x: x[1], overlap_locations)), c="black")
-        ax3.scatter(list(map(lambda x: x[0], gap_locations)), list(map(lambda x: x[1], gap_locations)), c="white", edgecolors="black")
+        ax3.text(xs[0], ys[0], "A", fontsize=6, color=plot3[0].get_color())
+        ax3.text(xs[-1], ys[-1], "B", fontsize=6, color=plot3[0].get_color())
+        ax3.scatter(list(map(lambda x: x[0], overlap_locations))[from_overlap_index: to_overlap_index], list(map(lambda x: x[1], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
+        ax3.scatter(list(map(lambda x: x[0], gap_locations))[from_gap_index: to_gap_index], list(map(lambda x: x[1], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
         ax3.set_xlabel('x')
         ax3.set_ylabel('y')
         max_position = max([max(xs), max(xs)])
