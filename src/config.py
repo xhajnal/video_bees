@@ -4,6 +4,11 @@ def get_distance_from_calculated_arena():
     return 53
 
 
+def get_min_trace_len():
+    """ Return minimal value of a trace len in frames to be kept."""
+    return 26
+
+
 def get_max_trace_gap():
     """ Returns maximal distance between two traces in frames to be able to merge.
         Effectively computes how long an agent can hide from being tracked (max_trace_gap / frame rate).

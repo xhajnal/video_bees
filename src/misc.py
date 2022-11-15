@@ -80,7 +80,9 @@ def take(n, iterable):
     return list(islice(iterable, n))
 
 
+## DEPRECATED
 def flatten(data):
+    """ Returns flatten data - makes a single tuple from multiple. """
     if isinstance(data, tuple):
         if len(data) == 0:
             return ()
@@ -88,6 +90,17 @@ def flatten(data):
             return flatten(data[0]) + flatten(data[1:])
     else:
         return (data,)
+
+
+def flatten2(data):
+    """ Returns flatten data - makes a single tuple from multiple. """
+    a = []
+    for item in data:
+        a = a + list(item)
+    return tuple(a)
+
+# print(flatten(((1,2,3),(4,5,9))))
+# print(flatten2(((1,2,3),(4,5,9))))
 
 
 def range_len(interval):

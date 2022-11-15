@@ -8,8 +8,8 @@ from operator import countOf
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from config import *
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, flatten, \
-    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, \
+    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten2
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
@@ -725,7 +725,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                     print(f"trace {trace_index} ({trace.trace_id}) of frame range {trace.frame_range}")
                 print()
             # Flattened indices of overlapping pairs of traces
-            keys = flatten(tuple(dictionary.keys()))
+            keys = flatten2(tuple(dictionary.keys()))
 
             # Count occurrences of trace indices in overlapping pairs
             counts = {}

@@ -5,7 +5,7 @@ from operator import countOf
 
 from config import *
 from cross_traces import compare_two_traces
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, flatten
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, flatten2
 from trace import Trace
 
 from traces_logic import merge_two_overlapping_traces
@@ -65,7 +65,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     print(f"trace {trace_index} ({trace.trace_id}) of frame range {trace.frame_range}")
                 print()
             # Flattened indices of overlapping pairs of traces
-            keys = flatten(tuple(dictionary.keys()))
+            keys = flatten2(tuple(dictionary.keys()))
 
             # Count occurrences of trace indices in overlapping pairs
             counts = {}
@@ -145,10 +145,21 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 ## compute the ranges
                 min_range = min([trace1.frame_range[0], trace2.frame_range[0], trace3.frame_range[0]])
                 max_range = max([trace1.frame_range[1], trace2.frame_range[1], trace3.frame_range[1]])
+                min_overlap_range = min(get_overlap(trace1.frame_range, trace2.frame_range)[0], get_overlap(trace2.frame_range, trace3.frame_range)[0])
+                max_overlap_range = max(get_overlap(trace1.frame_range, trace2.frame_range)[1], get_overlap(trace2.frame_range, trace3.frame_range)[1])
+                both_overlaps_overlap_range_len = max_overlap_range - min_overlap_range + 1
+
+                # print(min_overlap_range, max_overlap_range)
 
                 ## scatter plot of the triplet
                 scatter_detection([trace1, trace2, trace3], [min_range - 200, max_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                scatter_detection(traces, [min_range - 200, max_range + 200], show_trace_index=False,
+                                  subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                 ## show position
+                show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len*0.1), max_overlap_range + round(both_overlaps_overlap_range_len*0.1)],  subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len * 0.1),
+                                                                   max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)],
+                                    subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                 ## show the overlap
                 show_overlaps([trace1, trace2, trace3], whole_frame_range, from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                 ## show frames of the video
