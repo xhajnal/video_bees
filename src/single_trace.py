@@ -38,10 +38,11 @@ def remove_full_traces(traces, removed_traces, real_whole_frame_range, populatio
     return traces, removed_traces, population_size - deleted
 
 
-def single_trace_checker(traces, silent=False, debug=False):
+def single_trace_checker(traces, min_range_len=False, silent=False, debug=False):
     """ Checks a single trace.
 
     :arg traces: (list): a list of Traces
+    :arg min_range_len: (int): minimal length of trace in frames
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns traces: (list): a list of Traces
@@ -49,7 +50,10 @@ def single_trace_checker(traces, silent=False, debug=False):
     print(colored("SINGLE TRACE CHECKER", "blue"))
     start_time = time()
     traces_with_zero_len_in_xy = []
+    removed_short_traces = []
+    removed_short_traces_indices = []
     number_of_traces = len(traces)
+
     for index, trace in enumerate(traces):
         if not silent:
             print(colored(f"trace index:{index} {trace}", "blue"))
@@ -57,16 +61,23 @@ def single_trace_checker(traces, silent=False, debug=False):
             if not silent:
                 print(colored("This trace has length of 0 in x,y. Gonna delete trace of this agent!", "red"))  ## this can be FP
             traces_with_zero_len_in_xy.append(index)
+        if min_range_len is not False:
+            if trace.frame_range_len < min_range_len:
+                removed_short_traces.append(trace)
+                removed_short_traces_indices.append(index)
+                if not silent:
+                    print(colored(f"This trace has length in frames {trace.frame_range_len}<{min_range_len}. Gonna delete trace of this agent!", "red"))  ## this can be FP
         if trace.max_step_len > get_bee_max_step_len():
             if not silent:
                 print(colored(f"This agent has moved {trace.max_step_len} in a single step on frame {trace.max_step_len_frame_number}, you might consider fixing it!", "yellow"))
         # if not silent:
         #     print()
 
-    # DELETING TRACES WITH 0 LEN in XY
-    traces = delete_indices(traces_with_zero_len_in_xy, traces)
+    # DELETING TRACES WITH 0 LEN in XY and WITH FRAME RANGE < min_range_len
+    traces = delete_indices(traces_with_zero_len_in_xy + removed_short_traces_indices, traces)
+
     print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
-    return traces
+    return traces, removed_short_traces
 
 
 def check_inside_of_arena(traces, silent=False, debug=False):

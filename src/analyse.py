@@ -6,6 +6,7 @@ from _socket import gethostname
 from termcolor import colored
 
 from annotate import annotate_video
+from config import get_min_trace_len
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
@@ -29,7 +30,7 @@ batch_run = False       # sets silent, not debug, not show_plots, rerun
 silent = False           # minimal print
 debug = False           # maximal print
 show_plots = True      # showing plots
-guided = False          # human guided version (in progress)
+guided = True          # human guided version (in progress)
 rerun = True           # will execute also files with a setting which is already in the results
 
 
@@ -90,7 +91,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # Internal params
     #################
     counts = []
-    removed_traces = []
+    removed_short_traces = []
+    removed_full_traces = []
     original_population_size = population_size
 
     ############
@@ -115,7 +117,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         print(colored(f"File not found!", "magenta"))
         return
 
-    # store traces as list of Traces
+    # Store traces as list of Traces
     traces = []
     for index, trace in enumerate(scraped_traces.keys()):
         # print(trace)
@@ -123,7 +125,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         traces.append(Trace(scraped_traces[trace], index))
 
     # Storing the number of loaded traces
-    counts.append(len(traces) + len(removed_traces))
+    counts.append(len(traces) + len(removed_full_traces))
 
     ### AUXILIARY COMPUTATION
     ## FRAME RANGE
@@ -144,7 +146,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     ##################################
     check_inside_of_arena(traces)
     # Storing the number of traces inside of arena
-    counts.append(len(traces) + len(removed_traces))
+    counts.append(len(traces) + len(removed_full_traces))
 
     # TODO uncomment the following
     # if show_plots:
@@ -154,8 +156,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     ########################################
     # FIND TRACES OF ZERO LENGTH, TRACE INFO
     ########################################
-    single_trace_checker(traces, silent=silent, debug=debug)
-    counts.append(len(traces) + len(removed_traces))
+    traces, removed_short_traces = single_trace_checker(traces, min_range_len=get_min_trace_len(), silent=silent, debug=debug)
+    counts.append(len(traces) + len(removed_full_traces))
     # TODO uncomment the following
     # if show_plots:
     #     scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
@@ -222,7 +224,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         after_number_of_traces = len(traces)
 
     # Storing the number of traces after TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
-    counts.append(len(traces) + len(removed_traces))
+    counts.append(len(traces) + len(removed_full_traces))
     if not silent:
         print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
@@ -285,13 +287,13 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
             print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
 
     # Storing the number of traces after MERGE OVERLAPPING TRACES and OVERLAPPING TRIPLETS
-    counts.append(len(traces) + len(removed_traces))
+    counts.append(len(traces) + len(removed_full_traces))
 
     ############################
     ## REMOVE TRACES OF FULL LEN
     ############################
     if len(traces) > 1:
-        traces, removed_traces, new_population_size = remove_full_traces(traces, removed_traces, real_whole_frame_range, population_size)
+        traces, removed_full_traces, new_population_size = remove_full_traces(traces, removed_full_traces, real_whole_frame_range, population_size)
     else:
         new_population_size = population_size
 

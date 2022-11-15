@@ -147,6 +147,7 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
     # PARSE NEW ENTRY
     now = str(datetime.now())
     new_entry = {"distance_from_calculated_arena": get_distance_from_calculated_arena(),
+                 "min_trace_len": get_min_trace_len(),
                  "max_trace_gap": get_max_trace_gap(),
                  "min_trace_length": get_min_trace_length(),
                  "bee_max_step_len": get_bee_max_step_len(),
@@ -243,7 +244,10 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                                 break
                         if population_size is None:
                             raise err
-
+                    try:
+                        min_trace_len = record['min_trace_len']
+                    except KeyError as err:
+                        min_trace_len = ""
                     try:
                         zero_len = record['zero length']
                     except KeyError as err:
@@ -255,7 +259,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                         force_merge_vicinity = ""
 
                     file.write(f"{track_file}; {timestamp}; {record['distance_from_calculated_arena']}; "
-                               f"{record['max_trace_gap']}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
+                               f"{record['max_trace_gap']}; {min_trace_len}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
                                f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
                                f"{record['max_step_distance_to_merge_overlapping_traces']}; {force_merge_vicinity}; "
                                f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "
