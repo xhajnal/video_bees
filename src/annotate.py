@@ -1,5 +1,6 @@
 import cv2
 import distinctipy
+from termcolor import colored
 
 from trace import Trace
 
@@ -12,10 +13,11 @@ def annotate_video(input_video, output_video, traces, frame_offset):
     :arg traces: (list): a list of Traces
     :arg frame_offset: (int): number of the first frame cause opencv sees the first frame as 0th
     """
+    print(colored("ANNOTATES THE VIDEO WITH NEW TRACES", "blue"))
 
     ## TODO manage input and output
     # input_video = 'Resources/Cars.mp4'
-    output_video = '../output/video/output_video_from_file.mp4'
+    # output_video = '../output/video/output_video_from_file.mp4'
 
     for trace in traces:
         assert isinstance(trace, Trace)

@@ -33,11 +33,15 @@ def get_video_path(file_path):
         output_video_file = ""
     else:
         video_file = video_file[0]
-        output_video_file = os.path.join(folder, "Results", os.path.basename(video_file))
-    try:
-        os.mkdir(os.path.join(folder, "Results"))
-    except OSError:
-        pass
+        try:
+            os.mkdir("../output")
+        except OSError:
+            pass
+        try:
+            os.mkdir("../output/video")
+        except OSError:
+            pass
+        output_video_file = os.path.join("..", "output", "video", os.path.basename(video_file))
 
     return video_file, output_video_file
 
