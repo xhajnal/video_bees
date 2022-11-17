@@ -22,21 +22,28 @@ global batch_run
 global silent
 global debug
 global show_plots
+global show_all_plots
 global guided
 global rerun
 
 # USER - please set up the following 6 flags
 batch_run = False       # sets silent, not debug, not show_plots, rerun
-silent = False           # minimal print
+silent = False          # minimal print
 debug = False           # maximal print
-show_plots = True      # showing plots
-guided = True          # human guided version (in progress)
-rerun = True           # will execute also files with a setting which is already in the results
+show_plots = True       # showing plots
+show_all_plots = False  # showing all plots - also those in the loops
+guided = False          # human guided version (in progress)
+rerun = True            # will execute also files with a setting which is already in the results
 
 
 def set_show_plots(do_show_plots):
     global show_plots
     show_plots = do_show_plots
+
+
+def set_show_all_plots(do_show_all_plots):
+    global show_all_plots
+    show_all_plots = do_show_all_plots
 
 
 def set_silent(is_silent):
@@ -77,6 +84,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         set_silent(True)
         set_debug(False)
         set_show_plots(False)
+        set_show_all_plots(False)
         set_rerun(True)
         set_guided(False)
 
@@ -85,7 +93,10 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         set_show_plots(True)
         set_silent(False)
 
-    set_show_plots(False)
+    if show_plots is False:
+        set_show_all_plots(False)
+
+    # set_show_plots(False)
 
     #################
     # Internal params
@@ -99,6 +110,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # I/O stuff
     ############
     video_file, output_video_file = get_video_path(file_path)
+    # print(output_video_file)
 
     ####################
     # PARSE CSV & CONFIG
@@ -216,33 +228,29 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
         before_number_of_traces = len(traces)
         traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
-        if show_plots:
+        if show_all_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
         traces = put_gaping_traces_together(traces, population_size, silent=silent, debug=debug)
-        if show_plots:
+        if show_all_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
         after_number_of_traces = len(traces)
 
     # Storing the number of traces after TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
     counts.append(len(traces) + len(removed_full_traces))
     if not silent:
-        print(colored(f"After trimming and putting not overlapping traces together there are {len(traces)} left:", "yellow"))
+        print(colored(f"After trimming overlapping redundant traces and putting gaping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
             print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range}")
 
-    if show_plots:
-        # scatter_detection(traces, whole_frame_range)
-        show_gaps(traces, whole_frame_range, silent=silent, debug=debug)
-        show_overlaps(traces, whole_frame_range, silent=silent, debug=debug)
-
-    # show_gaps(traces, whole_frame_range)
-
     ## ALL TRACES SHOW
     if show_plots:
-        show_plot_locations(traces, whole_frame_range)
-        track_reappearance(traces, show=debug)
+        # scatter_detection(traces, whole_frame_range)
+        show_gaps(traces, whole_frame_range, silent=silent, debug=debug, subtitle="After Cross analysis phase 1.")
+        show_overlaps(traces, whole_frame_range, silent=silent, debug=debug, subtitle="After Cross analysis phase 1.")
+        show_plot_locations(traces, whole_frame_range, subtitle="After Cross analysis phase 1.")
+        # track_reappearance(traces, show=True)
 
-    set_show_plots(True)
+    # set_show_plots(True)
 
     ###########################
     ## MERGE OVERLAPPING TRACES
@@ -257,7 +265,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         after_number_of_traces = -9
         while before_number_of_traces != after_number_of_traces:
             before_number_of_traces = len(traces)
-            merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_plots)
+            merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_all_plots)
             after_number_of_traces = len(traces)
 
         ## MERGE OVERLAPPING TRIPLETS
@@ -266,7 +274,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         while before_number_of_traces != after_number_of_traces:
             before_number_of_traces = len(traces)
             merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided, silent=silent,
-                                                 debug=debug, show=show_plots)
+                                                 debug=debug, show=show_all_plots)
             after_number_of_traces = len(traces)
         if len(traces) > population_size:
             traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
@@ -285,6 +293,9 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
             print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
+
+    # set_show_plots(True)
+    # scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
 
     # Storing the number of traces after MERGE OVERLAPPING TRACES and OVERLAPPING TRIPLETS
     counts.append(len(traces) + len(removed_full_traces))
@@ -306,10 +317,10 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # while (not before_number_of_traces == after_number_of_traces) and (len(traces) > new_population_size):
     #     before_number_of_traces = len(traces)
     #     traces = trim_out_additional_agents_over_long_traces2(traces, new_population_size, silent=silent, debug=debug)
-    #     if show_plots:
+    #     if show_all_plots:
     #         scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
     #     traces = put_gaping_traces_together(traces, new_population_size, silent=silent, debug=debug)
-    #     if show_plots:
+    #     if show_all_plots:
     #         scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
     #     after_number_of_traces = len(traces)
     #
@@ -334,8 +345,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     # raise Exception
 
     # ### ANNOTATE THE VIDEO
-    if has_video or has_tracked_video:
-        pass
-        # spam = removed_traces
-        # spam.extend(traces)
-        # annotate_video(video_file, output_video_file, spam, min(traces[0].frame_range[0], removed_traces[0].frame_range[0]))
+    # if has_video or has_tracked_video:
+    #     all_traces = removed_full_traces
+    #     all_traces.extend(traces)
+    #     annotate_video(video_file, output_video_file, all_traces, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]))
