@@ -1,11 +1,13 @@
 import math
 
 from dave_io import parse_traces
+from single_trace import single_trace_checker
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap
 import unittest
 import matplotlib.pyplot as plt
 from misc import *
+from visualise import scatter_detection
 
 
 class MyTestCase(unittest.TestCase):
@@ -20,7 +22,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(to_vect([5], [3]), [-2])
         self.assertEqual(to_vect([8, 5], [7, 3]), [-1, -2])
         self.assertEqual(to_vect([5, 8, 5], [10, 7, 3]), [5, -1, -2])
-
 
         self.assertEqual(nice_range_print([605, 610]), "605-10")
         self.assertEqual(nice_range_print([605, 710]), "605 - 710")
@@ -151,7 +152,7 @@ class MyTestCase(unittest.TestCase):
         # self.assertTrue(np.array_equal(get_submatrix(np.array([[1, 2, 3], [4, 5, 6]]), [1, 2]), 6))
         # self.assertTrue(np.array_equal(get_submatrix(np.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]), [1, 1]), [10, 11, 12]))
 
-    def testParseTraces(self):
+    def testTraces(self):
         with open('../test/test.csv', newline='') as csv_file:
             traces = parse_traces(csv_file)
             traces_lengths = []
@@ -173,7 +174,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(trace0.trace_id, 0)
             self.assertEqual(trace0.frame_range, [1620, 1622])
             self.assertEqual(trace0.get_number_of_frames_tracked(), 3)
-            self.assertEqual(trace0.frame_range_len, 2)
+            self.assertEqual(trace0.frame_range_len, 3)
             self.assertAlmostEqual(trace0.trace_length, 4.242640687119286)
             self.assertAlmostEqual(trace0.max_step_len, 2.8284271247461903)
             self.assertEqual(trace0.max_step_len_step_index, 1)
@@ -187,7 +188,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(trace1.trace_id, 1)
             self.assertEqual(trace1.frame_range, [1620, 1622])
             self.assertEqual(trace1.get_number_of_frames_tracked(), 3)
-            self.assertEqual(trace1.frame_range_len, 2)
+            self.assertEqual(trace1.frame_range_len, 3)
             self.assertAlmostEqual(trace1.trace_length, 7.6212327846342935)
             self.assertAlmostEqual(trace1.max_step_len, 5.385164807134505)
             self.assertEqual(trace1.max_step_len_step_index, 0)
@@ -218,7 +219,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(merged_trace.frame_range, [1620, 1625])
             self.assertEqual(merged_trace.gap_frames, [])
             self.assertEqual(merged_trace.get_number_of_frames_tracked(), 6)
-            self.assertEqual(merged_trace.frame_range_len, 5)
+            self.assertEqual(merged_trace.frame_range_len, 6)
             self.assertAlmostEqual(merged_trace.trace_length, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
             self.assertAlmostEqual(merged_trace.max_step_len, 5.3851648071)
             self.assertEqual(merged_trace.max_step_len_step_index, 0)
@@ -231,6 +232,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(merged_trace.frames_list, [1620, 1621, 1622, 1623, 1624, 1625])
             self.assertTrue(np.array_equal(merged_trace.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]]))
 
+
             trace0 = Trace(traces[0], 0)
             trace4 = Trace(traces[4], 4)
 
@@ -239,7 +241,7 @@ class MyTestCase(unittest.TestCase):
             self.assertIsInstance(merged_trace, Trace)
             self.assertEqual(merged_trace.frame_range, [1620, 1635])
             self.assertEqual(merged_trace.get_number_of_frames_tracked(), 6)
-            self.assertEqual(merged_trace.frame_range_len, 15)
+            self.assertEqual(merged_trace.frame_range_len, 16)
             self.assertAlmostEqual(merged_trace.trace_length, 4.242640687119286 + 7.6212327846342935 + 4.24264068711928514)
             self.assertAlmostEqual(merged_trace.max_step_len, 5.3851648071)
             self.assertEqual(merged_trace.max_step_len_step_index, 0)
@@ -256,14 +258,26 @@ class MyTestCase(unittest.TestCase):
             #                  [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [1.5, 1.5], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
             self.assertEqual(merged_trace.locations, [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0], [2.7272727272727275, 2.7272727272727275], [2.4545454545454546, 2.4545454545454546], [2.1818181818181817, 2.1818181818181817], [1.9090909090909092, 1.9090909090909092], [1.6363636363636365, 1.6363636363636365], [1.3636363636363638, 1.3636363636363638], [1.090909090909091, 1.090909090909091], [0.8181818181818183, 0.8181818181818183], [0.5454545454545459, 0.5454545454545459], [0.27272727272727293, 0.27272727272727293], [0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
 
-
             trace0 = Trace(traces[0], 0)
             trace5 = Trace(traces[5], 5)
             merged_trace = merge_two_traces_with_gap(trace5, trace0)
             spam = [[0.0, 0.0], [1.0, 1.0], [3.0, 3.0]]
-            spam.extend([[-sys.maxsize, -sys.maxsize]] * 502)
+            spam.extend([[-1, -1]] * 502)
             spam.extend([[0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
             self.assertEqual(merged_trace.locations, spam)
+
+    def testCheckTraces(self):
+        with open('../test/test.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+            traces = []
+            for index, trace in enumerate(scraped_traces.keys()):
+                # print(trace)
+                # print(scraped_traces[trace])
+                traces.append(Trace(scraped_traces[trace], index))
+            scatter_detection(traces, [1620, 2127])
+            single_trace_checker(traces, min_range_len=2)
+            scatter_detection(traces, [1620, 2127])
+
 
     def testSwapTraces(self):
         with open('../test/test.csv', newline='') as csv_file:

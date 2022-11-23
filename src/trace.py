@@ -42,7 +42,7 @@ class Trace:
         self.frame_range = [frames[0], frames[-1]]
         self.is_done = False
         # print(frame_range)
-        self.frame_range_len = int(float(frames[-1]) - float(frames[0]))
+        self.frame_range_len = int(float(frames[-1]) - float(frames[0])) + 1
         self.max_step_len = 0
         self.max_step_len_step_index = None
         self.max_step_len_line = None

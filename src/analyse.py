@@ -165,9 +165,9 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     #     show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
     #     scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
-    ########################################
-    # FIND TRACES OF ZERO LENGTH, TRACE INFO
-    ########################################
+    #####################################################################
+    # FIND TRACES OF ZERO LENGTH and SHORT FRAME RANGE TRACES, TRACE INFO
+    #####################################################################
     traces, removed_short_traces = single_trace_checker(traces, min_range_len=get_min_trace_len(), silent=silent, debug=debug)
     counts.append(len(traces) + len(removed_full_traces))
     # TODO uncomment the following

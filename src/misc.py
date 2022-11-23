@@ -32,6 +32,9 @@ def nice_range_print(interval):
     a = f"{interval[0]}"
     b = f"{interval[1]}"
 
+    if a == b:
+        return f"{a}"
+
     # if the ranges are different in magnitude
     if len(a) != len(b):
         return f"{interval[0]} - {interval[1]}"

@@ -138,7 +138,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
     trace1.frame_range = [trace1.frame_range[0], trace2.frame_range[1]]
 
     # frame_range_len is the len from new boundary to another
-    trace1.frame_range_len = int(float(trace1.frame_range[-1]) - float(trace1.frame_range[0]))
+    trace1.frame_range_len = int(float(trace1.frame_range[-1]) - float(trace1.frame_range[0])) + 1
 
     # print("trace1.max_step_len", trace1.max_step_len)
     # print("trace2.max_step_len", trace2.max_step_len)
