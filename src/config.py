@@ -9,6 +9,11 @@ def get_min_trace_len():
     return 26
 
 
+def get_vicinity_of_short_traces():
+    """ Returns number of frame a short traces needs to be far from other short trace to be trimmed"""
+    return 200
+
+
 def get_max_trace_gap():
     """ Returns maximal distance between two traces in frames to be able to merge.
         Effectively computes how long an agent can hide from being tracked (max_trace_gap / frame rate).

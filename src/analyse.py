@@ -5,8 +5,8 @@ import glob
 from _socket import gethostname
 from termcolor import colored
 
-from annotate import annotate_video
-from config import get_min_trace_len
+from video import annotate_video, show_video
+from config import get_min_trace_len, get_vicinity_of_short_traces
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
@@ -168,7 +168,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     #####################################################################
     # FIND TRACES OF ZERO LENGTH and SHORT FRAME RANGE TRACES, TRACE INFO
     #####################################################################
-    traces, removed_short_traces = single_trace_checker(traces, min_range_len=get_min_trace_len(), silent=silent, debug=debug)
+    traces, removed_short_traces = single_trace_checker(traces, min_range_len=get_min_trace_len(), vicinity=get_vicinity_of_short_traces(), silent=silent, debug=debug)
     counts.append(len(traces) + len(removed_full_traces))
     # TODO uncomment the following
     # if show_plots:
@@ -273,8 +273,8 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
         after_number_of_traces = -9
         while before_number_of_traces != after_number_of_traces:
             before_number_of_traces = len(traces)
-            merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided, silent=silent,
-                                                 debug=debug, show=show_all_plots)
+            merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided,
+                                                 input_video=video_file, silent=silent, debug=debug, show=show_all_plots)
             after_number_of_traces = len(traces)
         if len(traces) > population_size:
             traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)

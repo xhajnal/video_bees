@@ -964,6 +964,6 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
 
     if not silent:
         print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
-        print(colored(f"The overlap of the traces is {end_index2 - start_index2} long and the total overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
+        print(colored(f"The overlap of the traces is {end_index2 - start_index2} frames long and the TOTAL overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
 
     return distances

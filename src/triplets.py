@@ -9,16 +9,18 @@ from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals,
 from trace import Trace
 
 from traces_logic import merge_two_overlapping_traces
+from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlaps
 
 
-def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=False,  silent=False, debug=False, show=False):
+def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=False, input_video=False,  silent=False, debug=False, show=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg population_size (int) expected number of agents
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
+        :arg input_video: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
@@ -55,6 +57,8 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
             print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                           f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
             return
+
+        print("triplets:", dictionary)
 
         # Flag whether to try another pair of overlapping intervals
         go_next = True
@@ -164,7 +168,11 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     ## show the overlap
                     show_overlaps([trace1, trace2, trace3], whole_frame_range, from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                     ## show frames of the video
-                    ## TODO
+                    if input_video:
+                        answer = "yes"
+                        while "y" in answer:
+                            show_video(input_video, frame_range=[min_overlap_range, max_overlap_range])
+                            answer = input("Replay the video? yes or no.")
 
                 # Ask for the index of the first trace to be merged and verify it
                 first_trace_to_merge = input("Write an index of one of the traces to be merged (number before the bracket):")

@@ -7,7 +7,7 @@ from _socket import gethostname
 from termcolor import colored
 
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
-from misc import delete_indices
+from misc import delete_indices, has_overlap
 from trace import Trace
 
 
@@ -38,11 +38,12 @@ def remove_full_traces(traces, removed_traces, real_whole_frame_range, populatio
     return traces, removed_traces, population_size - deleted
 
 
-def single_trace_checker(traces, min_range_len=False, silent=False, debug=False):
+def single_trace_checker(traces, min_range_len=False, vicinity=False, silent=False, debug=False):
     """ Checks a single trace.
 
     :arg traces: (list): a list of Traces
     :arg min_range_len: (int): minimal length of trace in frames
+    :arg vicinity: (int): number of frames a short trace has to be far from another short trace to be removed, set False for no check
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns traces: (list): a list of Traces
@@ -59,14 +60,14 @@ def single_trace_checker(traces, min_range_len=False, silent=False, debug=False)
             print(colored(f"trace index:{index} {trace}", "blue"))
         if trace.trace_length == 0:
             if not silent:
-                print(colored("This trace has length of 0 in x,y. Gonna delete trace of this agent!", "red"))  ## this can be FP
+                print(colored("Trace length of 0 in x,y. Gonna delete trace of this agent!", "red"))  ## this can be FP
             traces_with_zero_len_in_xy.append(index)
         if min_range_len is not False:
             if trace.frame_range_len < min_range_len:
                 removed_short_traces.append(trace)
                 removed_short_traces_indices.append(index)
                 if not silent:
-                    print(colored(f"This trace has length in frames {trace.frame_range_len}<{min_range_len}. Gonna delete trace of this agent!", "red"))  ## this can be FP
+                    print(colored(f"Trace length in frames {trace.frame_range_len}<{min_range_len}. Gonna delete trace of this agent!", "red"))  ## this can be FP
         if trace.max_step_len > get_bee_max_step_len():
             if not silent:
                 print(colored(f"This agent has moved {trace.max_step_len} in a single step on frame {trace.max_step_len_frame_number}, you might consider fixing it!", "yellow"))
@@ -74,6 +75,28 @@ def single_trace_checker(traces, min_range_len=False, silent=False, debug=False)
         #     print()
 
     # DELETING TRACES WITH 0 LEN in XY and WITH FRAME RANGE < min_range_len
+    # Not include short traces near other short traces
+    if vicinity is not False:
+        not_to_be_deleted_indices = []
+        frame_ranges_of_removed_traces = []
+        for trace in removed_short_traces:
+            frame_ranges_of_removed_traces.append(trace.frame_range)
+
+        for index, frame_range1 in enumerate(frame_ranges_of_removed_traces):
+            for index2, frame_range2 in enumerate(frame_ranges_of_removed_traces):
+                if index == index2:
+                    continue
+                if has_overlap([frame_range1[0]-vicinity, frame_range1[1]+vicinity], frame_range2):
+                    not_to_be_deleted_indices.append(index)
+                    break
+
+        delete_indices(not_to_be_deleted_indices, removed_short_traces_indices)
+        delete_indices(not_to_be_deleted_indices, removed_short_traces)
+        # for index in not_to_be_deleted_indices:
+        #     del removed_short_traces_indices[index]
+        #     del removed_short_traces[index]
+
+    # Actually delete the races
     traces = delete_indices(traces_with_zero_len_in_xy + removed_short_traces_indices, traces)
 
     print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))

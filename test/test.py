@@ -275,9 +275,11 @@ class MyTestCase(unittest.TestCase):
                 # print(scraped_traces[trace])
                 traces.append(Trace(scraped_traces[trace], index))
             scatter_detection(traces, [1620, 2127])
-            single_trace_checker(traces, min_range_len=2)
-            scatter_detection(traces, [1620, 2127])
-
+            # single_trace_checker(traces, min_range_len=2)
+            # scatter_detection(traces, [1620, 2127])
+            single_trace_checker(traces, min_range_len=4, vicinity=6)
+            # scatter_detection(traces, [1620, 2127])
+            scatter_detection(traces, [1620, 1626])
 
     def testSwapTraces(self):
         with open('../test/test.csv', newline='') as csv_file:
