@@ -270,7 +270,7 @@ class Trace:
                 else:
                     from_gap_index = 0
 
-                if self.gap_frames and from_to_frame[1] < self.gap_frames[1]:
+                if self.gap_frames and from_to_frame[1] < self.gap_frames[0]:
                     for index, gap_frame in enumerate(self.gap_frames):
                         to_gap_index = index
                         if gap_frame > from_to_frame[1]:
@@ -292,7 +292,7 @@ class Trace:
                 else:
                     from_overlap_index = 0
 
-                if self.overlap_frames and from_to_frame[1] < self.overlap_frames[1]:
+                if self.overlap_frames and from_to_frame[1] < self.overlap_frames[0]:
                     for index, overlap_frame in enumerate(self.overlap_frames):
                         to_overlap_index = index
                         if overlap_frame > from_to_frame[1]:
@@ -344,7 +344,7 @@ class Trace:
             fig1, ax1 = plt.subplots()
 
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
-        plot1 = ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         if show_middle_point:
                 ax1.scatter([middle_index], [x_middle_pos], c="magenta", s=3)
         ax1.scatter(self.overlap_frames[from_overlap_index: to_overlap_index], list(map(lambda x: x[0], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
@@ -372,17 +372,18 @@ class Trace:
             fig2, ax2 = plt.subplots()
 
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
-        plot2 = ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        ax2.set_ylabel('y')
+        ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         if show_middle_point:
             ax2.scatter([middle_index], [y_middle_pos], c="magenta", s=3)
         ax2.scatter(self.overlap_frames[from_overlap_index: to_overlap_index], list(map(lambda x: x[1], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
         ax2.scatter(self.gap_frames[from_gap_index: to_gap_index], list(map(lambda x: x[1], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
         ax2.set_xlabel('Time')
-        ax2.set_ylabel('y')
         if from_to_frame is not False:
             ax2.set_xlim(from_to_frame)
         else:
             ax2.set_xlim(whole_frame_range)
+        ax2.invert_yaxis()
 
         if where:
             ax2.set_title(f'Traces in y-axis.' + ("\n"+subtitle if subtitle else ""))
@@ -398,6 +399,10 @@ class Trace:
         else:
             fig3, ax3 = plt.subplots()
 
+        ax3.set_xlabel('x')
+        ax3.set_ylabel('y')
+
+
         xs = list(map(lambda x: x[0], self.locations[from_index:to_index]))
         ys = list(map(lambda x: x[1], self.locations[from_index:to_index]))
         # ax3.scatter(xs, ys, alpha=0.5)
@@ -409,8 +414,7 @@ class Trace:
         ax3.text(xs[-1], ys[-1], "B", fontsize=6, color=plot3[0].get_color())
         ax3.scatter(list(map(lambda x: x[0], overlap_locations))[from_overlap_index: to_overlap_index], list(map(lambda x: x[1], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
         ax3.scatter(list(map(lambda x: x[0], gap_locations))[from_gap_index: to_gap_index], list(map(lambda x: x[1], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
-        ax3.set_xlabel('x')
-        ax3.set_ylabel('y')
+
         max_position = max([max(xs), max(xs)])
 
         ## TODO implement from_to_frame
@@ -423,6 +427,7 @@ class Trace:
             plt.xlim(max_position)
             plt.ylim(max_position)
 
+        ax3.invert_yaxis()
         if where:
             ax3.set_title(f'Traces "phase" space.' + ("\n"+subtitle if subtitle else ""))
         else:
