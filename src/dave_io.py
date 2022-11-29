@@ -9,6 +9,7 @@ from _socket import gethostname
 from termcolor import colored
 from datetime import datetime
 
+from bee_specific import parse_population_size
 from trace import Trace
 from config import *
 
@@ -293,6 +294,18 @@ def save_traces(traces, file_name, silent=False, debug=False):
     except OSError:
         pass
 
+    try:
+        os.mkdir("../output/traces")
+    except OSError:
+        pass
+
+    digit = parse_population_size(file_name)
+    if digit is not False:
+        try:
+            os.mkdir(f"../output/traces/{digit}")
+        except OSError:
+            pass
+
     trackings = []
     frames_tracked = []
     tracking_to_trace_index = {}
@@ -315,7 +328,7 @@ def save_traces(traces, file_name, silent=False, debug=False):
         # print("trackings", trackings)
         print("frames_tracked", frames_tracked)
 
-    with open(f"../output/{file_name}", "w") as file:
+    with open(f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}", "w") as file:
         file.write(",date,err,frame_count,frame_number,frame_timestamp,name,oid,type,x,y\n")
         for index, frame in enumerate(trackings):
             # obtain the ids of traces with the given frame
@@ -352,7 +365,19 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
     except OSError:
         pass
 
-    file_path = str(os.path.splitext(f"../output/{file_name}")[0]) + ".p"
+    try:
+        os.mkdir("../output/traces")
+    except OSError:
+        pass
+
+    digit = parse_population_size(file_name)
+    if digit is not False:
+        try:
+            os.mkdir(f"../output/traces/{digit}")
+        except OSError:
+            pass
+
+    file_path = str(os.path.splitext(f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}")[0]) + ".p"
     if debug:
         print("file", file_path)
     with open(file_path, 'wb') as file:

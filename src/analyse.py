@@ -339,13 +339,16 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     is_new = save_setting(counts, file_name=file_path, population_size=original_population_size, silent=silent, debug=debug)
     if is_new:
         convert_results_from_json_to_csv(silent=silent, debug=debug)
-        # TODO uncomment the following
-        # save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
-        # pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
-    # raise Exception
+        save_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
+        pickle_traces(traces, os.path.basename(file_path), silent=silent, debug=debug)
 
-    # ### ANNOTATE THE VIDEO
-    # if has_video or has_tracked_video:
-    #     all_traces = removed_full_traces
-    #     all_traces.extend(traces)
-    #     annotate_video(video_file, output_video_file, all_traces, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]))
+    ## ANNOTATE THE VIDEO
+    if has_video or has_tracked_video:
+        ## update the output video_file_name
+        spam = output_video_file.split(".")
+        all_final_traces = removed_full_traces
+        all_final_traces.extend(traces)
+        updated_output_video_file = f"{spam[0]}_{str(len(all_final_traces))}_traces.{spam[1]}"
+        ## annotate only if the annotated video does not exist
+        if not exists(updated_output_video_file):
+            annotate_video(video_file, updated_output_video_file, all_final_traces, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]))
