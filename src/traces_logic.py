@@ -7,6 +7,7 @@ from termcolor import colored
 from config import get_max_trace_gap_to_interpolate_distance
 from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap
 from trace import Trace
+from video import show_video
 
 
 def get_gaps_of_traces(traces, get_all_gaps=False, debug=False):
@@ -345,3 +346,30 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
     trace2.recalculate_trace_lengths(recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True)
 
     return trace1, trace2
+
+
+def ask_to_delete_a_trace(traces, input_video):
+    traces_indices_to_be_removed = []
+    to_delete_by_user = input("Are we gonna delete any of the shown traces? (yes or no):")
+    if "y" in to_delete_by_user.lower():
+        trace_to_delete = input("Write an index of one of the traces to be deleted (number before the bracket):")
+        try:
+            trace_to_delete = int(trace_to_delete)
+        except ValueError:
+            print(colored("Not selected any trace to be deleted. Skipping this triplet.", "red"))
+
+        to_show_the_trace = input(f"Show the whole trace {trace_to_delete} in video before deleting? (yes or no):")
+        if "y" in to_show_the_trace.lower():
+            show_video(input_video, frame_range=traces[trace_to_delete].frame_range, video_speed=0.02, wait=True)
+            to_delete_the_trace = input(f"Delete this trace? (yes or no):")
+            if "y" in to_delete_the_trace.lower():
+                to_delete = True
+            else:
+                to_delete = False
+        else:
+            to_delete = True
+
+        if to_delete:
+            traces_indices_to_be_removed.append(trace_to_delete)
+
+    return traces_indices_to_be_removed

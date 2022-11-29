@@ -8,7 +8,7 @@ from cross_traces import compare_two_traces
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, flatten2
 from trace import Trace
 
-from traces_logic import merge_two_overlapping_traces
+from traces_logic import merge_two_overlapping_traces, ask_to_delete_a_trace
 from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlaps
 
@@ -30,9 +30,13 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
     start_time = time()
     starting_number_of_traces = len(traces)
 
+    ## Internal variables
     count_two = [-9]  # indices of traces which have exactly two occurrences
     number_of_traces = -9
     force_merge = False
+    traces_indices_to_be_removed = []
+    # Internal/Output variables
+    removed_traces = []
 
     while len(count_two) >= 1 or number_of_traces != len(traces):
         number_of_traces = len(traces)
@@ -48,21 +52,20 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 print(colored("Cannot merge no trace. Skipping the rest of this analysis.\n", "yellow"))
                 return
 
-        # Find overlapping pairs
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(3, list(map(lambda x: x.frame_range, traces)), skip_whole_in=True)
-
-        # print("dictionary", dictionary)
-        if dictionary == {}:
-            print(colored("Cannot merge any trace as there is no partial overlap of three traces.", "red"))
-            print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
-                          f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
-            return
-
-        print("triplets:", dictionary)
-
         # Flag whether to try another pair of overlapping intervals
         go_next = True
         while go_next:
+            # Find overlapping pairs
+            dictionary = dictionary_of_m_overlaps_of_n_intervals(3, list(map(lambda x: x.frame_range, traces)),skip_whole_in=True)
+
+            # print("dictionary", dictionary)
+            if dictionary == {}:
+                print(colored("Cannot merge any trace as there is no partial overlap of three traces.", "red"))
+                print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
+                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                return
+            print("triplets:", dictionary)
+
             if debug:
                 print("dictionary", dictionary)
                 for trace_index, trace in enumerate(traces):
@@ -153,39 +156,61 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 max_overlap_range = max(get_overlap(trace1.frame_range, trace2.frame_range)[1], get_overlap(trace2.frame_range, trace3.frame_range)[1])
                 both_overlaps_overlap_range_len = max_overlap_range - min_overlap_range + 1
 
-                # print(min_overlap_range, max_overlap_range)
+                print(f"Range of at least one overlap: [{min_overlap_range}, {max_overlap_range}]")
 
                 ## scatter plot of the triplet
                 if show or guided:
-                    scatter_detection([trace1, trace2, trace3], [min_range - 200, max_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                    scatter_detection([trace1, trace2, trace3], [min_range - 200, max_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
                     scatter_detection(traces, [min_range - 200, max_range + 200], show_trace_index=False,
-                                      subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                                      subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
                     ## show position
                     show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len*0.1), max_overlap_range + round(both_overlaps_overlap_range_len*0.1)],  subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                     show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len * 0.1),
                                                                        max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)],
-                                        subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                                        subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
                     ## show the overlap
                     show_overlaps([trace1, trace2, trace3], whole_frame_range, from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                     ## show frames of the video
                     if input_video:
-                        answer = "yes"
-                        while "y" in answer:
-                            show_video(input_video, frame_range=[min_overlap_range, max_overlap_range])
-                            answer = input("Replay the video? yes or no.")
+                        # answer = "yes"
+                        # while "y" in answer:
+                        show_video(input_video, frame_range=[min_overlap_range, max_overlap_range], video_speed=0.01, wait=True)
+                            # answer = input("Replay the video? yes or no.")
 
-                # Ask for the index of the first trace to be merged and verify it
-                first_trace_to_merge = input("Write an index of one of the traces to be merged (number before the bracket):")
-                try:
-                    first_trace_to_merge = int(first_trace_to_merge)
-                except ValueError:
-                    print(colored("Not selected any trace to be merged. Skipping this triplet.", "red"))
-                    del dictionary[pick_key2]
-                    continue
-                if first_trace_to_merge not in pick_key2:
-                    print(colored("Selected trace not in the triplet. Skipping it.", "red"))
-                    del dictionary[pick_key2]
-                    continue
+                # Ask whether we should merge any of these traces
+                to_merge_by_user = input("Are we gonna merge any of the shown traces? (yes or no):")
+                if "n" in to_merge_by_user.lower():
+                    print(colored("Not merging this triplet.", "red"))
+                    spam = ask_to_delete_a_trace(traces, input_video)
+                    if spam:
+                        ## this is deprecated as we recalculate the dictionary in each cycle
+                        # del dictionary[pick_key2]
+                        for item in spam:
+                            traces_indices_to_be_removed.append(item)
+
+                        # Actually delete the given traces
+                        for index in traces_indices_to_be_removed:
+                            removed_traces.append(traces[index])
+                        delete_indices(traces_indices_to_be_removed, traces, debug=False)
+                        traces_indices_to_be_removed = []
+
+                        # Continue searching for triplets
+                        continue
+                elif "y" in to_merge_by_user.lower():
+                    # Ask for the index of the first trace to be merged and verify it
+                    first_trace_to_merge = input("Write an index of one of the traces to be merged (number before the bracket):")
+                    try:
+                        first_trace_to_merge = int(first_trace_to_merge)
+                    except ValueError:
+                        print(colored("Not selected any trace to be merged. Skipping this triplet.", "red"))
+                        ## this is deprecated as we recalculate the dictionary in each cycle
+                        # del dictionary[pick_key2]
+                        continue
+                    if first_trace_to_merge not in pick_key2:
+                        print(colored("Selected trace not in the triplet. Skipping it.", "red"))
+                        ## this is deprecated as we recalculate the dictionary in each cycle
+                        # del dictionary[pick_key2]
+                        continue
 
                 # Ask for the index of the second trace to be merged and verify it
                 second_trace_to_merge = input("Write an index of the other trace to be merged (number before the bracket):")
@@ -265,6 +290,6 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 except UnboundLocalError:
                     pass
 
-    print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
+    print(colored(f"Returning {len(traces)} traces, {len(removed_traces)} removed, {starting_number_of_traces - len(traces) + len(removed_traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
-    return traces
+    return traces, removed_traces

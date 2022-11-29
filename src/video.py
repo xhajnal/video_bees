@@ -18,6 +18,9 @@ def play_opencv(input_video, frame_range, fps, speed):
     cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
+    print("Press q (while video window) to stop the video, press r to restart.")
+
+    first = True
 
     while video.isOpened():
         # Read video capture
@@ -31,12 +34,23 @@ def play_opencv(input_video, frame_range, fps, speed):
         else:
             cv2.imshow("video", frame)
         key = cv2.waitKey(round(2*(100/fps)/speed))
+
+        if first:
+            # time.sleep(3)
+            first = False
+
         if key == ord('q'):
             break
+        if key == ord('r'):
+            if frame_range:
+                video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
+            else:
+                video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     video.release()
     # Exit and destroy all windows
     cv2.destroyAllWindows()
+    return
 
 
 def play_tk_opencv(input_video, frame_range, fps, speed):
@@ -134,14 +148,14 @@ def play_vlc2(input_video, frame_range):
     vlcplayer.play()
 
 
-def show_video(input_video, frame_range=False):
+def show_video(input_video, frame_range=False, video_speed=0.1, wait=False):
     """ Shows given video
 
         :arg input_video: (Path or str): path to the input video
         :arg frame_range: (tuple): if set shows only given frame range of the video
+        :arg video_speed: (float): ratio of rate, hence default speed is 1
+        :arg wait: (bool): if True it will wait for the end of the video
     """
-    video_speed = 0.1
-
     vid_capture = cv2.VideoCapture(input_video)
 
     if vid_capture.isOpened() is False:
@@ -152,7 +166,7 @@ def show_video(input_video, frame_range=False):
         # Get frame rate information
         # You can replace 5 with CAP_PROP_FPS as well, they are enumerations
         fps = vid_capture.get(5)
-        print("fps", fps)
+        # print("fps", fps)
     vid_capture.release()
 
     # vid_capture = cv2.VideoCapture(input_video)
@@ -200,6 +214,8 @@ def show_video(input_video, frame_range=False):
 
     p = Process(target=play_opencv, args=(input_video, frame_range, fps, video_speed,))
     p.start()
+    if wait:
+        p.join()
     # if frame_range:
     #     time.sleep((frame_range[1] - frame_range[0]) / (fps * video_speed))
     #     # time.sleep(max(5, (frame_range[1] - frame_range[0]) / (fps * video_speed)))

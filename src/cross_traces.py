@@ -12,6 +12,7 @@ from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals,
     get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten2
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
+from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
 
@@ -38,12 +39,13 @@ def get_video_whole_frame_range(traces):
     return [a[0] - 2000, a[1] + 2000]
 
 
-def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, silent=False, debug=False):
+def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, input_video=False, silent=False, debug=False):
     """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg automatically_swap: (bool): if True swaps without asking
+        :arg input_video: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg: traces: (list): list of trimmed Traces
@@ -53,7 +55,7 @@ def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, sil
     number_of_swaps = 0
 
     while keep_looking:
-        keep_looking = track_swapping(traces, whole_frame_range, automatically_swap=automatically_swap, silent=silent, debug=debug)
+        keep_looking = track_swapping(traces, whole_frame_range, automatically_swap=automatically_swap, input_video=input_video, silent=silent, debug=debug)
         if keep_looking:
             number_of_swaps = number_of_swaps + 1
 
@@ -64,12 +66,13 @@ def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, sil
     return number_of_swaps
 
 
-def track_swapping(traces, whole_frame_range, automatically_swap=False, silent=False, debug=False):
+def track_swapping(traces, whole_frame_range, automatically_swap=False, input_video=False, silent=False, debug=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
         :arg traces: (list): list of Traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg automatically_swap: (bool or list of int): if True swaps all without asking, if list it contains frames to autopass
+        :arg input_video: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :return: traces: (list): list of trimmed Traces
@@ -119,14 +122,21 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, silent=F
                     print(f"cosine_similarity(vector2, vector1_next) > cosine_similarity(vector2, vector2_next): {calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
                     print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
 
-                    scatter_detection([traces[trace1_index], traces[trace2_index]], get_video_whole_frame_range([traces[trace1_index], traces[trace2_index]]), subtitle="Traces to be swapped.")
-                    show_plot_locations([traces[trace1_index], traces[trace2_index]], [0, 0], from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30], show_middle_point=True, subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
-
                     if automatically_swap is True:
                         answer = "6"
                     elif isinstance(automatically_swap, list) and dictionary[overlapping_pair_of_traces][0] + index in automatically_swap:
                         answer = "6"
                     else:
+                        scatter_detection([traces[trace1_index], traces[trace2_index]],
+                                          get_video_whole_frame_range([traces[trace1_index], traces[trace2_index]]),
+                                          subtitle="Traces to be swapped.")
+                        show_plot_locations([traces[trace1_index], traces[trace2_index]], [0, 0],
+                                            from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30,
+                                                           dictionary[overlapping_pair_of_traces][0] + index + 30],
+                                            show_middle_point=True,
+                                            subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
+                        show_video(input_video, frame_range=False, video_speed=0.1, wait=False)
+
                         answer = input("Is this right? (yes or no)")
                     if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
                         print(colored(f"Swapping the traces {trace1_index}({traces[trace1_index].trace_id}), {trace2_index}({traces[trace2_index].trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))

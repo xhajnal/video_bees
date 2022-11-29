@@ -205,7 +205,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     #     show_overlaps(traces, whole_frame_range)
 
     if has_tracked_video and guided:
-        number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, silent=silent, debug=debug)
+        number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, input_video=False, silent=silent, debug=debug)
         # Storing the number of swaps done
         counts.append(number_of_swaps)
     else:
@@ -268,7 +268,7 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
             merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_all_plots)
             after_number_of_traces = len(traces)
 
-        ## MERGE OVERLAPPING TRIPLETS
+        ## MERGE OVERLAPPING TRIPLETS, video-guided trace deleting
         before_number_of_traces = len(traces)
         after_number_of_traces = -9
         while before_number_of_traces != after_number_of_traces:
