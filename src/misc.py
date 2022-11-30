@@ -115,6 +115,16 @@ def range_len(interval):
     return interval[1] - interval[0]
 
 
+def margin_range(interval, margin):
+    """ Margins given range adding the margin to both sides
+
+    :param interval: tuple of numbers to margin
+    :param margin: margin to be added to both sides
+    :return:
+    """
+    return (interval[0] - margin, interval[1] + margin)
+
+
 def is_in(range1, range2, strict=False):
     """ Returns whether the range1 is in range2.
 
@@ -462,3 +472,48 @@ def merge_dictionary(dict_1, dict_2):
         if key in dict_1 and key in dict_2:
             dict_3[key] = value + dict_1[key]
     return dict_3
+
+
+def merge_sorted_dictionaries(gaps, overlaps):
+    """ Merges two dictionaries with tuple keys in a sorted manner
+
+    :param gaps: first dictionary to merge
+    :param overlaps: second dictionary to merge
+    :return: merged dictionary
+    """
+    overlaps_and_gaps = {}
+
+    # MERGE THE DICTIONARIES
+    gap_key_index = 0
+    overlap_key_index = 0
+
+    gap_keys = list(gaps.keys())
+    overlap_keys = list(overlaps.keys())
+
+    for index in range(len(gaps) + len(overlaps)):
+        try:
+            gap_keys[gap_key_index]
+        except IndexError:
+            overlaps_and_gaps[overlap_keys[overlap_key_index]] = overlaps[overlap_keys[overlap_key_index]]
+            overlap_key_index = overlap_key_index + 1
+            continue
+        try:
+            overlap_keys[overlap_key_index]
+        except IndexError:
+            overlaps_and_gaps[gap_keys[gap_key_index]] = gaps[gap_keys[gap_key_index]]
+            gap_key_index = gap_key_index + 1
+            continue
+
+        if gap_keys[gap_key_index][0] < overlap_keys[overlap_key_index][0] or (
+                gap_keys[gap_key_index][0] == overlap_keys[overlap_key_index][0] and gap_keys[gap_key_index][1] <
+                overlap_keys[overlap_key_index][1]):
+            overlaps_and_gaps[gap_keys[gap_key_index]] = gaps[gap_keys[gap_key_index]]
+            gap_key_index = gap_key_index + 1
+        elif gap_keys[gap_key_index][0] > overlap_keys[overlap_key_index][0] or (
+                gap_keys[gap_key_index][0] == overlap_keys[overlap_key_index][0] and gap_keys[gap_key_index][1] >
+                overlap_keys[overlap_key_index][1]):
+            overlaps_and_gaps[overlap_keys[overlap_key_index]] = overlaps[overlap_keys[overlap_key_index]]
+            overlap_key_index = overlap_key_index + 1
+        else:
+            raise Exception("gaps and overlaps got the same pair")
+    return overlaps_and_gaps
