@@ -187,16 +187,11 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                         first_trace_to_merge = int(first_trace_to_merge)
                     except ValueError:
                         print(colored("Not selected any trace to be merged. Skipping this triplet.", "red"))
-                        ## this is deprecated as we recalculate the dictionary in each cycle
-                        # del dictionary[pick_key2]
                         continue
                     if first_trace_to_merge not in pick_key2:
                         print(colored("Selected trace not in the triplet. Skipping it.", "red"))
-                        ## this is deprecated as we recalculate the dictionary in each cycle
-                        # del dictionary[pick_key2]
-
-                        # Continue searching for triplets
                         continue
+
                     # Ask for the index of the second trace to be merged and verify it
                     second_trace_to_merge = input(
                         "Write an index of the other trace to be merged (number before the bracket):")
@@ -208,7 +203,10 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     if second_trace_to_merge not in pick_key2:
                         print(colored("Selected trace not in the triplet. Skipping it.", "red"))
                         continue
+                    user_merging = True
+                    force_merge = True
                 else:
+                    user_merging = False
                     print(colored("Not merging this triplet.", "red"))
 
                 # Ask to delete a trace
@@ -220,18 +218,19 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     for item in spam:
                         traces_indices_to_be_removed.append(item)
 
-                    # Actually delete the given traces
-                    for index in traces_indices_to_be_removed:
-                        removed_traces.append(traces[index])
-                    delete_indices(traces_indices_to_be_removed, traces, debug=False)
-                    traces_indices_to_be_removed = []
+                    if not user_merging:
+                        # Actually delete the given traces
+                        for index in traces_indices_to_be_removed:
+                            removed_traces.append(traces[index])
+                        delete_indices(traces_indices_to_be_removed, traces, debug=False)
+                        traces_indices_to_be_removed = []
 
-                    # Continue searching for triplets
-                    continue
+                        # Continue searching for triplets
+                        continue
 
-                answer = input("Force merge these? Will not ask on the distance of the selected traces. (yes or no)")
-                if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
-                    force_merge = True
+                # answer = input("Force merge these? Will not ask on the distance of the selected traces. (yes or no)")
+                # if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
+                #     force_merge = True
 
                 # Find the trace which is not to be merged (the one not picked)
                 for trace_index in pick_key2:
@@ -267,6 +266,10 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 force_merge = False
                 reason = f"single huge distance (>{get_max_step_distance_to_merge_overlapping_traces()})"
 
+                # delete traces which have been picked to be deleted and merged as well
+                delete_indices(traces_indices_to_be_removed, traces, debug=False)
+                traces_indices_to_be_removed = []
+
                 # the distance of the traces is greater than the given threshold, we move on
                 del dictionary[pick_key2]
 
@@ -283,7 +286,11 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     # print(colored(f"Gonna delete trace {trace2_id}.", "blue"))
                     print(colored(f"Gonna delete trace {duplet_indices[1]}({trace2_id}).", "blue"))
                     print()
-                traces = delete_indices([duplet_indices[1]], traces)
+
+                traces_indices_to_be_removed.append(duplet_indices[1])
+                delete_indices(traces_indices_to_be_removed, traces, debug=False)
+                traces_indices_to_be_removed = []
+
                 # Show scatter plot of traces having two traces merged
                 go_next = False
 
