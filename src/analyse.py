@@ -1,10 +1,12 @@
 import os.path
+from os.path import exists
 from pathlib import Path
 from time import time
 import glob
 from _socket import gethostname
 from termcolor import colored
 
+from guided_traces import full_guided
 from video import annotate_video, show_video
 from config import get_min_trace_len, get_vicinity_of_short_traces
 from trace import Trace
@@ -26,13 +28,13 @@ global show_all_plots
 global guided
 global rerun
 
-# USER - please set up the following 6 flags
+# USER - please set up the following 7 flags
 batch_run = False       # sets silent, not debug, not show_plots, rerun
+guided = False          # human guided version
 silent = False          # minimal print
 debug = False           # maximal print
 show_plots = True       # showing plots
 show_all_plots = False  # showing all plots - also those in the loops
-guided = False          # human guided version (in progress)
 rerun = True            # will execute also files with a setting which is already in the results
 
 
@@ -326,6 +328,9 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     #
     # # Storing the number of traces after second TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
     # counts.append(len(traces) + len(removed_traces))
+
+    if len(traces)+len(removed_full_traces) > original_population_size and guided:
+        full_guided(traces, input_video=video_file, show=True, silent=silent, debug=debug)
 
     ## VISUALISATIONS
     if show_plots:
