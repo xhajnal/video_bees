@@ -1,3 +1,4 @@
+import json
 import multiprocessing
 import os
 import time
@@ -7,12 +8,22 @@ import cv2
 import distinctipy
 from termcolor import colored
 
+from misc import convert_frame_number_back, dictionary_of_m_overlaps_of_n_intervals, is_in, get_leftmost_point, to_vect
 from trace import Trace
 import vlc
 from tkinter import *
 
 
-def play_opencv(input_video, frame_range, fps, speed):
+def play_opencv(input_video, frame_range, fps, speed, points):
+    """ Plays the given video in a new window.
+
+    :param input_video: (Path or str): path to the input video
+    :param frame_range: (list or tuple): if set shows only given frame range of the video
+    :param fps: (int): number of frames per second
+    :param speed: ratio of rate, hence default speed is 1
+    :arg points: (tuple of points): points to be shown over the video
+    :return:
+    """
     video = cv2.VideoCapture(input_video)
     # window name and size
     cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
@@ -27,6 +38,16 @@ def play_opencv(input_video, frame_range, fps, speed):
         ret, frame = video.read()
         frame_number = int(video.get(1))
         # print(frame_number)
+        # Show the frame number
+        cv2.putText(img=frame, text=str(frame_number), org=(15, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1.0,
+                    color=(125, 246, 55), thickness=4)
+        if points:
+            colors = distinctipy.get_colors(len(points))
+            colors = list(map(lambda x: [round(x[0] * 255), round(x[1] * 255), round(x[2] * 255)], colors))
+            for index, point in enumerate(points):
+                point = list(map(round, point))
+                cv2.circle(frame, point, 4, colors[index], thickness=-1, lineType=cv2.LINE_AA)
+
         # Display each frame
         if frame_range:
             if frame_range[0] <= frame_number <= frame_range[1]:
@@ -46,11 +67,40 @@ def play_opencv(input_video, frame_range, fps, speed):
                 video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
             else:
                 video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        if points:
+            if key == ord("s"):
+                for index, point in enumerate(points):
+                    points[index] = [point[0], point[1]+10]
+
+                # points = list(map(lambda x: x[1] = x[1] + 10, points))
+            if key == ord("w"):
+                for index, point in enumerate(points):
+                    points[index] = [point[0], point[1]-10]
+
+            if key == ord("a"):
+                for index, point in enumerate(points):
+                    points[index] = [point[0]-10, point[1]]
+
+            if key == ord("d"):
+                for index, point in enumerate(points):
+                    points[index] = [point[0]+10, point[1]]
+
+            if key == ord("s") or key == ord("w") or key == ord("a") or key == ord("d"):
+                if frame_range:
+                    video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0] - 1)
+                else:
+                    video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     video.release()
     # Exit and destroy all windows
     cv2.destroyAllWindows()
-    return
+    if points:
+        with open("../auxiliary/point.txt", "w") as file:
+            file.write(f"video file: {input_video})\n")
+            file.write(f"frame: {frame_range[0]}\n")
+            file.write(f"points assigned: {points}\n")
+
+    return points
 
 
 def play_tk_opencv(input_video, frame_range, fps, speed):
@@ -148,13 +198,14 @@ def play_vlc2(input_video, frame_range):
     vlcplayer.play()
 
 
-def show_video(input_video, frame_range=False, video_speed=0.1, wait=False):
+def show_video(input_video, frame_range=(), video_speed=0.1, wait=False, points=()):
     """ Shows given video
 
         :arg input_video: (Path or str): path to the input video
-        :arg frame_range: (tuple): if set shows only given frame range of the video
+        :arg frame_range: (list or tuple): if set shows only given frame range of the video
         :arg video_speed: (float): ratio of rate, hence default speed is 1
         :arg wait: (bool): if True it will wait for the end of the video
+        :arg points: (tuple of points): points to be shown over the video
     """
     vid_capture = cv2.VideoCapture(input_video)
 
@@ -212,7 +263,7 @@ def show_video(input_video, frame_range=False, video_speed=0.1, wait=False):
     #     if frame_range[0] > 50:
     #         frame_range = [frame_range[0] + 50, frame_range[1] + 56]
 
-    p = Process(target=play_opencv, args=(input_video, frame_range, fps, video_speed,))
+    p = Process(target=play_opencv, args=(input_video, frame_range, fps, video_speed, points,))
     p.start()
     if wait:
         p.join()
@@ -423,6 +474,85 @@ def make_help_video():
     vid_capture.release()
     output.release()
     print("Finished annotation.")
+
+
+def align_the_video(traces, video_file, population_size, real_whole_frame_range, csv_file):
+    """ User guided alignment of the video onto its not cropped version
+
+    :arg traces (list) list of traces
+    :arg video_file: (Path or str): path to the input video
+    :arg population_size: (int): population size of original traces
+    :arg real_whole_frame_range: (tuple of int): frame range of the video
+    :arg csv_file: (str or Path): path to the csv_file
+    :return: vector of shift to assign to the locations so that align with the not cropped video
+    """
+    # Find a frame with at least half of population
+    # if population_size == 1:
+    #     da_frame = traces[0].frame_range[0]
+    #     da_traces_indices = [0]
+    # else:
+    #     da_frame = -1
+    #     for number in reversed(range(population_size)):
+    #         dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)
+    #         if not dictionary:
+    #             continue
+    #         else:
+    #             da_frame = list(dictionary.values())[0][0]
+    #             da_traces = list(dictionary.keys())[0]
+    #             break
+
+    da_frame = 0
+    points = []
+    for trace in traces:
+        assert isinstance(trace, Trace)
+        if is_in([da_frame, da_frame], trace.frame_range):
+            points.append(trace.get_location_from_frame(da_frame))
+
+    da_converted_frame = convert_frame_number_back(da_frame, csv_file)
+
+    show_video(input_video=video_file, frame_range=[da_converted_frame, da_converted_frame], wait=True, points=points)
+
+    with open("../auxiliary/point.txt", "r") as file:
+        lines = file.readlines()
+
+    for line in lines:
+        if "points assigned:" in line:
+            assigned_points = line.split(":")[1]
+            del lines
+            break
+
+    assigned_points = json.loads(assigned_points)
+    leftmost_point, a = get_leftmost_point(points)
+    leftmost_assigned_point, b = get_leftmost_point(assigned_points)
+    leftmost_assigned_point = list(map(float, leftmost_assigned_point))
+    ## TODO - maybe check that all the other points share the vector of transposition
+    vector = to_vect(leftmost_point, leftmost_assigned_point)
+
+    try:
+        os.mkdir("../auxiliary")
+    except OSError:
+        pass
+
+    try:
+        if os.stat("../auxiliary/transpositions.txt").st_size == 0:
+            transpositions = {}
+        else:
+            with open("../auxiliary/transpositions.txt") as file:
+                transpositions = json.load(file)
+    except FileNotFoundError as err:
+        file = open("../auxiliary/transpositions.txt", "a")
+        file.close()
+        transpositions = {}
+
+    if video_file in transpositions.keys():
+        raise Exception("This transposition already in the file.")
+
+    transpositions[video_file] = vector
+
+    with open("../auxiliary/transpositions.txt", 'w') as file:
+        file.write(json.dumps(transpositions))
+
+    return vector
 
 
 if __name__ == "__main__":

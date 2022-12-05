@@ -125,6 +125,11 @@ class Trace:
 
         return overlap_locations
 
+    def get_location_from_frame(self, frame_number):
+        """ For a given frame range it results locations of the given range."""
+        start_index = self.frames_list.index(frame_number)
+        return self.locations[start_index]
+
     def get_locations_from_frame_range(self, interval):
         """ For a given frame range it results locations of the given range."""
         start_index = self.frames_list.index(interval[0])

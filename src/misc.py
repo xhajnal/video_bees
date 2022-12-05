@@ -1,3 +1,4 @@
+import csv
 import sys
 from copy import copy
 import numpy as np
@@ -167,6 +168,19 @@ def is_in(range1, range2, strict=False):
 #         matrix2 = matrix[indices[0]]
 #         indices = indices[1:]
 #         return get_submatrix(matrix2, indices)
+
+
+def get_leftmost_point(points):
+    """ Returns the leftmost point and its index of the given points
+    :arg points: (list of points): the list of points to return the leftmost point from
+    """
+    left_most_point = points[0]
+    left_most_index = 0
+    for index, point in enumerate(points):
+        if point[0] < left_most_point[0]:
+            left_most_point = point
+            left_most_index = index
+    return left_most_point, left_most_index
 
 
 ## DEPRICATED
@@ -517,3 +531,17 @@ def merge_sorted_dictionaries(gaps, overlaps):
         else:
             raise Exception("gaps and overlaps got the same pair")
     return overlaps_and_gaps
+
+
+def convert_frame_number_back(frame, csv_file_path):
+    """ Converts normalised frame number back to the original using the loopy csv file.
+
+    :param frame: (int): frame number to be converted back
+    :param csv_file_path: (str or path): loopy csv file to be used to convert
+    :return: (int) original frame number
+    """
+    with open(csv_file_path, newline='') as csv_file:
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            difference = int(row['frame_count']) - int(row['frame_number'])
+            return frame + difference

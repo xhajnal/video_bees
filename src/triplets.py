@@ -164,14 +164,20 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 print(f"Range of at least one overlap: [{min_overlap_range}, {max_overlap_range}]")
 
                 ## Show the plots and the video
+                scatter_detection(traces, whole_frame_range)
                 scatter_detection([trace1, trace2, trace3], [min_range - 200, max_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
-                scatter_detection(traces, [min_range - 200, max_range + 200], show_trace_index=False,
-                                  subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}), {pick_key2[1]}({trace2.trace_id}), {pick_key2[2]}({trace3.trace_id}).")
+                # check that there are traces in frame range [min_range - 200, max_range + 200]
+                if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_range - 200 for f in range(pick_key2[0]))) or (pick_key2[2] < len(traces)-1 and traces[pick_key2[2]+1].frame_range[0] < max_range + 200):
+                    scatter_detection(traces, [min_range - 200, max_range + 200], show_trace_index=False,
+                                      subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}), {pick_key2[1]}({trace2.trace_id}), {pick_key2[2]}({trace3.trace_id}).")
                 ## show position
                 show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len*0.1), max_overlap_range + round(both_overlaps_overlap_range_len*0.1)],  subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
-                show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len * 0.1),
-                                                                   max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)],
-                                    subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
+                # check that there are traces in the frame range
+                if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_overlap_range - round(both_overlaps_overlap_range_len * 0.1) for f in range(pick_key2[0]))) or (
+                        pick_key2[2] < len(traces) - 1 and traces[pick_key2[2] + 1].frame_range[0] < max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)):
+                    show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len * 0.1),
+                                                                       max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)],
+                                        subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
                 ## show the overlap
                 show_overlaps([trace1, trace2, trace3], whole_frame_range, from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                 ## show frames of the video
@@ -205,6 +211,12 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                         continue
                     user_merging = True
                     force_merge = True
+
+                    # Find the trace which is not to be merged (the one not picked)
+                    for trace_index in pick_key2:
+                        if trace_index != first_trace_to_merge and trace_index != second_trace_to_merge:
+                            trace_index_to_omit = trace_index
+                    trace_index_to_omit = pick_key2.index(trace_index_to_omit)
                 else:
                     user_merging = False
                     print(colored("Not merging this triplet.", "red"))
@@ -227,16 +239,12 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
 
                         # Continue searching for triplets
                         continue
+                elif user_merging is False:
+                    continue
 
                 # answer = input("Force merge these? Will not ask on the distance of the selected traces. (yes or no)")
                 # if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
                 #     force_merge = True
-
-                # Find the trace which is not to be merged (the one not picked)
-                for trace_index in pick_key2:
-                    if trace_index != first_trace_to_merge and trace_index != second_trace_to_merge:
-                        trace_index_to_omit = trace_index
-                trace_index_to_omit = pick_key2.index(trace_index_to_omit)
 
             ## Obtain the pair of traces and their indices
             duplet = [trace1, trace2, trace3]
@@ -288,6 +296,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     print()
 
                 traces_indices_to_be_removed.append(duplet_indices[1])
+                traces_indices_to_be_removed = list(set(traces_indices_to_be_removed))
                 delete_indices(traces_indices_to_be_removed, traces, debug=False)
                 traces_indices_to_be_removed = []
 

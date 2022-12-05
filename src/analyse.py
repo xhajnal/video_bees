@@ -1,3 +1,4 @@
+import json
 import os.path
 from os.path import exists
 from pathlib import Path
@@ -7,7 +8,7 @@ from _socket import gethostname
 from termcolor import colored
 
 from guided_traces import full_guided
-from video import annotate_video, show_video
+from video import annotate_video, show_video, align_the_video
 from config import get_min_trace_len, get_vicinity_of_short_traces
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
@@ -68,16 +69,16 @@ def set_guided(do_guided):
     guided = do_guided
 
 
-def analyse(file_path, population_size, swaps=False, has_video=False, has_tracked_video=False):
+def analyse(csv_file_path, population_size, swaps=False, has_video=False, has_tracked_video=False):
     """ Runs the whole file analysis.
 
-    :arg file_path: (str): path to csv file
+    :arg csv_file_path: (str): path to csv file
     :arg population_size: (int): expected number of agents
     :arg swaps: (list of int): list of frame number of swaps to auto-pass
     :arg has_video: (bool): flag whether any video is available
     :arg has_tracked_video: (bool): flag whether a video with tracking is available
     """
-    print(colored(f"Gonna analyse {file_path}", "magenta"))
+    print(colored(f"Gonna analyse {csv_file_path}", "magenta"))
 
     #################
     # Set run setting
@@ -111,19 +112,19 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     ############
     # I/O stuff
     ############
-    video_file, output_video_file = get_video_path(file_path)
+    video_file, output_video_file = get_video_path(csv_file_path)
     # print(output_video_file)
 
     ####################
     # PARSE CSV & CONFIG
     ####################
     try:
-        with open(file_path, newline='') as csv_file:
+        with open(csv_file_path, newline='') as csv_file:
             #################
             # Check whether this is new setting
             #################
             if not rerun:
-                if not is_new_config(file_name=file_path):
+                if not is_new_config(file_name=csv_file_path):
                     return
             # parse traces from csv file
             scraped_traces = parse_traces(csv_file)
@@ -147,6 +148,20 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     real_whole_frame_range = get_whole_frame_range(traces)
     # compute frame range margins for visualisation
     whole_frame_range = get_video_whole_frame_range(traces)
+
+    if "movie" not in video_file:
+        try:
+            try:
+                if os.stat("../auxiliary/transpositions.txt").st_size == 0:
+                    raise KeyError
+                with open("../auxiliary/transpositions.txt") as file:
+                    transpositions = json.load(file)
+            except FileNotFoundError as err:
+                raise KeyError
+            vect = transpositions[video_file]
+
+        except KeyError:
+            vect = align_the_video(traces, video_file, population_size, real_whole_frame_range, csv_file_path)
 
     ### ANALYSIS
     if show_plots:
@@ -345,11 +360,11 @@ def analyse(file_path, population_size, swaps=False, has_video=False, has_tracke
     all_final_traces.extend(traces)
 
     ## SAVE RESULTS
-    is_new = save_setting(counts, file_name=file_path, population_size=original_population_size, silent=silent, debug=debug)
+    is_new = save_setting(counts, file_name=csv_file_path, population_size=original_population_size, silent=silent, debug=debug)
     if is_new:
         convert_results_from_json_to_csv(silent=silent, debug=debug)
-        save_traces(all_final_traces, os.path.basename(file_path), silent=silent, debug=debug)
-        pickle_traces(all_final_traces, os.path.basename(file_path), silent=silent, debug=debug)
+        # save_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug)
+        pickle_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug)
 
     ## ANNOTATE THE VIDEO
     if has_video or has_tracked_video:
