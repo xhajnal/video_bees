@@ -139,6 +139,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_video=False, has_tr
         # print(scraped_traces[trace])
         traces.append(Trace(scraped_traces[trace], index))
 
+    # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True)
+    # TODO delete this
+    # full_guided(traces, input_video=video_file, show=True, silent=silent, debug=debug)
     # Storing the number of loaded traces
     counts.append(len(traces) + len(removed_full_traces))
 

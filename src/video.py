@@ -291,13 +291,15 @@ def show_video(input_video, frame_range=(), video_speed=0.1, wait=False, points=
     # print("hello")
 
 
-def annotate_video(input_video, output_video, traces, frame_offset):
+def annotate_video(input_video, output_video, traces, frame_offset, video_frame_offset=0, crop_offset=(0, 0)):
     """ Annotates given video with the tracked position of individual bees.
 
     :arg input_video: (Path or str): path to the input video
     :arg output_video: (Path or str): path to the input video
     :arg traces: (list): a list of Traces
     :arg frame_offset: (int): number of the first frame cause opencv sees the first frame as 0th
+    :arg video_frame_offset: (int): number of first frames to cut from original video
+    :arg crop_offset: (tuple): a pair of pints, a vector to offset the location in order to match the input video
     """
     print(colored("ANNOTATES THE VIDEO WITH NEW TRACES", "blue"))
 
@@ -350,8 +352,22 @@ def annotate_video(input_video, output_video, traces, frame_offset):
         # and the second is frame
         ret, frame = vid_capture.read()
 
-        frame_number = int(vid_capture.get(1)) + frame_offset
+        frame_number = int(vid_capture.get(1)) - video_frame_offset + frame_offset
         # print("frame_number", frame_number)
+
+        # print("frame_number to look at in locations", frame_number)
+
+        if int(vid_capture.get(1)) < video_frame_offset:
+            vid_capture.set(cv2.CAP_PROP_POS_FRAMES, video_frame_offset)
+            # print("pass")
+            # continue
+
+        ## TODO uncomment this to annotate only first 50 frames - for development purpose
+        # if frame_number > 50 + frame_offset:
+        #     # print("over")
+        #     vid_capture.release()
+        #     output.release()
+        #     return
 
         if ret == True:
             ## TODO, uncomment to see the frame
@@ -364,7 +380,7 @@ def annotate_video(input_video, output_video, traces, frame_offset):
                     location_index = trace.frames_list.index(frame_number)
                 except ValueError as err:
                     continue
-                pointA = list(map(lambda x: round(x), trace.locations[location_index]))
+                pointA = list(map(lambda x: round(x), to_vect(crop_offset, trace.locations[location_index])))
 
                 # cv2.line(frame, pointA, pointB, (255, 255, 0), thickness=3, lineType=cv2.LINE_AA)
                 try:
@@ -518,8 +534,8 @@ def align_the_video(traces, video_file, population_size, real_whole_frame_range,
     for line in lines:
         if "points assigned:" in line:
             assigned_points = line.split(":")[1]
-            del lines
-            break
+        if "frame:" in line:
+            offset_frame = int(line.split(":")[1])
 
     assigned_points = json.loads(assigned_points)
     leftmost_point, a = get_leftmost_point(points)
@@ -527,6 +543,7 @@ def align_the_video(traces, video_file, population_size, real_whole_frame_range,
     leftmost_assigned_point = list(map(float, leftmost_assigned_point))
     ## TODO - maybe check that all the other points share the vector of transposition
     vector = to_vect(leftmost_point, leftmost_assigned_point)
+    vector = list(map(lambda x: -x, vector))
 
     try:
         os.mkdir("../auxiliary")
@@ -547,12 +564,12 @@ def align_the_video(traces, video_file, population_size, real_whole_frame_range,
     if video_file in transpositions.keys():
         raise Exception("This transposition already in the file.")
 
-    transpositions[video_file] = vector
+    transpositions[video_file] = [vector, offset_frame]
 
     with open("../auxiliary/transpositions.txt", 'w') as file:
         file.write(json.dumps(transpositions))
 
-    return vector
+    return vector, offset_frame
 
 
 if __name__ == "__main__":
