@@ -492,15 +492,42 @@ def make_help_video():
     print("Finished annotation.")
 
 
-def align_the_video(traces, video_file, population_size, real_whole_frame_range, csv_file):
-    """ User guided alignment of the video onto its not cropped version
+def parse_video_info(video_file, traces, csv_file_path):
+    """ Obtains video parameters either loading from the json or via user-guided video and csv file parser.
+    vect - to move the locations according the cropping the video
+    frame_offset - number of first frames of the video to skip
 
     :arg traces (list) list of traces
     :arg video_file: (Path or str): path to the input video
-    :arg population_size: (int): population size of original traces
-    :arg real_whole_frame_range: (tuple of int): frame range of the video
-    :arg csv_file: (str or Path): path to the csv_file
-    :return: vector of shift to assign to the locations so that align with the not cropped video
+    :arg csv_file_path: (str or Path): path to the csv_file
+    :return: vector of shift to assign to the locations so that align with the not cropped video,
+            number of first frames of the video to be skipped
+    """
+    if "movie" not in video_file:
+        try:
+            try:
+                if os.stat("../auxiliary/transpositions.txt").st_size == 0:
+                    raise KeyError
+                with open("../auxiliary/transpositions.txt") as file:
+                    transpositions = json.load(file)
+            except FileNotFoundError as err:
+                raise KeyError
+            vect, frame_offset = transpositions[video_file]
+
+        except KeyError:
+            vect, frame_offset = align_the_video(traces, video_file, csv_file_path)
+
+    return vect, frame_offset
+
+
+def align_the_video(traces, video_file, csv_file_path):
+    """ User-guided alignment of the video onto its not cropped version.
+
+    :arg traces (list) list of traces
+    :arg video_file: (Path or str): path to the input video
+    :arg csv_file_path: (str or Path): path to the csv_file
+    :return: vector of shift to assign to the locations so that align with the not cropped video,
+            number of first frames of the video to be skipped
     """
     # Find a frame with at least half of population
     # if population_size == 1:
@@ -524,7 +551,7 @@ def align_the_video(traces, video_file, population_size, real_whole_frame_range,
         if is_in([da_frame, da_frame], trace.frame_range):
             points.append(trace.get_location_from_frame(da_frame))
 
-    da_converted_frame = convert_frame_number_back(da_frame, csv_file)
+    da_converted_frame = convert_frame_number_back(da_frame, csv_file_path)
 
     show_video(input_video=video_file, frame_range=[da_converted_frame, da_converted_frame], wait=True, points=points)
 
