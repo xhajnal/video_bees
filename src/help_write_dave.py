@@ -35,7 +35,7 @@ def write_dave():
                 file2 = str("_".join(file2.split("_")[:3]))
                 # print(file2)
                 if glob(f"{path}/{folder}/*{file2}*.mp4", recursive=False):
-                    if_video = ", has_video=True, has_tracked_video=True"
+                    if_video = ", has_video=True, video_params=True"
                 else:
                     if_video = ""
 

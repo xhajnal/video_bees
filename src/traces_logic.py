@@ -348,7 +348,13 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
     return trace1, trace2
 
 
-def ask_to_delete_a_trace(traces, input_video):
+def ask_to_delete_a_trace(traces, input_video, video_params=False):
+    """ Creates a user dialogue to ask whether to delete a certain trace while showing video of the trace
+
+    :arg traces: (list): a list of Traces
+    :arg input_video: (str or bool): if set, path to the input video
+    :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+    """
     traces_indices_to_be_removed = []
     to_delete_by_user = input("Are we gonna delete any of the shown traces? (yes or no):")
     if "y" in to_delete_by_user.lower():
@@ -360,7 +366,8 @@ def ask_to_delete_a_trace(traces, input_video):
 
         to_show_the_trace = input(f"Show the whole trace {trace_to_delete} in video before deleting? (yes or no):")
         if "y" in to_show_the_trace.lower():
-            show_video(input_video, frame_range=traces[trace_to_delete].frame_range, video_speed=0.02, wait=True)
+            # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
+            show_video(input_video, frame_range=traces[trace_to_delete].frame_range, video_speed=0.02, wait=True, video_params=video_params)
             to_delete_the_trace = input(f"Delete this trace? (yes or no):")
             if "y" in to_delete_the_trace.lower():
                 to_delete = True

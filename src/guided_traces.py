@@ -5,7 +5,7 @@ from traces_logic import get_gaps_of_traces, ask_to_delete_a_trace, merge_two_ov
 from video import show_video
 
 
-def full_guided(traces, input_video, show=True, silent=False, debug=False):
+def full_guided(traces, input_video, show=True, silent=False, debug=False, video_params=False):
     """ Goes a gap and overlap one by one in a user-guided manner
 
         :arg traces: (list): a list of Traces
@@ -13,6 +13,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False):
         :arg show: (bool): a flag whether to show the plot
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
+        :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
     """
     print(colored("VIDEO-GUIDED SOLVER", "blue"))
     if not input_video:
@@ -44,10 +45,11 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False):
         print(colored(
             f"We have found a {'overlapping' if is_overlap else 'gaping'} traces {key[0]}({traces[key[0]].trace_id}),{key[1]}({traces[key[1]].trace_id}).", "blue"))
         frame_range = overlaps_and_gaps[key]
-        show_video(input_video, frame_range=margin_range(frame_range, 15), video_speed=0.02, wait=True)
+        # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
+        show_video(input_video, frame_range=margin_range(frame_range, 15), video_speed=0.02, wait=True, video_params=video_params)
         to_merge_by_user = input("Merge these traces? (yes or no):")
         if "n" in to_merge_by_user.lower():
-            spam = ask_to_delete_a_trace(traces, input_video)
+            spam = ask_to_delete_a_trace(traces, input_video, video_params=video_params)
             if spam:
                 traces_indices_to_be_removed.append(spam[0])
                 last_edited_index = spam[0]

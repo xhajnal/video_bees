@@ -39,7 +39,7 @@ def get_video_whole_frame_range(traces):
     return [a[0] - 2000, a[1] + 2000]
 
 
-def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, input_video=False, silent=False, debug=False):
+def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
     """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
@@ -48,14 +48,14 @@ def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, inp
         :arg input_video: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
-        :arg: traces: (list): list of trimmed Traces
+        :arg video_params: (bool or tuple): i if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
     """
     start_time = time()
     keep_looking = True
     number_of_swaps = 0
 
     while keep_looking:
-        keep_looking = track_swapping(traces, whole_frame_range, automatically_swap=automatically_swap, input_video=input_video, silent=silent, debug=debug)
+        keep_looking = track_swapping(traces, whole_frame_range, automatically_swap=automatically_swap, input_video=input_video, silent=silent, debug=debug, video_params=video_params)
         if keep_looking:
             number_of_swaps = number_of_swaps + 1
 
@@ -66,7 +66,7 @@ def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, inp
     return number_of_swaps
 
 
-def track_swapping(traces, whole_frame_range, automatically_swap=False, input_video=False, silent=False, debug=False):
+def track_swapping(traces, whole_frame_range, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
         :arg traces: (list): list of Traces
@@ -75,6 +75,7 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
         :arg input_video: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
+        :arg video_params: (bool or tuple): i if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :return: traces: (list): list of trimmed Traces
     """
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
@@ -135,7 +136,9 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
                                                            dictionary[overlapping_pair_of_traces][0] + index + 30],
                                             show_middle_point=True,
                                             subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
-                        show_video(input_video, frame_range=False, video_speed=0.1, wait=False)
+                        # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
+                        show_video(input_video, traces=traces, frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
+                                   video_speed=0.1, wait=False, video_params=video_params)
 
                         answer = input("Is this right? (yes or no)")
                     if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):

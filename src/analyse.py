@@ -112,6 +112,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # I/O stuff
     ############
     video_file, output_video_file = get_video_path(csv_file_path)
+    has_video = True if output_video_file else False
     # print(output_video_file)
 
     ####################
@@ -153,8 +154,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
     ## OBTAIN VIDEO PARAMETERS
     # VECT - to move the locations according the cropping the video
-    # frame_offset - number of first frames of the video to skip
-    vect, frame_offset = parse_video_info(video_file, traces, csv_file_path)
+    # trace_offset - number of first frames of the video to skip
+    crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
+    video_params = [crop_offset, trim_offset] if crop_offset is not None else False
 
     ### ANALYSIS
     if show_plots:
@@ -215,7 +217,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     #     show_overlaps(traces, whole_frame_range)
 
     if has_tracked_video and guided:
-        number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, input_video=False, silent=silent, debug=debug)
+        number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, input_video=False, silent=silent, debug=debug, video_params=True)
         # Storing the number of swaps done
         counts.append(number_of_swaps)
     else:
@@ -250,7 +252,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     if not silent:
         print(colored(f"After trimming overlapping redundant traces and putting gaping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
-            print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range}")
+            print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range} and length {trace.frame_range_len}")
 
     ## ALL TRACES SHOW
     if show_plots:
@@ -284,7 +286,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         while before_number_of_traces != after_number_of_traces:
             before_number_of_traces = len(traces)
             merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided,
-                                                 input_video=video_file, silent=silent, debug=debug, show=show_all_plots)
+                                                 input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
+                                                 video_params=video_params)
             after_number_of_traces = len(traces)
         if len(traces) > population_size:
             traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
@@ -302,7 +305,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     if not silent:
         print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
-            print(f"Trace {index} ({trace.trace_id}) of range {trace.frame_range}")
+            print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range} and length {trace.frame_range_len}")
 
     # set_show_plots(True)
     # scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
@@ -338,7 +341,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # counts.append(len(traces) + len(removed_traces))
 
     if len(traces)+len(removed_full_traces) > original_population_size and guided:
-        full_guided(traces, input_video=video_file, show=True, silent=silent, debug=debug)
+        full_guided(traces, input_video=video_file, show=True, silent=silent, debug=debug, video_params=video_params)
 
     ## VISUALISATIONS
     if show_plots:
@@ -360,14 +363,17 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         pickle_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug)
 
     # ANNOTATE THE VIDEO
-    ## update the output video_file_name
-    spam = output_video_file.split(".m")
-    updated_output_video_file = f"{spam[0]}_{str(len(traces))}_traces.m{spam[1]}"
-    # print(updated_output_video_file)
-    ## annotate only if the annotated video does not exist
-    if not exists(updated_output_video_file):
-        if has_tracked_video:
-            annotate_video(video_file, updated_output_video_file, all_final_traces, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]))
-        else:
-            # annotate_video(video_file, updated_output_video_file, traces[:10], traces[0].frame_range[0], frame_offset, vect)
-            annotate_video(video_file, updated_output_video_file, all_final_traces, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), frame_offset, vect)
+    # Check we have found the video
+    if has_video:
+        ## update the output video_file_name
+        spam = output_video_file.split(".m")
+        updated_output_video_file = f"{spam[0]}_{str(len(traces))}_traces.m{spam[1]}"
+        # print(updated_output_video_file)
+        ## annotate only if the annotated video does not exist
+        if not exists(updated_output_video_file):
+            if has_tracked_video is True:
+                # annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
+                annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]))
+            else:
+                # annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
+                annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), trim_offset, crop_offset)

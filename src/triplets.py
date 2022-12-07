@@ -13,7 +13,7 @@ from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlaps
 
 
-def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=False, input_video=False,  silent=False, debug=False, show=False):
+def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=False, input_video=False,  silent=False, debug=False, show=False, video_params=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
@@ -24,6 +24,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
+        :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE OVERLAPPING TRIPLETS OF TRACES", "blue"))
@@ -182,7 +183,8 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 show_overlaps([trace1, trace2, trace3], whole_frame_range, from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
                 ## show frames of the video
                 if input_video:
-                    show_video(input_video, frame_range=[min_overlap_range, max_overlap_range], video_speed=0.01, wait=True)
+                    # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
+                    show_video(input_video, frame_range=[min_overlap_range, max_overlap_range], video_speed=0.01, wait=True, video_params=video_params)
 
                 # Ask whether we should merge any of these traces
                 to_merge_by_user = input("Are we gonna merge any of the shown traces? (yes or no):")
@@ -222,7 +224,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     print(colored("Not merging this triplet.", "red"))
 
                 # Ask to delete a trace
-                spam = ask_to_delete_a_trace(traces, input_video)
+                spam = ask_to_delete_a_trace(traces, input_video, video_params=video_params)
                 if spam:
                     ## this is deprecated as we recalculate the dictionary in each cycle
                     # del dictionary[pick_key2]
