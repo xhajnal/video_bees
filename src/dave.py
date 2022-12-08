@@ -167,7 +167,7 @@ if __name__ == "__main__":
     analyse("../data/Video_tracking/190930/20190930_115128061_1BEE_generated_20211020_072929_nn.csv", 1)
 
     # 523 -> 390 -> 30
-    # analyse("../data/Video_tracking/190930/20190930_145350661_1BEE_generated_20211018_102533_nn.csv", 1)
+    analyse("../data/Video_tracking/190930/20190930_145350661_1BEE_generated_20211018_102533_nn.csv", 1)
     ## 191001
     # 31 -> 21 -> 1 *
     analyse("../data/Video_tracking/191001/20191001_114401465_1BEE_generated_20211026_100501_nn.csv", 1)
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     # 45 -> 25 -> 1 *
     analyse("../data/Video_tracking/191018/20191018_123336571_1BEE_generated_20220126_083927_nn.csv", 1)
 
-    ############################################# 2 BEES #######################################################
+    ############################################ 2 BEES #######################################################
     ## 190822
     # # a lot of jump back and forth
     # # one swap of traces

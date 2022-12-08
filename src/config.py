@@ -6,7 +6,7 @@ def get_distance_from_calculated_arena():
 
 def get_min_trace_len():
     """ Return minimal value of a trace len in frames to be kept."""
-    return 26
+    return 1
 
 
 def get_vicinity_of_short_traces():
@@ -47,14 +47,14 @@ def get_max_trace_gap_to_interpolate_distance():
     """ Returns a maximal distance in frames so that the location of the bee is linearly interpolated based on border points. """
     # TODO check this
     # Usage: gaping traces, whether to calculate the location in the gap
-    return 150  # 1 second (as frame rate is 100)
+    return 50  # 1 second (as frame rate is 100)
 
 
 def get_max_step_distance_to_merge_overlapping_traces():
     """ Returns a maximal distance two traces can differ in any point to be not merged."""
     # TODO check this
     # Usage: overlapping traces
-    return 120
+    return 100
 
 
 def get_maximal_distance_to_check_for_trace_swapping():
@@ -66,7 +66,7 @@ def get_force_merge_vicinity():
     """ Returns range for which there should be no overlap in order to force merge overlapping traces."""
     # TODO apply this to gaping traces
     # Usage: merge_overlapping_traces
-    return 0
+    return 500
 
 
 def get_screen_size():

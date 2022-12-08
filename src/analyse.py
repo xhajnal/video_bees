@@ -31,11 +31,11 @@ global rerun
 
 # USER - please set up the following 7 flags
 batch_run = False       # sets silent, not debug, not show_plots, rerun
-guided = False          # human guided version
+guided = True          # human guided version
 silent = False          # minimal print
 debug = False           # maximal print
 show_plots = True       # showing plots
-show_all_plots = False  # showing all plots - also those in the loops
+show_all_plots = True  # showing all plots - also those in the loops
 rerun = True            # will execute also files with a setting which is already in the results
 
 
@@ -140,8 +140,12 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         traces.append(Trace(scraped_traces[trace], index))
 
     # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True)
+    # show_video(input_video=video_file, frame_range=[8500, 9000])
+
     # TODO delete this
     # full_guided(traces, input_video=video_file, show=True, silent=silent, debug=debug)
+    # print(len(traces))
+
     # Storing the number of loaded traces
     counts.append(len(traces) + len(removed_full_traces))
 
@@ -156,7 +160,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # VECT - to move the locations according the cropping the video
     # trace_offset - number of first frames of the video to skip
     crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
-    video_params = [crop_offset, trim_offset] if crop_offset is not None else False
+    video_params = [crop_offset, trim_offset] if crop_offset is not None else True
 
     ### ANALYSIS
     if show_plots:
