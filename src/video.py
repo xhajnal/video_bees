@@ -182,7 +182,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
     # Initialize video writer object
     if output_video:
-        output = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*'XVID'), fps, frame_size)
+        output = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, frame_size)
 
     ## INITIALISE ANNOTATION
     locations_of_traces = []

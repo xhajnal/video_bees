@@ -34,7 +34,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         if last_edited_index == key[0]:
             # Actually delete the given traces
             delete_indices(traces_indices_to_be_removed, traces, debug=False)
-            traces, spam = full_guided(traces, input_video, show=show, silent=silent, debug=debug)
+            traces, spam = full_guided(traces, input_video, show=show, silent=silent, debug=debug, video_params=video_params)
             removed_traces.extend(spam)
             return traces, removed_traces
 
