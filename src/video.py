@@ -1,12 +1,15 @@
 import json
 import os
 from multiprocessing import Process
+from os.path import exists
+
 import cv2
 import distinctipy
 from termcolor import colored
 
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect
 from trace import Trace
+from video2 import play_opencv2
 
 
 def play_opencv(input_video, frame_range, speed, points):
@@ -15,7 +18,7 @@ def play_opencv(input_video, frame_range, speed, points):
     :arg input_video: (Path or str): path to the input video
     :arg frame_range: (list or tuple): if set shows only given frame range of the video
     :arg speed: ratio of rate, hence default speed is 1
-    :arg points: (tuple of points): points to be shown over the video
+    :arg points: (tuple of points): points to be shown over the video (TO ALIGN THE VIDEO)
     :return:
     """
     video = cv2.VideoCapture(input_video)
@@ -29,11 +32,23 @@ def play_opencv(input_video, frame_range, speed, points):
 
     first = True
 
-    while video.isOpened():
-        # Read video capture
-        ret, frame = video.read()
+    if frame_range:
+        # print("frame_range", frame_range)
+        video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0])
+
+    # while video.isOpened():
+    while True:
         frame_number = int(video.get(1))
         # print(frame_number)
+        # ## TODO delete this
+        # if frame_range:
+        #     if frame_number < frame_range[0]:
+        #         # print("setting the frame", frame_range[0])
+        #         video.set(1, frame_range[0])
+        #         # print("frame set to", int(video.get(1)))
+
+        # Read video capture
+        ret, frame = video.read()
 
         # Show the frame number
         cv2.putText(img=frame, text=str(frame_number), org=(15, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1.0,
@@ -51,6 +66,7 @@ def play_opencv(input_video, frame_range, speed, points):
                 cv2.imshow("video", frame)
         else:
             cv2.imshow("video", frame)
+
         key = cv2.waitKey(round(2*(100/fps)/speed))
 
         if first:
@@ -64,6 +80,7 @@ def play_opencv(input_video, frame_range, speed, points):
                 video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
             else:
                 video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
         if points:
             if key == ord("s"):
                 for index, point in enumerate(points):
@@ -115,15 +132,20 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
     if vid_capture.isOpened() is False:
         print("Error opening the video file: ", input_video)
         return
+    # fps = vid_capture.get(5)
     vid_capture.release()
 
     if video_speed > 1:
         video_speed = 1
 
-    if video_params is True:
+    if points or video_params is True:
+        # to show points
         p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points,))
     else:
-        assert isinstance(video_params, tuple) or isinstance(video_params, list)
+        try:
+            assert isinstance(video_params, tuple) or isinstance(video_params, list)
+        except AssertionError:
+            video_params = (0, (0, 0))
         p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], True,))
     p.start()
     if wait:
@@ -145,6 +167,12 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     """
     if traces and not show:
         print(colored("ANNOTATES THE VIDEO WITH NEW TRACES", "blue"))
+
+    if output_video:
+        ## annotate only if the annotated video does not exist
+        if exists(output_video):
+            print(colored("Chosen video already exists, not overwriting it.", "yellow"))
+            return
 
     if frame_range:
         if frame_range[1] < trace_offset:
@@ -195,7 +223,8 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
     video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset)
 
-    while video.isOpened():
+    # while video.isOpened():
+    while video.isOpened() or show:
         # vid_capture.read() methods returns a tuple, first element is a bool and the second is frame
         ret, frame = video.read()
 
@@ -277,7 +306,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     video.release()
     if output_video:
         output.release()
-    print("Finished annotation.")
+        print(colored("Annotation done.", "yellow"))
 
 
 def make_help_video():
@@ -362,18 +391,27 @@ def parse_video_info(video_file, traces, csv_file_path):
     :return: vector of shift to assign to the locations so that align with the not cropped video,
             number of first frames of the video to be skipped
     """
+    # there is no video file
+    if not video_file:
+        return None, None
+
     if "movie" not in video_file:
         try:
             try:
+                # if transpositions empty
                 if os.stat("../auxiliary/transpositions.txt").st_size == 0:
                     raise KeyError
+                # load transpositions
                 with open("../auxiliary/transpositions.txt") as file:
                     transpositions = json.load(file)
             except FileNotFoundError as err:
+                # transpositions.txt not found
                 raise KeyError
+            # load video record
             vect, frame_offset = transpositions[video_file]
 
         except KeyError:
+            # video not found
             vect, frame_offset = align_the_video(traces, video_file, csv_file_path)
 
         return vect, frame_offset
@@ -416,7 +454,7 @@ def align_the_video(traces, video_file, csv_file_path):
     da_converted_frame = convert_frame_number_back(da_frame, csv_file_path)
 
     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-    show_video(input_video=video_file, frame_range=[da_converted_frame, da_converted_frame], wait=True, points=points, video_params=True)
+    show_video(input_video=video_file, traces=(), frame_range=[da_converted_frame, da_converted_frame], wait=True, points=points, video_params=True)
 
     with open("../auxiliary/point.txt", "r") as file:
         lines = file.readlines()

@@ -139,8 +139,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # print(scraped_traces[trace])
         traces.append(Trace(scraped_traces[trace], index))
 
-    # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True)
-    # show_video(input_video=video_file, frame_range=[8500, 9000])
+
 
     # TODO delete this
     # full_guided(traces, input_video=video_file, show=True, silent=silent, debug=debug)
@@ -161,6 +160,12 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # trace_offset - number of first frames of the video to skip
     crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
     video_params = [crop_offset, trim_offset] if crop_offset is not None else True
+    # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
+
+    # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
+    # show_video(input_video=video_file, frame_range=[8000, 8500], wait=False, video_params=[0, [0, 0]])
+    # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
+
 
     ### ANALYSIS
     if show_plots:
@@ -373,11 +378,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         spam = output_video_file.split(".m")
         updated_output_video_file = f"{spam[0]}_{str(len(traces))}_traces.m{spam[1]}"
         # print(updated_output_video_file)
-        ## annotate only if the annotated video does not exist
-        if not exists(updated_output_video_file):
-            if has_tracked_video is True:
-                # annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
-                annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]))
-            else:
-                # annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
-                annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), trim_offset, crop_offset)
+        if has_tracked_video is True:
+            # annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
+            annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]))
+        else:
+            # annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
+            annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), trim_offset, crop_offset)

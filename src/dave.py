@@ -5,6 +5,7 @@ if __name__ == "__main__":
     ############################################# SINGLE BEE #######################################################
     ## SINGLE BEE 190822
     # already done and SAVED
+    # GOT VIDEO
     analyse('../data/Video_tracking/190822/20190822_111607344_1BEE_generated_20210430_080914_nn.csv', 1)
 
     # 156 -> 87 -> 11 -> 1
@@ -155,7 +156,6 @@ if __name__ == "__main__":
     analyse("../data/Video_tracking/190929/20190929_124230212_1BEE_generated_20211012_095333_nn.csv", 1)
 
     # 63 -> 40 -> 1 *
-    # TODO check THIS
     analyse("../data/Video_tracking/190929/20190929_160530530_1BEE_generated_20211018_081442_nn.csv", 1, has_tracked_video=True)
 
     ## 190930
@@ -489,6 +489,7 @@ if __name__ == "__main__":
     ############################################# 5 BEES #######################################################
     ## 190822
     # 1416 -> 1091 -> 679
+    # GOT VIDEO
     analyse("../data/Video_tracking/190822/20190822_114441236_5BEE_generated_20210503_090128_nn.csv", 5)
 
     # 526 -> 415 -> 253
