@@ -35,7 +35,7 @@ guided = True          # human guided version
 silent = False          # minimal print
 debug = False           # maximal print
 show_plots = True       # showing plots
-show_all_plots = True  # showing all plots - also those in the loops
+show_all_plots = False  # showing all plots - also those in the loops
 rerun = True            # will execute also files with a setting which is already in the results
 
 
@@ -142,7 +142,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
 
     # TODO delete this
-    # full_guided(traces, input_video=video_file, show=True, silent=silent, debug=debug)
+    # full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug)
     # print(len(traces))
 
     # Storing the number of loaded traces
@@ -295,7 +295,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         while before_number_of_traces != after_number_of_traces:
             before_number_of_traces = len(traces)
             merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided,
-                                                 input_video=video_file, silent=silent, debug=debug, show=True,
+                                                 input_video=video_file, silent=silent, debug=debug, show=show_plots,
                                                  show_all_plots=show_all_plots, video_params=video_params)
             after_number_of_traces = len(traces)
         if len(traces) > population_size:
@@ -350,7 +350,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # counts.append(len(traces) + len(removed_traces))
 
     if len(traces)+len(removed_full_traces) > original_population_size and guided:
-        full_guided(traces, input_video=video_file, show=True, silent=silent, debug=debug, video_params=video_params)
+        full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params)
 
     ## VISUALISATIONS
     if show_plots:

@@ -219,7 +219,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     colors = get_colors(len(traces))
     print("traces colours (R,G,B):", colors)
     colors = list(map(rgb_to_bgr, colors))
-    print("traces colours (G,B,R):", colors)
+    # print("traces colours (G,B,R):", colors)
 
     for trace in traces:
         ## TODO this can be optimised using queue instead of list
@@ -261,7 +261,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                 # Round the position to whole pixels
                 pointA = list(map(lambda x: round(x), to_vect(crop_offset, trace.locations[location_index])))
 
-                print(trace_index, trace.trace_id, colors[trace_index], pointA)
+                # print(trace_index, trace.trace_id, colors[trace_index], pointA)
 
                 # cv2.line(frame, pointA, pointB, (255, 255, 0), thickness=3, lineType=cv2.LINE_AA)
                 try:

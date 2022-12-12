@@ -80,6 +80,14 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 for trace_index, trace in enumerate(traces):
                     print(f"trace {trace_index} ({trace.trace_id}) of frame range {trace.frame_range}")
                 print()
+
+            ## Remove skipped keys
+            for item in skipped_triplets_indices:
+                try:
+                    del dictionary[item]
+                except:
+                    pass
+
             # Flattened indices of overlapping pairs of traces
             keys = flatten2(tuple(dictionary.keys()))
 
@@ -118,12 +126,18 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 print("pick_key", pick_key)
 
             # Find the triplet of the smallest index which has two overlaps
+            pick_key2 = None
             for key in dictionary.keys():
-                if pick_key in key:  # the triplet has the smallest index
+                # with the smallest index
+                if pick_key in key:
                     pick_key2 = key
                     if debug:
                         print("pick_key2", pick_key2)
                     break
+            if pick_key2 is None:
+                go_next = False
+                break
+
 
             trace1 = traces[pick_key2[0]]
             assert isinstance(trace1, Trace)
@@ -180,7 +194,8 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     ## show position
                     # show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len*0.1), max_overlap_range + round(both_overlaps_overlap_range_len*0.1)],
                     show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range, max_overlap_range],
-                                        subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue,{pick_key2[1]}({trace2.trace_id}) orange,{pick_key2[2]}({trace3.trace_id}) green.")
+                                        subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue,{pick_key2[1]}({trace2.trace_id}) orange,{pick_key2[2]}({trace3.trace_id}) green.",
+                                        silent=True)
                     # check that there are traces in the frame range
                     ## TODO maybe comment the following plot
                     if not input_video and show_all_plots:
@@ -188,7 +203,8 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                                 (pick_key2[2] < len(traces) - 1 and traces[pick_key2[2] + 1].frame_range[0] < max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)):
                             show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len * 0.1),
                                                                                max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)],
-                                                subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
+                                                subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.",
+                                                silent=True)
                     ## show the overlap
                     ## TODO maybe comment the following plot
                     if not input_video and show_all_plots:
@@ -255,6 +271,9 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                         # Continue searching for triplets
                         continue
                 elif user_merging is False:
+                    skipped_triplets_indices.append(pick_key2)
+                    if all(f in skipped_triplets_indices for f in dictionary.keys()):
+                        go_next = False
                     continue
 
                 # answer = input("Force merge these? Will not ask on the distance of the selected traces. (yes or no)")
