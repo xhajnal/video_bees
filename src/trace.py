@@ -246,6 +246,8 @@ class Trace:
             if not has_overlap(from_to_frame, self.frame_range):
                 return
 
+            frame_range_len = from_to_frame[1] - from_to_frame[0]
+
             # from_to_frame right is before this trace
             if self.frame_range[0] < from_to_frame[0]:
                 from_index = self.frames_list.index(from_to_frame[0])
@@ -348,6 +350,12 @@ class Trace:
         else:
             fig1, ax1 = plt.subplots()
 
+        ## Set range
+        if from_to_frame is not False:
+            ax1.set_xlim(from_to_frame)
+        else:
+            ax1.set_xlim(whole_frame_range)
+
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
         ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         if show_middle_point:
@@ -356,11 +364,6 @@ class Trace:
         ax1.scatter(self.gap_frames[from_gap_index: to_gap_index], list(map(lambda x: x[0], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
         ax1.set_xlabel('Time')
         ax1.set_ylabel('x')
-        
-        if from_to_frame is not False:
-            ax1.set_xlim(from_to_frame)
-        else:
-            ax1.set_xlim(whole_frame_range)
 
         if where:
             ax1.set_title(f'Traces in x-axis.' + ("\n"+subtitle if subtitle else ""))
@@ -376,6 +379,12 @@ class Trace:
         else:
             fig2, ax2 = plt.subplots()
 
+        ## Set range
+        if from_to_frame is not False:
+            ax2.set_xlim(from_to_frame)
+        else:
+            ax2.set_xlim(whole_frame_range)
+
         # ax2.scatter(self.frames_tracked, ys, alpha=0.5)
         ax2.set_ylabel('y')
         ax2.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), ys, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
@@ -384,10 +393,7 @@ class Trace:
         ax2.scatter(self.overlap_frames[from_overlap_index: to_overlap_index], list(map(lambda x: x[1], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
         ax2.scatter(self.gap_frames[from_gap_index: to_gap_index], list(map(lambda x: x[1], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
         ax2.set_xlabel('Time')
-        if from_to_frame is not False:
-            ax2.set_xlim(from_to_frame)
-        else:
-            ax2.set_xlim(whole_frame_range)
+
         ax2.invert_yaxis()
 
         if where:

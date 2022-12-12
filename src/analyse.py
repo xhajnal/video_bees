@@ -226,7 +226,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     #     show_overlaps(traces, whole_frame_range)
 
     if has_tracked_video and guided:
-        number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, input_video=False, silent=silent, debug=debug, video_params=True)
+        number_of_swaps = track_swapping_loop(traces, whole_frame_range, automatically_swap=swaps, input_video=video_file, silent=silent, debug=debug, video_params=True)
         # Storing the number of swaps done
         counts.append(number_of_swaps)
     else:
@@ -295,8 +295,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         while before_number_of_traces != after_number_of_traces:
             before_number_of_traces = len(traces)
             merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided,
-                                                 input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                                                 video_params=video_params)
+                                                 input_video=video_file, silent=silent, debug=debug, show=True,
+                                                 show_all_plots=show_all_plots, video_params=video_params)
             after_number_of_traces = len(traces)
         if len(traces) > population_size:
             traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)

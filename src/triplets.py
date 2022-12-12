@@ -13,7 +13,7 @@ from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlaps
 
 
-def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=False, input_video=False,  silent=False, debug=False, show=False, video_params=False):
+def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=False, input_video=False,  silent=False, debug=False, show=False, show_all_plots=False, video_params=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
@@ -24,6 +24,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
+        :arg show_all_plots: (bool): if True all plots are shown
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :returns: traces: (list): list of concatenated Traces
     """
@@ -39,6 +40,9 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
     # Internal/Output variables
     removed_traces = []
     skipped_triplets_indices = []
+
+    if show is False:
+        show_all_plots = False
 
     while len(count_two) >= 1 and number_of_traces != len(traces):
         number_of_traces = len(traces)
@@ -129,9 +133,9 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
             assert isinstance(trace3, Trace)
 
             # if the picked traces are overlapping in whole range of one of the traces we delete it from the dictionary and move on
-            if is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range) or \
-                    is_in(trace2.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace2.frame_range) or \
-                    is_in(trace1.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace1.frame_range):
+            if not guided and (is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range) or
+                               is_in(trace2.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace2.frame_range) or
+                               is_in(trace1.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace1.frame_range)):
                 if debug:
                     print("trace1.frame_range", trace1.frame_range)
                     print("trace2.frame_range", trace2.frame_range)
@@ -165,26 +169,35 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 print(f"Range of at least one overlap: [{min_overlap_range}, {max_overlap_range}]")
 
                 ## Show the plots and the video
-                scatter_detection(traces, whole_frame_range)
-                scatter_detection([trace1, trace2, trace3], [min_range - 200, max_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
-                # check that there are traces in frame range [min_range - 200, max_range + 200]
-                if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_range - 200 for f in range(pick_key2[0]))) or (pick_key2[2] < len(traces)-1 and traces[pick_key2[2]+1].frame_range[0] < max_range + 200):
-                    scatter_detection(traces, [min_range - 200, max_range + 200], show_trace_index=False,
-                                      subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}), {pick_key2[1]}({trace2.trace_id}), {pick_key2[2]}({trace3.trace_id}).")
-                ## show position
-                show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len*0.1), max_overlap_range + round(both_overlaps_overlap_range_len*0.1)],  subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
-                # check that there are traces in the frame range
-                if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_overlap_range - round(both_overlaps_overlap_range_len * 0.1) for f in range(pick_key2[0]))) or (
-                        pick_key2[2] < len(traces) - 1 and traces[pick_key2[2] + 1].frame_range[0] < max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)):
-                    show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len * 0.1),
-                                                                       max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)],
-                                        subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
-                ## show the overlap
-                show_overlaps([trace1, trace2, trace3], whole_frame_range, from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+                if show:
+                    ## TODO maybe comment the following plot
+                    # scatter_detection(traces, whole_frame_range)
+                    scatter_detection([trace1, trace2, trace3], [min_range - 200, max_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
+                    # check that there are traces in frame range [min_range - 200, max_range + 200]
+                    if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_range - 200 for f in range(pick_key2[0]))) or (pick_key2[2] < len(traces)-1 and traces[pick_key2[2]+1].frame_range[0] < max_range + 200):
+                        scatter_detection(traces, [min_range - 200, max_range + 200], from_to_frame=[min_range, max_range], show_trace_index=False,
+                                          subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}), {pick_key2[1]}({trace2.trace_id}), {pick_key2[2]}({trace3.trace_id}).")
+                    ## show position
+                    # show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len*0.1), max_overlap_range + round(both_overlaps_overlap_range_len*0.1)],
+                    show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range, max_overlap_range],
+                                        subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue,{pick_key2[1]}({trace2.trace_id}) orange,{pick_key2[2]}({trace3.trace_id}) green.")
+                    # check that there are traces in the frame range
+                    ## TODO maybe comment the following plot
+                    if not input_video and show_all_plots:
+                        if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_overlap_range - round(both_overlaps_overlap_range_len * 0.1) for f in range(pick_key2[0]))) or \
+                                (pick_key2[2] < len(traces) - 1 and traces[pick_key2[2] + 1].frame_range[0] < max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)):
+                            show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len * 0.1),
+                                                                               max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)],
+                                                subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
+                    ## show the overlap
+                    ## TODO maybe comment the following plot
+                    if not input_video and show_all_plots:
+                        show_overlaps([trace1, trace2, trace3], whole_frame_range, from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}).")
+
                 ## show frames of the video
                 if input_video:
                     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-                    show_video(input_video, frame_range=[min_overlap_range, max_overlap_range], video_speed=0.01, wait=True, video_params=video_params)
+                    show_video(input_video, [trace1, trace2, trace3], frame_range=[min_overlap_range, max_overlap_range], video_speed=0.01, wait=True, video_params=video_params)
 
                 # Ask whether we should merge any of these traces
                 to_merge_by_user = input("Are we gonna merge any of the shown traces? (yes or no):")

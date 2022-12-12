@@ -1,6 +1,5 @@
 import copy
 import math
-import sys
 import numpy as np
 from termcolor import colored
 
@@ -8,6 +7,22 @@ from config import get_max_trace_gap_to_interpolate_distance
 from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap
 from trace import Trace
 from video import show_video
+
+
+def get_traces_from_range(traces, interval):
+    """ Returns the traces with frame range in given range
+
+    :param traces: (list): a list of Traces
+    :param interval: (tuple): range to pick traces
+    :return: list of traces in the given range
+    """
+    traces_in_range = []
+    for trace in traces:
+        assert isinstance(trace, Trace)
+        if is_in(trace.frame_range, interval):
+            traces_in_range.append(trace)
+
+    return traces_in_range
 
 
 def get_gaps_of_traces(traces, get_all_gaps=False, debug=False):

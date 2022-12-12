@@ -7,7 +7,7 @@ import cv2
 import distinctipy
 from termcolor import colored
 
-from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect
+from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr
 from trace import Trace
 from video2 import play_opencv2
 
@@ -54,11 +54,12 @@ def play_opencv(input_video, frame_range, speed, points):
         cv2.putText(img=frame, text=str(frame_number), org=(15, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1.0,
                     color=(125, 246, 55), thickness=4)
         if points:
-            colors = distinctipy.get_colors(len(points))
-            colors = list(map(lambda x: [round(x[0] * 255), round(x[1] * 255), round(x[2] * 255)], colors))
+            colors = get_colors(len(points))
+            colors = list(map(rgb_to_bgr, colors))
+
             for index, point in enumerate(points):
                 point = list(map(round, point))
-                cv2.circle(frame, point, 4, colors[index], thickness=-1, lineType=cv2.LINE_AA)
+                cv2.circle(frame, point, 4, color=colors[index], thickness=-1, lineType=cv2.LINE_AA)
 
         # Display each frame
         if frame_range:
@@ -138,7 +139,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
     if video_speed > 1:
         video_speed = 1
 
-    if points or video_params is True:
+    if points:
         # to show points
         p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points,))
     else:
@@ -146,6 +147,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
             assert isinstance(video_params, tuple) or isinstance(video_params, list)
         except AssertionError:
             video_params = (0, (0, 0))
+        # s
         p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], True,))
     p.start()
     if wait:
@@ -214,11 +216,13 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
     ## INITIALISE ANNOTATION
     locations_of_traces = []
-    colors = distinctipy.get_colors(len(traces))
-    colors = list(map(lambda x: [round(x[0]*255), round(x[1]*255), round(x[2]*255)], colors))
+    colors = get_colors(len(traces))
     print("traces colours (R,G,B):", colors)
+    colors = list(map(rgb_to_bgr, colors))
+    print("traces colours (G,B,R):", colors)
 
     for trace in traces:
+        ## TODO this can be optimised using queue instead of list
         locations_of_traces.append([])
 
     video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset)
@@ -245,17 +249,23 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
         if ret == True:
             ## ANNOTATION
-            # Round the position to whole pixels
             for trace_index, trace in enumerate(traces):
+                # if trace_index > 0:
+                #     continue
+
                 try:
                     location_index = trace.frames_list.index(frame_number)
                 except ValueError as err:
                     continue
+
+                # Round the position to whole pixels
                 pointA = list(map(lambda x: round(x), to_vect(crop_offset, trace.locations[location_index])))
+
+                print(trace_index, trace.trace_id, colors[trace_index], pointA)
 
                 # cv2.line(frame, pointA, pointB, (255, 255, 0), thickness=3, lineType=cv2.LINE_AA)
                 try:
-                    cv2.circle(frame, pointA, 4, colors[trace_index], thickness=-1, lineType=cv2.LINE_AA)
+                    cv2.circle(frame, pointA, 4, color=colors[trace_index], thickness=-1, lineType=cv2.LINE_AA)
                 except:
                     print(pointA)
 
@@ -264,7 +274,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                     if index == 0:
                         continue
                     try:
-                        cv2.line(frame, locations_of_traces[trace_index][index-1], point, colors[trace_index], thickness=1, lineType=cv2.LINE_AA)
+                        cv2.line(frame, locations_of_traces[trace_index][index-1], point, color=colors[trace_index], thickness=1, lineType=cv2.LINE_AA)
                     except IndexError as err:
                         print("index", index)
                         print(len(locations_of_traces[trace_index]))
@@ -287,6 +297,12 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                         video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + frame_range[0])
                     else:
                         video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+                if key == ord('+'):
+                    speed = 1.1 * speed
+
+                if key == ord('-'):
+                    speed = 0.9 * speed
 
             # Write the frame to the output files
             if output_video:

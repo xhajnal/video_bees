@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 from trace import Trace
-from traces_logic import get_gaps_of_traces
+from traces_logic import get_gaps_of_traces, get_traces_from_range
 from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
 
 
@@ -70,11 +70,17 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
 
     fontsize = get_fontsize(len(traces))
 
-    for index, trace in enumerate(traces):
+    if from_to_frame:
+        traces_to_show = get_traces_from_range(traces, from_to_frame)
+    else:
+        traces_to_show = traces
+
+    for index, trace in enumerate(traces_to_show):
         assert isinstance(trace, Trace)
 
         x = trace.frames_list
         y = [index] * len(x)
+        ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
         ax1.scatter(x, y, alpha=0.5)
         if show_trace_index or show_trace_id:
             if show_trace_index and show_trace_id:
@@ -83,12 +89,12 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
                 msg = f"{index}"
             else:
                 msg = f"({trace.trace_id})"
-            if len(traces) > 5:
+            if len(traces_to_show) > 5:
                 # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
                 ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.5, msg, fontsize=fontsize)
             else:
-                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), msg, fontsize=fontsize)
+                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces_to_show)), trace.trace_id, fontsize=fontsize)
+                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces_to_show)), msg, fontsize=fontsize)
         if show_trace_range:
             if trace.frame_range_len < 5000:
                 ax1.text(trace.frame_range[1] + 0.035*(whole_frame_range[1] - whole_frame_range[0]), y[0], f"{nice_range_print(trace.frame_range)} [{trace.frame_range_len}]", fontsize=fontsize)
@@ -112,9 +118,9 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     title = f'Scatter plot of detections of individual agents over time.'
     if subtitle:
         assert isinstance(subtitle, str)
-        plt.title(title + "\n" + subtitle + f" {len(traces)} traces.")
+        plt.title(title + "\n" + subtitle + f"{' Showing' if from_to_frame else ''} {len(traces_to_show)} traces.")
     else:
-        plt.title(title + f"\n{len(traces)} traces.")
+        plt.title(title + f"\n{' Showing' if from_to_frame else ''} {len(traces_to_show)} traces.")
     plt.show()
 
 

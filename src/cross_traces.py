@@ -137,8 +137,8 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
                                             show_middle_point=True,
                                             subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
                         # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-                        show_video(input_video, traces=traces, frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
-                                   video_speed=0.1, wait=False, video_params=video_params)
+                        show_video(input_video, traces=[traces[trace1_index], traces[trace2_index]], frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
+                                   video_speed=0.1, wait=True, video_params=video_params)
 
                         answer = input("Is this right? (yes or no)")
                     if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):

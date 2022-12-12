@@ -2,6 +2,7 @@ import csv
 import sys
 from copy import copy
 import numpy as np
+from distinctipy import distinctipy
 from interval import Interval
 from mpmath import mpi
 import pandas as pd
@@ -545,3 +546,38 @@ def convert_frame_number_back(frame, csv_file_path):
         for row in reader:
             difference = int(row['frame_count']) - int(row['frame_number'])
             return frame + difference
+
+
+def get_colors(number_of_colors):
+    """ Returns a list of colors."""
+    if number_of_colors <= 10:
+        colors = list(map(hex_to_rgb, ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'][:number_of_colors]))
+    # if number_of_colors == 1:
+    #     colors = [[0, 0, 255]]
+    # elif number_of_colors == 2:
+    #     colors = [[0, 0, 255], [255, 102, 0]]
+    # elif number_of_colors == 3:
+    #     colors = [[0, 0, 255], [255, 102, 0], [0, 255, 0]]
+    else:
+        colors = distinctipy.get_colors(len(number_of_colors))
+        colors = list(map(lambda x: [round(x[0] * 255), round(x[1] * 255), round(x[2] * 255)], colors))
+
+    return colors
+
+
+def hex_to_rgb(value):
+    """ Returns hex value of a color in RGB."""
+    value = value.lstrip('#')
+    lv = len(value)
+    return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+
+
+def rgb_to_bgr(rgb):
+    """ Return rgb color in bgr
+
+    :param rgb: (triplet of ints): color in RGB
+    :return: BGR color
+    """
+
+    return rgb[2], rgb[1], rgb[0]
+
