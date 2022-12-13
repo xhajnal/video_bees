@@ -1,8 +1,10 @@
 from termcolor import colored
 
-from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionaries, margin_range, delete_indices
+from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionaries, margin_range, delete_indices, \
+    range_len
 from traces_logic import get_gaps_of_traces, ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap
 from video import show_video
+from visualise import scatter_detection, show_plot_locations
 
 
 def full_guided(traces, input_video, show=True, silent=False, debug=False, video_params=False):
@@ -43,14 +45,26 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         trace1_index = key[0]
         trace2_index = key[1]
 
+        min_range = min([trace1.frame_range[0], trace2.frame_range[0]])
+        max_range = max([trace1.frame_range[1], trace2.frame_range[1]])
+
         if key in overlaps.keys():
             is_overlap = True
+            show_range = overlaps[key]
         else:
             is_overlap = False
+            show_range = gaps[key]
+            show_range = margin_range(show_range, max(100, 0.2*range_len(show_range)))
         print(colored(f"We have found a {'overlapping' if is_overlap else 'gaping'} traces {key[0]}({traces[key[0]].trace_id}),{key[1]}({traces[key[1]].trace_id}).", "blue"))
+
         frame_range = overlaps_and_gaps[key]
 
-        ## TODO add other plots before
+        # Video-guided visualisations
+        scatter_detection([trace1, trace2], [min_range - 200, max_range + 200], show_trace_index=False,
+                          subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue, {trace2_index}({trace2.trace_id}) orange.")
+        show_plot_locations([trace1, trace2], [0, 0], from_to_frame=show_range,
+                            subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
+                            silent=True)
 
         # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
         # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
