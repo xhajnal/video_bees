@@ -4,12 +4,10 @@ from multiprocessing import Process
 from os.path import exists
 
 import cv2
-import distinctipy
 from termcolor import colored
 
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr
 from trace import Trace
-from video2 import play_opencv2
 
 
 def play_opencv(input_video, frame_range, speed, points):

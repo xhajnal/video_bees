@@ -99,7 +99,8 @@ def single_trace_checker(traces, min_range_len=False, vicinity=False, silent=Fal
     # Actually delete the races
     traces = delete_indices(traces_with_zero_len_in_xy + removed_short_traces_indices, traces)
 
-    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. "
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     return traces, removed_short_traces
 
 
@@ -162,7 +163,8 @@ def check_inside_of_arena(traces, silent=False, debug=False):
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)
-    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. "
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     return traces
 
 

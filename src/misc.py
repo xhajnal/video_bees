@@ -12,6 +12,8 @@ from termcolor import colored
 
 
 def calculate_cosine_distance(a, b):
+    ## TODO have look on the warning
+    ## scipy\spatial\distance.py:620: RuntimeWarning: invalid value encountered in double_scalars
     return float(spatial.distance.cosine(a, b))
 
 

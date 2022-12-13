@@ -220,7 +220,7 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
     if dist1 < dist2:
         # Cutting trace1
         if not silent:
-            print(colored(f"Cutting first trace of the pair {trace1_index} of id {trace1.trace_id}.", "yellow"))
+            print(colored(f"Cutting FIRST trace of the pair {trace1_index} of id {trace1.trace_id}.", "green"))
         # trim
         trace1.frames_list = trace1.frames_list[:index1_overlap_start]
         trace1.locations = trace1.locations[:index1_overlap_start]
@@ -228,7 +228,7 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
         # Cutting trace2
         # trim
         if not silent:
-            print(colored(f"Cutting second trace of the pair {trace2_index} of id {trace2.trace_id}.", "yellow"))
+            print(colored(f"Cutting SECOND trace of the pair {trace2_index} of id {trace2.trace_id}.", "green"))
         trace2.frames_list = trace2.frames_list[index2_overlap_end + 1:]
         trace2.locations = trace2.locations[index2_overlap_end + 1:]
 

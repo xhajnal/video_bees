@@ -69,9 +69,9 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
 
             # print("dictionary", dictionary)
             if dictionary == {}:
-                print(colored("Cannot merge any trace as there is no partial overlap of three traces.", "red"))
+                print(colored("Cannot merge any trace as there is no partial overlap of three traces.", "yellow"))
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
-                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
                 return
             print("triplets:", dictionary)
 
@@ -116,7 +116,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     for trace_index, trace in enumerate(traces):
                         print(f"trace {trace_index} of range {trace.frame_range}")
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
-                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
                 return
 
             # Pick the smallest index
@@ -138,7 +138,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 go_next = False
                 break
 
-
+            # parse the traces from dict
             trace1 = traces[pick_key2[0]]
             assert isinstance(trace1, Trace)
             trace2 = traces[pick_key2[1]]
@@ -338,8 +338,9 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 go_next = False
 
             if not silent:
-                msg = f"{'' if to_merge else 'NOT '}MERGING OVERLAPPING TRACES {'' if to_merge else '(' + reason + ') '}"
+                msg = f"{'' if to_merge else 'NOT '}MERGING THE OVERLAPPING TRACES {'' if to_merge else '(' + reason + ') '}"
                 print(colored(msg, "yellow") if to_merge else colored(msg, "red"))
+                print()
 
             if show:
                 try:
@@ -347,6 +348,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 except UnboundLocalError:
                     pass
 
-    print(colored(f"Returning {len(traces)} traces, {len(removed_traces)} removed, {starting_number_of_traces - len(traces) + len(removed_traces)} merged. "
-                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {len(removed_traces)} removed, "
+                  f"{starting_number_of_traces - len(traces) + len(removed_traces)} merged. "
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     return traces, removed_traces

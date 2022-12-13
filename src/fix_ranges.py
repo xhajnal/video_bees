@@ -44,7 +44,8 @@ def fix_ranges(file_path, autodelete=False, debug=False):
                     row["frame_number"] = str(int(row["frame_number"]) - lowest_range)
                     writer.writerow(row)
 
-                print(colored(f"Loaded {str(file_path)} and saving to {str(new_file_path)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                print(colored(f"Loaded {str(file_path)} and saving to {str(new_file_path)}. "
+                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
 
     if autodelete:
         os.remove(file_path)

@@ -77,7 +77,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     :arg swaps: (list of int): list of frame number of swaps to auto-pass
     :arg has_tracked_video: (bool): flag whether a video with tracking is available
     """
-    print(colored(f"Gonna analyse {csv_file_path}", "magenta"))
+    print(colored(f"Gonna analyse: {csv_file_path}", "magenta"))
 
     #################
     # Set run setting
@@ -200,7 +200,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     number_of_jump_detected = 0
     for index, trace in enumerate(traces):
         number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, index, whole_frame_range, show_plots=True, silent=silent, debug=debug)
-    print(colored(f"We have found and fixed {number_of_jump_detected} jumps. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    print(colored(f"We have found and fixed {number_of_jump_detected} jumps. "
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     # if show_plots:
     #     scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
     # Storing the number of jumps detected
@@ -259,6 +260,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         print(colored(f"After trimming overlapping redundant traces and putting gaping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
             print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range} and length {trace.frame_range_len}")
+        print()
 
     ## ALL TRACES SHOW
     if show_plots:
@@ -312,6 +314,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
         for index, trace in enumerate(traces):
             print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range} and length {trace.frame_range_len}")
+        print()
 
     # set_show_plots(True)
     # scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
@@ -352,7 +355,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     ## VISUALISATIONS
     if show_plots:
         track_reappearance(traces, show=True)
-        scatter_detection(removed_traces + traces, whole_frame_range, subtitle="Final.")
+        scatter_detection(traces, whole_frame_range, subtitle="Final.")
         show_overlaps(traces, whole_frame_range, subtitle="Final.", silent=silent, debug=debug)
         show_gaps(traces, whole_frame_range, subtitle="Final.", silent=silent, debug=debug)
         show_plot_locations(traces, whole_frame_range, subtitle="Final.")
@@ -360,7 +363,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     ## OBTAIN ALL FINAL TRACES
     all_final_traces = removed_full_traces
     all_final_traces.extend(traces)
-    print(colored(f"There are {len(removed_traces) + len(traces)} traces left.", "green"))
+    print(colored(f"ANALYSIS FINISHED. There are {len(all_final_traces)} traces left.", "green"))
 
     ## SAVE RESULTS
     is_new = save_setting(counts, file_name=csv_file_path, population_size=original_population_size, silent=silent, debug=debug)

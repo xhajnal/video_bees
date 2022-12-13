@@ -62,7 +62,7 @@ def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, inp
     if number_of_swaps == 0:
         print(colored(f"There were no traces considerable of swapping. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     else:
-        print(colored(f"We swapped {number_of_swaps} pairs of traces. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+        print(colored(f"In total, we swapped {number_of_swaps} pairs of traces. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     return number_of_swaps
 
 
@@ -156,6 +156,8 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
                     if math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
                         if debug:
                             print(colored(f"trace 1 previous point {first_trace_locations[index-1]} is closer to next point of trace2 {second_trace_locations[index]} than to next point of this trace {first_trace_locations[index]}", "yellow"))
+    if not silent:
+        print(colored("We haven't found any possible swap this time.", "yellow"))
     return False
 
 
@@ -609,7 +611,8 @@ def track_reappearance(traces, show=True, debug=False):
 
     :returns: time_to_reappear (list): list of times for an agent to reappear after end of a trace
     """
-    print(colored("TRACE REAPPEARANCE", "blue"))
+    if debug:
+        print(colored("TRACE REAPPEARANCE", "blue"))
 
     # Check
     if len(traces) < 2:
@@ -688,7 +691,8 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
                             print(colored(message, "yellow"))
                     else:
                         print(message)
-    print(colored(f"Cross_trace analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    print(colored(f"Cross_trace analysis done. "
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds.", "green"))
     print()
 
 
@@ -725,9 +729,9 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
         dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=True)
         # print("dictionary", dictionary)
         if dictionary == {}:
-            print(colored("Cannot merge any trace as there is no partial overlap of two traces.", "red"))
+            print(colored("Cannot merge any trace as there is no partial overlap of two traces.", "yellow"))
             print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
-                          f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                          f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
             return
         # Flag whether to try another pair of overlapping intervals
         go_next = True
@@ -766,7 +770,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                     if debug:
                         print(f"trace {trace_index} of range {trace.frame_range}")
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
-                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                              f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
                 return
 
             # Pick the smallest index
@@ -850,8 +854,9 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                 go_next = False
 
             if not silent:
-                msg = f"{'' if to_merge else 'NOT '}MERGING OVERLAPPING TRACES {'' if to_merge else '(' + reason + ') '}"
+                msg = f"{'' if to_merge else 'NOT '}MERGING THE OVERLAPPING TRACES {'' if to_merge else '(' + reason + ') '}"
                 print(colored(msg, "yellow") if to_merge else colored(msg, "red"))
+                print()
 
             if show:
                 try:
@@ -860,7 +865,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
                     pass
 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
-                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     return traces
 
 
@@ -975,8 +980,9 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
     if show:
         show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index2, silent=silent, debug=debug)
 
-    if not silent:
+    if debug:
         print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
-        print(colored(f"The overlap of the traces is {end_index2 - start_index2} frames long and the TOTAL overlap's distance is {round(sum(distances), 3)} point wise.", "green"))
+    if not silent:
+        print(colored(f"The overlap of the traces is {end_index2 - start_index2} frames long and the TOTAL overlap's distance is {round(sum(distances), 3)} point wise.", "yellow"))
 
     return distances

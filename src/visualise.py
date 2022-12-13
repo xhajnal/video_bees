@@ -38,7 +38,7 @@ def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_mid
     :arg silent: (bool) if True minimal output is shown
     :arg debug: (bool) if True extensive output is shown
     """
-    if not silent:
+    if debug:
         print(colored("SHOW PLOT LOCATIONS", "blue"))
     start_time = time()
     for index, trace in enumerate(traces):
@@ -51,7 +51,7 @@ def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_mid
         else:
             figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show_middle_point=show_middle_point, show=True, subtitle=subtitle, silent=silent, debug=debug)
 
-    if not silent:
+    if debug:
         print(colored(f"Showing location of {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds.\n", "yellow"))
 
 
