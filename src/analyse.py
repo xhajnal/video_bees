@@ -352,7 +352,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     ## VISUALISATIONS
     if show_plots:
         track_reappearance(traces, show=True)
-        scatter_detection(traces, whole_frame_range, subtitle="Final.")
+        scatter_detection(removed_traces + traces, whole_frame_range, subtitle="Final.")
         show_overlaps(traces, whole_frame_range, subtitle="Final.", silent=silent, debug=debug)
         show_gaps(traces, whole_frame_range, subtitle="Final.", silent=silent, debug=debug)
         show_plot_locations(traces, whole_frame_range, subtitle="Final.")
@@ -360,6 +360,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     ## OBTAIN ALL FINAL TRACES
     all_final_traces = removed_full_traces
     all_final_traces.extend(traces)
+    print(colored(f"There are {len(removed_traces) + len(traces)} traces left.", "green"))
 
     ## SAVE RESULTS
     is_new = save_setting(counts, file_name=csv_file_path, population_size=original_population_size, silent=silent, debug=debug)

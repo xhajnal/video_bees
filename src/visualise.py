@@ -208,7 +208,7 @@ def show_overlaps(traces, whole_frame_range, from_to_frame=False, skip_whole_in=
     ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
     plt.xlabel('Frame number')
     plt.ylabel('Overlap id')
-    title = f'Scatter plot of overlaps of two traces.'
+    title = f'Scatter plot of OVERLAPS of two traces.'
     if subtitle:
         assert isinstance(subtitle, str)
         plt.title(title + "\n" + subtitle)
@@ -308,7 +308,7 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     ax1.set_xlim(whole_frame_range)
     plt.xlabel('Frame number')
     plt.ylabel('Gap id')
-    title = f'Scatter plot of {"all " if show_all_gaps else ""}gaps of two traces.'
+    title = f'Scatter plot of {"all " if show_all_gaps else ""}GAPS of two traces.'
     if subtitle:
         assert isinstance(subtitle, str)
         plt.title(title + "\n" + subtitle)
