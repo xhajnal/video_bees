@@ -26,7 +26,7 @@ def play_opencv(input_video, frame_range, speed, points):
     cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
-    print("Press q (while video window) to stop the video, press r to restart.")
+    print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
 
     fps = video.get(5)
 
@@ -81,6 +81,12 @@ def play_opencv(input_video, frame_range, speed, points):
                 video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
             else:
                 video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+        if key == ord('a'):
+            video.set(cv2.CAP_PROP_POS_FRAMES, max(frame_number - 100, frame_range[0]))
+
+        if key == ord('d'):
+            video.set(cv2.CAP_PROP_POS_FRAMES, min(frame_number + 100, frame_range[1]))
 
         if points:
             if key == ord("s"):
@@ -147,7 +153,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
             assert isinstance(video_params, tuple) or isinstance(video_params, list)
         except AssertionError:
             video_params = (0, (0, 0))
-        # s
+        # show traces over
         p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], True,))
     p.start()
     if wait:
@@ -198,6 +204,8 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     if video.isOpened() is False:
         print("Error opening the video file")
     else:
+        print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
+
         fps = video.get(5)
         print('Frames per second : ', fps, 'FPS')
 
@@ -297,6 +305,21 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                         video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + frame_range[0])
                     else:
                         video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    locations_of_traces = []
+                    for trace in traces:
+                        locations_of_traces.append([])
+
+                if key == ord('a'):
+                    video.set(cv2.CAP_PROP_POS_FRAMES, max(frame_number - 100, trim_offset + frame_range[0]))
+                    locations_of_traces = []
+                    for trace in traces:
+                        locations_of_traces.append([])
+
+                if key == ord('d'):
+                    video.set(cv2.CAP_PROP_POS_FRAMES, min(frame_number + 100, trim_offset + frame_range[1]))
+                    locations_of_traces = []
+                    for trace in traces:
+                        locations_of_traces.append([])
 
                 if key == ord('+'):
                     speed = 1.1 * speed
