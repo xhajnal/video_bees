@@ -62,7 +62,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
 
         # Flag whether to try another pair of overlapping intervals
         go_next = True
-        while go_next:
+        while go_next and len(traces) >= 3:
             # Find overlapping pairs
             if guided:
                 dictionary = dictionary_of_m_overlaps_of_n_intervals(3, list(map(lambda x: x.frame_range, traces)), skip_whole_in=True)
@@ -193,7 +193,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                                           subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}), {pick_key2[1]}({trace2.trace_id}), {pick_key2[2]}({trace3.trace_id}).")
                     ## show position
                     # show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len*0.1), max_overlap_range + round(both_overlaps_overlap_range_len*0.1)],
-                    show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range, max_overlap_range],
+                    show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range-15, max_overlap_range+15],
                                         subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue,{pick_key2[1]}({trace2.trace_id}) orange,{pick_key2[2]}({trace3.trace_id}) green.",
                                         silent=True)
                     # check that there are traces in the frame range
@@ -213,7 +213,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 ## show frames of the video
                 if input_video:
                     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-                    show_video(input_video, [trace1, trace2, trace3], frame_range=[min_overlap_range, max_overlap_range], video_speed=0.01, wait=True, video_params=video_params)
+                    show_video(input_video, [trace1, trace2, trace3], frame_range=[min_overlap_range-15, max_overlap_range+15], video_speed=0.01, wait=True, video_params=video_params)
 
                 # Ask whether we should merge any of these traces
                 to_merge_by_user = input("Are we gonna merge any of the shown traces? (yes or no):")

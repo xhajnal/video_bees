@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
 from config import *
-from misc import has_overlap, take, is_in
+from misc import has_overlap, take
 
 
 class Trace:
@@ -241,7 +241,7 @@ class Trace:
 
         # set boundaries for from_to_frame
         if from_to_frame is not False:
-            assert isinstance(from_to_frame, list)
+            assert isinstance(from_to_frame, list) or isinstance(from_to_frame, tuple)
             assert len(from_to_frame) == 2
             if not has_overlap(from_to_frame, self.frame_range):
                 return
@@ -417,7 +417,7 @@ class Trace:
         xs = list(map(lambda x: x[0], self.locations[from_index:to_index]))
         ys = list(map(lambda x: x[1], self.locations[from_index:to_index]))
         # ax3.scatter(xs, ys, alpha=0.5)
-        plot3 = ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
+        plot3 = ax3.plot(xs, ys, 'x-', markersize=0.1, alpha=0.7, linewidth=0.4*rcParams['lines.linewidth'])
         if show_middle_point:
             ax3.scatter([x_middle_pos], [y_middle_pos], c="magenta", s=3)
 
@@ -425,6 +425,7 @@ class Trace:
         ax3.text(xs[-1], ys[-1], "B", fontsize=6, color=plot3[0].get_color())
         ax3.scatter(list(map(lambda x: x[0], overlap_locations))[from_overlap_index: to_overlap_index], list(map(lambda x: x[1], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
         ax3.scatter(list(map(lambda x: x[0], gap_locations))[from_gap_index: to_gap_index], list(map(lambda x: x[1], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
+        # ax3.plot(list(map(lambda x: x[0], self.locations)), list(map(lambda x: x[1], self.locations)), 'x-', markersize=0.1, alpha=0.3, linewidth=0.35*rcParams['lines.linewidth'])
 
         max_position = max([max(xs), max(xs)])
 

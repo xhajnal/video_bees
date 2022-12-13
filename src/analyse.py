@@ -139,8 +139,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # print(scraped_traces[trace])
         traces.append(Trace(scraped_traces[trace], index))
 
-
-
     # TODO delete this
     # full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug)
     # print(len(traces))
@@ -165,7 +163,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
     # show_video(input_video=video_file, frame_range=[8000, 8500], wait=False, video_params=[0, [0, 0]])
     # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
-
 
     ### ANALYSIS
     if show_plots:
@@ -284,7 +281,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ## MERGE OVERLAPPING PAIRS
         before_number_of_traces = len(traces)
         after_number_of_traces = -9
-        while before_number_of_traces != after_number_of_traces:
+        while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
             before_number_of_traces = len(traces)
             merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_all_plots)
             after_number_of_traces = len(traces)
@@ -292,7 +289,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ## MERGE OVERLAPPING TRIPLETS, video-guided trace deleting
         before_number_of_traces = len(traces)
         after_number_of_traces = -9
-        while before_number_of_traces != after_number_of_traces:
+        while before_number_of_traces != after_number_of_traces and len(traces) >= 3:
             before_number_of_traces = len(traces)
             merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_size, guided=guided,
                                                  input_video=video_file, silent=silent, debug=debug, show=show_plots,

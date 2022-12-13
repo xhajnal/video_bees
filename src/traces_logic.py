@@ -2,6 +2,7 @@ import copy
 import math
 import numpy as np
 from termcolor import colored
+from ast import literal_eval as make_tuple
 
 from config import get_max_trace_gap_to_interpolate_distance
 from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap
@@ -373,16 +374,20 @@ def ask_to_delete_a_trace(traces, input_video, video_params=False):
     traces_indices_to_be_removed = []
     to_delete_by_user = input("Are we gonna delete any of the shown traces? (yes or no):")
     if "y" in to_delete_by_user.lower():
-        trace_to_delete = input("Write an index of one of the traces to be deleted (number before the bracket):")
+        traces_to_delete = input("Write an index of one of the traces to be deleted (number before the bracket):")
         try:
-            trace_to_delete = int(trace_to_delete)
+            traces_to_delete = [int(traces_to_delete)]
         except ValueError:
-            print(colored("Not selected any trace to be deleted. Skipping this triplet.", "red"))
+            try:
+                traces_to_delete = make_tuple(traces_to_delete)
+            except ValueError:
+                print(colored("Not selected any trace to be deleted. Skipping this triplet.", "red"))
 
-        to_show_the_trace = input(f"Show the whole trace {trace_to_delete} in video before deleting? (yes or no):")
+        to_show_the_trace = input(f"Show the whole trace(s) {traces_to_delete} in video before deleting? (yes or no):")
         if "y" in to_show_the_trace.lower():
             # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-            show_video(input_video, frame_range=traces[trace_to_delete].frame_range, video_speed=0.02, wait=True, video_params=video_params)
+            for trace_index in traces_to_delete:
+                show_video(input_video, traces=[traces[trace_index]], frame_range=traces[trace_index].frame_range, video_speed=0.02, wait=True, video_params=video_params)
             to_delete_the_trace = input(f"Delete this trace? (yes or no):")
             if "y" in to_delete_the_trace.lower():
                 to_delete = True
@@ -392,6 +397,6 @@ def ask_to_delete_a_trace(traces, input_video, video_params=False):
             to_delete = True
 
         if to_delete:
-            traces_indices_to_be_removed.append(trace_to_delete)
+            traces_indices_to_be_removed.extend(traces_to_delete)
 
     return traces_indices_to_be_removed
