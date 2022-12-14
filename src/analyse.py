@@ -1,5 +1,6 @@
 import json
 import os.path
+import pathlib
 from os.path import exists
 from pathlib import Path
 from time import time
@@ -119,7 +120,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # PARSE CSV & CONFIG
     ####################
     try:
-        with open(csv_file_path, newline='') as csv_file:
+        ## call the file as this is the file calling it
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), csv_file_path), newline='') as csv_file:
             #################
             # Check whether this is new setting
             #################

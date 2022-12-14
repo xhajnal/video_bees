@@ -135,7 +135,7 @@ dmypy.json
 data
 output
 test/test-sorted.csv
-/src/help/
+/src/spam/
 test/help_video.mp4
 auxiliary/point.txt
 src/video2.py

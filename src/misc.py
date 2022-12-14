@@ -561,7 +561,7 @@ def get_colors(number_of_colors):
     # elif number_of_colors == 3:
     #     colors = [[0, 0, 255], [255, 102, 0], [0, 255, 0]]
     else:
-        colors = distinctipy.get_colors(len(number_of_colors))
+        colors = distinctipy.get_colors(number_of_colors)
         colors = list(map(lambda x: [round(x[0] * 255), round(x[1] * 255), round(x[2] * 255)], colors))
 
     return colors
