@@ -73,9 +73,9 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
 
         to_merge_by_user = input("Merge these traces? (yes or no):")
         if "n" in to_merge_by_user.lower():
-            spam = ask_to_delete_a_trace(traces, input_video, video_params=video_params)
+            spam = ask_to_delete_a_trace(traces, input_video, key, video_params=video_params)
             if spam:
-                traces_indices_to_be_removed.append(spam[0])
+                traces_indices_to_be_removed.extend(spam)
                 last_edited_index = spam[0]
 
         elif "y" in to_merge_by_user.lower():
@@ -87,7 +87,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             removed_traces.append(traces[key[1]])
             last_edited_index = key[1]
 
-    # Actually delete the given traces
+    # Actually delete the given traces now
     delete_indices(traces_indices_to_be_removed, traces, debug=False)
 
     return traces, removed_traces

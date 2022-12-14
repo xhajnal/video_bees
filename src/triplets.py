@@ -5,7 +5,7 @@ from operator import countOf
 
 from config import *
 from cross_traces import compare_two_traces
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, flatten2
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, flatten2, margin_range
 from trace import Trace
 
 from traces_logic import merge_two_overlapping_traces, ask_to_delete_a_trace
@@ -174,35 +174,37 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 print(colored(f"We have found a triplet of overlapping traces {pick_key2[0]}({trace1.trace_id}),{pick_key2[1]}({trace2.trace_id}),{pick_key2[2]}({trace3.trace_id}). Please select a pair to merge.", "blue"))
 
                 ## Compute the ranges
-                min_range = min([trace1.frame_range[0], trace2.frame_range[0], trace3.frame_range[0]])
-                max_range = max([trace1.frame_range[1], trace2.frame_range[1], trace3.frame_range[1]])
+                min_trace_range = min([trace1.frame_range[0], trace2.frame_range[0], trace3.frame_range[0]])
+                max_trace_range = max([trace1.frame_range[1], trace2.frame_range[1], trace3.frame_range[1]])
                 min_overlap_range = min(get_overlap(trace1.frame_range, trace2.frame_range)[0], get_overlap(trace2.frame_range, trace3.frame_range)[0])
                 max_overlap_range = max(get_overlap(trace1.frame_range, trace2.frame_range)[1], get_overlap(trace2.frame_range, trace3.frame_range)[1])
-                both_overlaps_overlap_range_len = max_overlap_range - min_overlap_range + 1
+                at_least_one_overlap_range_len = max_overlap_range - min_overlap_range + 1
+                double_overlap_range = dictionary[pick_key2]
 
                 print(f"Range of at least one overlap: [{min_overlap_range}, {max_overlap_range}]")
+                print(f"Range of double overlap: {double_overlap_range}")
 
                 ## Show the plots and the video
                 if show:
                     ## TODO maybe comment the following plot
                     # scatter_detection(traces, whole_frame_range)
-                    scatter_detection([trace1, trace2, trace3], [min_range - 200, max_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
-                    # check that there are traces in frame range [min_range - 200, max_range + 200]
-                    if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_range - 200 for f in range(pick_key2[0]))) or (pick_key2[2] < len(traces)-1 and traces[pick_key2[2]+1].frame_range[0] < max_range + 200):
-                        scatter_detection(traces, [min_range - 200, max_range + 200], from_to_frame=[min_range, max_range], show_trace_index=False,
+                    scatter_detection([trace1, trace2, trace3], [min_trace_range - 200, max_trace_range + 200], show_trace_index=False, subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.")
+                    # check that there are traces in frame range [min_trace_range - 200, max_trace_range + 200]
+                    if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_trace_range - 200 for f in range(pick_key2[0]))) or (pick_key2[2] < len(traces)-1 and traces[pick_key2[2]+1].frame_range[0] < max_trace_range + 200):
+                        scatter_detection(traces, [min_trace_range - 200, max_trace_range + 200], from_to_frame=[min_trace_range, max_trace_range], show_trace_index=False,
                                           subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}), {pick_key2[1]}({trace2.trace_id}), {pick_key2[2]}({trace3.trace_id}).")
                     ## show position
-                    # show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len*0.1), max_overlap_range + round(both_overlaps_overlap_range_len*0.1)],
+                    # show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range - round(at_least_one_overlap_range_len*0.1), max_overlap_range + round(at_least_one_overlap_range_len*0.1)],
                     show_plot_locations([trace1, trace2, trace3], [0, 0], from_to_frame=[min_overlap_range-15, max_overlap_range+15],
                                         subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue,{pick_key2[1]}({trace2.trace_id}) orange,{pick_key2[2]}({trace3.trace_id}) green.",
                                         silent=True)
                     # check that there are traces in the frame range
                     ## TODO maybe comment the following plot
                     if not input_video and show_all_plots:
-                        if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_overlap_range - round(both_overlaps_overlap_range_len * 0.1) for f in range(pick_key2[0]))) or \
-                                (pick_key2[2] < len(traces) - 1 and traces[pick_key2[2] + 1].frame_range[0] < max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)):
-                            show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(both_overlaps_overlap_range_len * 0.1),
-                                                                               max_overlap_range + round(both_overlaps_overlap_range_len * 0.1)],
+                        if (pick_key2[0] > 0 and any(traces[f].frame_range[1] > min_overlap_range - round(at_least_one_overlap_range_len * 0.1) for f in range(pick_key2[0]))) or \
+                                (pick_key2[2] < len(traces) - 1 and traces[pick_key2[2] + 1].frame_range[0] < max_overlap_range + round(at_least_one_overlap_range_len * 0.1)):
+                            show_plot_locations(traces, [0, 0], from_to_frame=[min_overlap_range - round(at_least_one_overlap_range_len * 0.1),
+                                                                               max_overlap_range + round(at_least_one_overlap_range_len * 0.1)],
                                                 subtitle=f"Triplet {pick_key2[0]}({trace1.trace_id}) blue, {pick_key2[1]}({trace2.trace_id}) orange, {pick_key2[2]}({trace3.trace_id}) green.",
                                                 silent=True)
                     ## show the overlap
@@ -213,7 +215,10 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 ## show frames of the video
                 if input_video:
                     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-                    show_video(input_video, [trace1, trace2, trace3], frame_range=[min_overlap_range-15, max_overlap_range+15], video_speed=0.01, wait=True, video_params=video_params)
+                    show_video(input_video, [trace1, trace2, trace3], frame_range=margin_range(double_overlap_range, 15), video_speed=0.01, wait=True, video_params=video_params)
+                    to_show_longer_video = input("Do you want to see longer video? (yes or no):")
+                    if "y" in to_show_longer_video.lower():
+                        show_video(input_video, [trace1, trace2, trace3], frame_range=[min_overlap_range-15, max_overlap_range+15], video_speed=0.01, wait=True, video_params=video_params)
 
                 # Ask whether we should merge any of these traces
                 to_merge_by_user = input("Are we gonna merge any of the shown traces? (yes or no):")
@@ -253,16 +258,13 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     print(colored("Not merging this triplet.", "red"))
 
                 # Ask to delete a trace
-                spam = ask_to_delete_a_trace(traces, input_video, video_params=video_params)
+                spam = ask_to_delete_a_trace(traces, input_video, pick_key2, video_params=video_params)
                 if spam:
-                    ## this is deprecated as we recalculate the dictionary in each cycle
-                    # del dictionary[pick_key2]
-
-                    for item in spam:
-                        traces_indices_to_be_removed.append(item)
+                    # add the traces to be deleted
+                    traces_indices_to_be_removed.extend(spam)
 
                     if not user_merging:
-                        # Actually delete the given traces
+                        # Actually delete the given traces now
                         for index in traces_indices_to_be_removed:
                             removed_traces.append(traces[index])
                         delete_indices(traces_indices_to_be_removed, traces, debug=False)

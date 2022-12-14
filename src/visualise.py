@@ -116,7 +116,7 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
 
     plt.xlabel('Frame number')
     plt.ylabel('Agent id')
-    title = f'Scatter plot of detections of individual agents over time.'
+    title = f'Timeline plot of TRACES.'
     if subtitle:
         assert isinstance(subtitle, str)
         plt.title(title + "\n" + subtitle + f"{' Showing' if from_to_frame else ''} {len(traces_to_show)} traces.")

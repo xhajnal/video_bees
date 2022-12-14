@@ -364,11 +364,12 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
     return trace1, trace2
 
 
-def ask_to_delete_a_trace(traces, input_video, video_params=False):
+def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=False):
     """ Creates a user dialogue to ask whether to delete a certain trace while showing video of the trace
 
     :arg traces: (list): a list of Traces
     :arg input_video: (str or bool): if set, path to the input video
+    :arg possible_options: (list or tuple): list of option to pick from
     :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
     """
     traces_indices_to_be_removed = []
@@ -382,6 +383,11 @@ def ask_to_delete_a_trace(traces, input_video, video_params=False):
                 traces_to_delete = make_tuple(traces_to_delete)
             except ValueError:
                 print(colored("Not selected any trace to be deleted. Skipping this triplet.", "red"))
+
+        for item in traces_to_delete:
+            if item not in possible_options:
+                print(colored("Choosing an option out of scope, I guess you made a typo, let's do this again.", "red"))
+                return ask_to_delete_a_trace(traces, input_video, possible_options, video_params=False)
 
         to_show_the_trace = input(f"Show the whole trace(s) {traces_to_delete} in video before deleting? (yes or no):")
         if "y" in to_show_the_trace.lower():
