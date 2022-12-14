@@ -91,14 +91,16 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
 
     # for each overlap, check frame by frame distance, if below 100 look at the movement vectors
     for overlapping_pair_of_traces in dictionary.keys():
-        # Get trace indices
+        # Get traces info
         trace1_index = overlapping_pair_of_traces[0]
         trace2_index = overlapping_pair_of_traces[1]
+        trace1 = traces[trace1_index]
+        trace2 = traces[trace2_index]
 
         # get locations of the first pair
-        first_trace_locations = traces[trace1_index].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
+        first_trace_locations = trace1.get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
         # get locations of the second pair
-        second_trace_locations = traces[trace2_index].get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
+        second_trace_locations = trace2.get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
 
         # maybe use in future to store distances of points of the two traces
         # distances = []
@@ -108,7 +110,7 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
             # distances.append(dist)
             if dist < get_maximal_distance_to_check_for_trace_swapping():
                 if debug:
-                    print(f"In pair {trace1_index}({traces[trace1_index].trace_id}), {trace2_index}({traces[trace2_index].trace_id}), on frame {dictionary[overlapping_pair_of_traces][0]+index}, the distance is {dist}")
+                    print(f"In pair {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}), on frame {dictionary[overlapping_pair_of_traces][0]+index}, the distance is {dist}")
                 vector1 = to_vect(first_trace_locations[index-2], first_trace_locations[index-1])
                 vector2 = to_vect(second_trace_locations[index-2], second_trace_locations[index-1])
                 vector1_next = to_vect(first_trace_locations[index-1], first_trace_locations[index])
@@ -116,7 +118,7 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
                 if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) \
                         and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next) \
                         and math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
-                    print(colored(f"It seems the traces {trace1_index}({traces[trace1_index].trace_id}), {trace2_index}({traces[trace2_index].trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}","yellow"))
+                    print(colored(f"It seems the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}","yellow"))
                     print(f"first_trace_location {first_trace_locations[index]}")
                     print(f"second_trace_location {second_trace_locations[index]}")
                     print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
@@ -128,22 +130,26 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
                     elif isinstance(automatically_swap, list) and dictionary[overlapping_pair_of_traces][0] + index in automatically_swap:
                         answer = "6"
                     else:
-                        scatter_detection([traces[trace1_index], traces[trace2_index]],
-                                          get_video_whole_frame_range([traces[trace1_index], traces[trace2_index]]),
+                        scatter_detection([trace1, trace2],
+                                          get_video_whole_frame_range([trace1, trace2]),
                                           subtitle="Traces to be swapped.")
-                        show_plot_locations([traces[trace1_index], traces[trace2_index]], [0, 0],
+                        show_plot_locations([trace1, trace2], [0, 0],
                                             from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30,
                                                            dictionary[overlapping_pair_of_traces][0] + index + 30],
                                             show_middle_point=True,
                                             subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
                         # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-                        show_video(input_video, traces=[traces[trace1_index], traces[trace2_index]], frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
+                        show_video(input_video, traces=[trace1, trace2], frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
                                    video_speed=0.1, wait=True, video_params=video_params)
+                        to_show_longer_video = input("Do you want to see longer video? (yes or no):")
+                        if "y" in to_show_longer_video.lower():
+                            show_video(input_video, traces=[trace1, trace2], frame_range=[trace1.frame_range[0]-15, trace2.frame_range[1]+15],
+                                       video_speed=0.1, wait=True, video_params=video_params)
 
                         answer = input("Is this right? (yes or no)")
                     if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
-                        print(colored(f"Swapping the traces {trace1_index}({traces[trace1_index].trace_id}), {trace2_index}({traces[trace2_index].trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
-                        a, b = swap_two_overlapping_traces(traces[trace1_index], traces[trace2_index], dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
+                        print(colored(f"Swapping the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
+                        a, b = swap_two_overlapping_traces(trace1, trace2, dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
                         traces[trace1_index], traces[trace2_index] = a, b
                         return True
                 else:
