@@ -202,7 +202,8 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     if video.isOpened() is False:
         print("Error opening the video file")
     else:
-        print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
+        if show:
+            print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
 
         fps = video.get(5)
         print('Frames per second : ', fps, 'FPS')
@@ -349,7 +350,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 def make_help_video():
     """ Annotates given video with the tracked position of individual bees.
     """
-    print(colored("ANNOTATES THE VIDEO WITH NEW TRACES", "blue"))
+    print(colored("MAKE HELP VIDEO", "blue"))
 
     # Create a video capture object, in this case we are reading the video from a file
     vid_capture = cv2.VideoCapture(r"../test/help_input.mp4")

@@ -77,6 +77,8 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     else:
         traces_to_show = traces
 
+    vertical_margin = get_vertical_margin(len(traces))
+
     for index, trace in enumerate(traces_to_show):
         assert isinstance(trace, Trace)
 
@@ -91,15 +93,12 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
                 msg = f"{index}"
             else:
                 msg = f"({trace.trace_id})"
-            if len(traces_to_show) > 5:
-                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.5, msg, fontsize=fontsize)
-            else:
-                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces_to_show)), trace.trace_id, fontsize=fontsize)
-                ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3 / (6 - len(traces_to_show)), msg, fontsize=fontsize)
+
+            ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - vertical_margin, msg, fontsize=fontsize)
+
         if show_trace_range:
             if trace.frame_range_len < 5000:
-                ax1.text(trace.frame_range[1] + 0.035*(whole_frame_range[1] - whole_frame_range[0]), y[0], f"{nice_range_print(trace.frame_range)} [{trace.frame_range_len}]", fontsize=fontsize)
+                ax1.text(trace.frame_range[1] + 0.035*(whole_frame_range[1] - whole_frame_range[0]), y[0] + vertical_margin/2, f"{nice_range_print(trace.frame_range)} [{trace.frame_range_len}]", fontsize=fontsize)
             else:
                 ax1.text(trace.frame_range[0], y[0], trace.frame_range[0], fontsize=fontsize)
                 ax1.text(trace.frame_range[1], y[0], f"{trace.frame_range[1]} [{trace.frame_range_len}]", fontsize=fontsize)
@@ -162,6 +161,8 @@ def show_overlaps(traces, whole_frame_range, from_to_frame=False, skip_whole_in=
             return
         whole_overlap_range = [min(map(lambda a: a[0], dictionary.values())), max(map(lambda a: a[1], dictionary.values()))]
 
+        vertical_margin = get_vertical_margin(len(overlaps))
+
         if debug:
             print("dictionary", dictionary)
             print("overlaps", overlaps)
@@ -182,15 +183,12 @@ def show_overlaps(traces, whole_frame_range, from_to_frame=False, skip_whole_in=
                 else:
                     msg = f"({traces[overlap[0]].trace_id}), ({traces[overlap[1]].trace_id})"
 
-                if len(traces) > 5:
-                    # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
-                    ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - 0.5, msg, fontsize=fontsize)
-                else:
-                    # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
-                    ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), msg, fontsize=fontsize)
+                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
+                ax1.text((overlap_range[0] + overlap_range[1]) / 2, y[0] - vertical_margin, msg, fontsize=fontsize)
+
             if show_overlap_range:
                 if overlap_range_len < 5000:
-                    ax1.text(overlap_range[0] + (overlap_range[1]-overlap_range[0])/2, y[0] + 0.1, f"{nice_range_print(overlap_range)} [{overlap_range_len}]",
+                    ax1.text(overlap_range[0] + (overlap_range[1]-overlap_range[0])/2, y[0] + vertical_margin/2, f"{nice_range_print(overlap_range)} [{overlap_range_len}]",
                              fontsize=fontsize)
                 else:
                     ax1.text(overlap_range[0], y[0], overlap_range[0], fontsize=fontsize)
@@ -280,7 +278,8 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
-    fontsize = get_fontsize(len(traces))
+    fontsize = get_fontsize(len(gaps))
+    vertical_margin = get_vertical_margin(len(gaps))
 
     for index, gap in enumerate(gaps):
         gap_range_len = dict_pairs_of_gaps[gap][1] - dict_pairs_of_gaps[gap][0]
@@ -291,15 +290,12 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
         ax1.scatter(x, y, alpha=0.5)
 
         if show_gap_indices:
-            if len(traces) > 5:
-                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
-                ax1.text((gap_range[0] + gap_range[1]) / 2, y[0] - 0.5, f"{gap[0]}({traces[gap[0]].trace_id}), {gap[1]}({traces[gap[1]].trace_id})", fontsize=fontsize)
-            else:
-                # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0] - 0.3/(6-len(traces)), trace.trace_id, fontsize=fontsize)
-                ax1.text((gap_range[0] + gap_range[1]) / 2, y[0] - 0.3 / (6 - len(traces)), f"{gap[0]}({traces[gap[0]].trace_id}), {gap[1]}({traces[gap[1]].trace_id})", fontsize=fontsize)
+            # ax1.text((trace.frame_range[0] + trace.frame_range[1]) / 2, y[0]-0.5, trace.trace_id, fontsize=fontsize)
+            ax1.text((gap_range[0] + gap_range[1]) / 2, y[0] - vertical_margin, f"{gap[0]}({traces[gap[0]].trace_id}), {gap[1]}({traces[gap[1]].trace_id})", fontsize=fontsize)
+
         if show_gap_range:
             if gap_range_len < 5000:
-                ax1.text(gap_range[0] + 700, y[0], f"{nice_range_print(gap_range)} [{gap_range_len}]", fontsize=fontsize)
+                ax1.text(gap_range[0] + 700, y[0] + vertical_margin/2, f"{nice_range_print(gap_range)} [{gap_range_len}]", fontsize=fontsize)
             else:
                 ax1.text(gap_range[0], y[0], gap_range[0], fontsize=fontsize)
                 ax1.text(gap_range[1], y[0], f"{gap_range[1]} [{gap_range_len}]", fontsize=fontsize)
@@ -315,3 +311,8 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     else:
         plt.title(title)
     plt.show()
+
+
+def get_vertical_margin(count):
+    """ Returns vertical margin for the plots based on number of items in the plot."""
+    return 0.5 if count > 5 else 0.3 / (7 - count)

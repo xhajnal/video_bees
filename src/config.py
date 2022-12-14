@@ -63,7 +63,7 @@ def get_maximal_distance_to_check_for_trace_swapping():
 
 
 def get_force_merge_vicinity():
-    """ Returns range for which there should be no overlap in order to force merge overlapping traces."""
+    """ Returns range for which there should be no overlap in order to force merge traces."""
     # TODO apply this to gaping traces
     # Usage: merge_overlapping_traces
     return 500
