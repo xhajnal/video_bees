@@ -24,7 +24,11 @@ def play_opencv(input_video, frame_range, speed, points):
     cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
-    print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
+
+    if points:
+        print("Press WASD keys to move point(s) to respective direction, press q to save the alignment and close the window.")
+    else:
+        print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
 
     fps = video.get(5)
 
