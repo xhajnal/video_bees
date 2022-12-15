@@ -375,7 +375,7 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
     traces_indices_to_be_removed = []
     to_delete_by_user = input("Are we gonna delete any of the shown traces? (yes or no):")
     if "y" in to_delete_by_user.lower():
-        traces_to_delete = input("Write an index of one of the traces to be deleted (number before the bracket):")
+        traces_to_delete = input("Write an index of one or more (separate the indices by comma) of the traces to be deleted (number before the bracket):")
         try:
             traces_to_delete = [int(traces_to_delete)]
         except ValueError:
