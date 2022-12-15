@@ -162,9 +162,15 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     video_params = [crop_offset, trim_offset] if crop_offset is not None else True
     # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
 
-    # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-    # show_video(input_video=video_file, frame_range=[8000, 8500], wait=False, video_params=[0, [0, 0]])
+    ## SHOW THE VIDEO
+    # simple show
+    # show_video(input_video, traces=(), frame_range=(), wait=True, points=(), video_params=True)
+    # show slower
+    # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=True, points=(), video_params=True)
+    # show from given frame
     # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
+    # show dealigment to the original video
+    show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=video_params)
 
     ### ANALYSIS
     if show_plots:
