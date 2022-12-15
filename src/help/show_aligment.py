@@ -1,5 +1,5 @@
 import os
-
+import config
 from analyse import analyse
 
 
