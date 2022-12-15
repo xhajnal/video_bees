@@ -72,39 +72,39 @@ def play_opencv(input_video, frame_range, speed, points):
             # time.sleep(3)
             first = False
 
-        if key == ord('q'):
+        if key == ord('q') or key == ord('Q'):
             break
-        if key == ord('r'):
+        if key == ord('r') or key == ord('R'):
             if frame_range:
                 video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
             else:
                 video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-        if key == ord('a'):
+        if key == ord('a') or key == ord('A'):
             video.set(cv2.CAP_PROP_POS_FRAMES, max(frame_number - 100, frame_range[0]))
 
-        if key == ord('d'):
+        if key == ord('d') or key == ord('D'):
             video.set(cv2.CAP_PROP_POS_FRAMES, min(frame_number + 100, frame_range[1]))
 
         if points:
-            if key == ord("s"):
+            if key == ord("s") or key == ord('S'):
                 for index, point in enumerate(points):
                     points[index] = [point[0], point[1]+10]
 
                 # points = list(map(lambda x: x[1] = x[1] + 10, points))
-            if key == ord("w"):
+            if key == ord("w") or key == ord('W'):
                 for index, point in enumerate(points):
                     points[index] = [point[0], point[1]-10]
 
-            if key == ord("a"):
+            if key == ord("a") or key == ord('A'):
                 for index, point in enumerate(points):
                     points[index] = [point[0]-10, point[1]]
 
-            if key == ord("d"):
+            if key == ord("d") or key == ord('D'):
                 for index, point in enumerate(points):
                     points[index] = [point[0]+10, point[1]]
 
-            if key == ord("s") or key == ord("w") or key == ord("a") or key == ord("d"):
+            if key == ord("s") or key == ord("w") or key == ord("a") or key == ord("d") or key == ord('W') or key == ord('A') or key == ord('S') or key == ord('D'):
                 if frame_range:
                     video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0] - 1)
                 else:
@@ -297,9 +297,9 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
                 key = cv2.waitKey(round(2 * (100 / fps) / speed))
 
-                if key == ord('q'):
+                if key == ord('q') or key == ord('Q'):
                     break
-                if key == ord('r'):
+                if key == ord('r') or key == ord('R'):
                     if frame_range:
                         video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + frame_range[0])
                     else:
@@ -308,13 +308,13 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                     for trace in traces:
                         locations_of_traces.append([])
 
-                if key == ord('a'):
+                if key == ord('a') or key == ord('A'):
                     video.set(cv2.CAP_PROP_POS_FRAMES, max(frame_number - 100, trim_offset + frame_range[0]))
                     locations_of_traces = []
                     for trace in traces:
                         locations_of_traces.append([])
 
-                if key == ord('d'):
+                if key == ord('d') or key == ord('D'):
                     video.set(cv2.CAP_PROP_POS_FRAMES, min(frame_number + 100, trim_offset + frame_range[1]))
                     locations_of_traces = []
                     for trace in traces:
@@ -335,7 +335,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
             ## TODO MAYBE UNCOMMENT THIS
             # key = cv2.waitKey(1)
             #
-            # if key == ord('q'):
+            # if key == ord('q') or key == ord('Q'):
             #     break
         else:
             break
@@ -407,7 +407,7 @@ def make_help_video():
             key = cv2.waitKey(1)
 
             # press 'q' key to stop the annotation
-            if key == ord('q'):
+            if key == ord('q') or key == ord('Q'):
                 break
         else:
             break
