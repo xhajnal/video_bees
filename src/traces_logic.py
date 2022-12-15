@@ -389,7 +389,7 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
                 print(colored("Choosing an option out of scope, I guess you made a typo, let's do this again.", "red"))
                 return ask_to_delete_a_trace(traces, input_video, possible_options, video_params=False)
 
-        to_show_the_trace = input(f"Show the whole trace(s) {traces_to_delete} in video before deleting? (yes or no):")
+        to_show_the_trace = input(f"Before deleting, show the whole trace(s) {traces_to_delete} in respective video(s) (highlighted with blue color)? (yes or no):")
         if "y" in to_show_the_trace.lower():
             # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
             for trace_index in traces_to_delete:
