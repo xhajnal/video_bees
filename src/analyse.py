@@ -28,16 +28,18 @@ global debug
 global show_plots
 global show_all_plots
 global guided
+global allow_force_merge
 global rerun
 
-# USER - please set up the following 7 flags
-batch_run = False       # sets silent, not debug, not show_plots, rerun
-guided = True          # human guided version
-silent = False          # minimal print
-debug = False           # maximal print
-show_plots = True       # showing plots
-show_all_plots = False  # showing all plots - also those in the loops
-rerun = True            # will execute also files with a setting which is already in the results
+# USER - please set up the following 8 flags
+batch_run = False           # sets silent, not debug, not show_plots, rerun
+guided = True               # human guided version
+silent = False              # minimal print
+debug = False               # maximal print
+show_plots = True           # showing plots
+show_all_plots = False      # showing all plots - also those in the loops
+allow_force_merge = False    # allows force merge gaps and overlaps
+rerun = True                # will execute also files with a setting which is already in the results
 
 
 def set_show_plots(do_show_plots):
@@ -63,6 +65,11 @@ def set_debug(is_debug):
 def set_rerun(do_rerun):
     global rerun
     rerun = do_rerun
+
+
+def set_allow_force_merge(do_allow_force_merge):
+    global allow_force_merge
+    allow_force_merge = do_allow_force_merge
 
 
 def set_guided(do_guided):
@@ -257,7 +264,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
         if show_all_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After trimming redundant overlapping traces.")
-        traces = put_gaping_traces_together(traces, population_size, silent=silent, debug=debug)
+        traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge, silent=silent, debug=debug)
         if show_all_plots:
             scatter_detection(traces, whole_frame_range, subtitle="After putting gaping traces together.")
         after_number_of_traces = len(traces)
@@ -293,7 +300,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         after_number_of_traces = -9
         while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
             before_number_of_traces = len(traces)
-            merge_overlapping_traces(traces, whole_frame_range, population_size, silent=silent, debug=debug, show=show_all_plots)
+            merge_overlapping_traces(traces, whole_frame_range, population_size, allow_force_merge=allow_force_merge, silent=silent, debug=debug, show=show_all_plots)
             after_number_of_traces = len(traces)
 
         ## MERGE OVERLAPPING TRIPLETS, video-guided trace deleting

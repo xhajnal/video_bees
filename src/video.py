@@ -137,9 +137,16 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         :arg points: (tuple of points): points to be shown over the video
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
     """
+    if not input_video:
+        return
+
+    if not exists(input_video):
+        print(colored(f"Could not find the video file: {input_video} \n", "red"))
+        return
+
     vid_capture = cv2.VideoCapture(input_video)
     if vid_capture.isOpened() is False:
-        print("Error opening the video file: ", input_video)
+        print(colored(f"Error opening the video file: {input_video} \n", "red"))
         return
     # fps = vid_capture.get(5)
     vid_capture.release()

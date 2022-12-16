@@ -394,13 +394,14 @@ def trim_out_additional_agents_over_long_traces_old(traces, population_size, sil
     return traces
 
 
-def put_gaping_traces_together(traces, population_size, silent=False, debug=False):
+def put_gaping_traces_together(traces, population_size, allow_force_merge=True, silent=False, debug=False):
     """ Puts gaping traces together iff all the agents but one is being tracked.
 
-        :arg traces (list) list of traces
-        :arg population_size (int) expected number of agents
-        :arg silent: (bool): if True minimal output is shown
-        :arg debug: (bool): if True extensive output is shown
+        :arg traces: (list): list of traces
+        :arg population_size: (int): expected number of agents
+        :arg allow_force_merge: (bool): iff True force merge is allow
+        :arg silent: (bool): iff True minimal output is shown
+        :arg debug: (bool): iff True extensive output is shown
         :returns: traces: (list): list of concatenated Traces
     """
     print(colored("PUT GAPING TRACES TOGETHER", "blue"))
@@ -529,16 +530,19 @@ def put_gaping_traces_together(traces, population_size, silent=False, debug=Fals
 
                 # Check for force_merge
                 gap_range = [trace1.frame_range[1], trace2.frame_range[0]]
-                force_merge = True
-                for trace in traces:
-                    if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
-                        continue
-                    if has_overlap(gap_range, [trace.frame_range[0] - get_force_merge_vicinity(), trace.frame_range[1] + get_force_merge_vicinity()]):
-                        force_merge = False
-                        break
-                if force_merge and not silent:
-                    # TODO switch colour to yellow
-                    print(colored("USING FORCED GAP MERGE", "magenta"))
+                if allow_force_merge:
+                    force_merge = True
+                    for trace in traces:
+                        if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
+                            continue
+                        if has_overlap(gap_range, [trace.frame_range[0] - get_force_merge_vicinity(), trace.frame_range[1] + get_force_merge_vicinity()]):
+                            force_merge = False
+                            break
+                    if force_merge and not silent:
+                        # TODO switch colour to yellow
+                        print(colored("USING FORCED GAP MERGE", "magenta"))
+                else:
+                    force_merge = False
 
                 if not force_merge:
                     # the gap is wider than max_trace_gap
@@ -702,12 +706,13 @@ def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
     print()
 
 
-def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=False, debug=False, show=False):
+def merge_overlapping_traces(traces, whole_frame_range, population_size, allow_force_merge=True, silent=False, debug=False, show=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg population_size (int) expected number of agents
+        :arg allow_force_merge: (bool): iff True force merge is allow
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
@@ -820,20 +825,23 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, silent=
             # Get frame_range
             picked_frame_range = dictionary[pick_key2]
 
-            # check whether there is overlap of overlaps
-            there_is_overlap = False
-            for key in dictionary.keys():
-                if key == pick_key2:
-                    continue
-                searched_overlap = dictionary[key]
-                if has_overlap(picked_frame_range, [searched_overlap[0] - get_force_merge_vicinity(), searched_overlap[1] + get_force_merge_vicinity()]):
-                    there_is_overlap = True
-                    break
-            if not there_is_overlap:
-                if not silent:
-                    # TODO switch colour to yellow
-                    print(colored("USING FORCED OVERLAP MERGE", "magenta"))
-                force_merge = True
+            if allow_force_merge:
+                # check whether there is overlap of overlaps
+                there_is_overlap = False
+                for key in dictionary.keys():
+                    if key == pick_key2:
+                        continue
+                    searched_overlap = dictionary[key]
+                    if has_overlap(picked_frame_range, [searched_overlap[0] - get_force_merge_vicinity(), searched_overlap[1] + get_force_merge_vicinity()]):
+                        there_is_overlap = True
+                        break
+                if not there_is_overlap:
+                    if not silent:
+                        # TODO switch colour to yellow
+                        print(colored("USING FORCED OVERLAP MERGE", "magenta"))
+                    force_merge = True
+            else:
+                force_merge = False
 
             #  Save the id of the merged trace before it is removed
             trace2_id = traces[pick_key2[1]].trace_id
