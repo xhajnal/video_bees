@@ -381,7 +381,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     print(colored(f"ANALYSIS FINISHED. There are {len(all_final_traces)} traces left.", "green"))
 
     ## SAVE RESULTS
-    is_new = save_setting(counts, file_name=csv_file_path, population_size=original_population_size, silent=silent, debug=debug)
+    is_new = save_setting(counts, file_name=csv_file_path, population_size=original_population_size, is_guided=guided,
+                          is_force_merge_allowed=allow_force_merge, silent=silent, debug=debug)
     if is_new:
         convert_results_from_json_to_csv(silent=silent, debug=debug)
         # save_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug)

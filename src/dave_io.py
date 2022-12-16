@@ -109,7 +109,7 @@ def load_setting(file_name=None, time_stamp=None):
     return results
 
 
-def save_setting(counts, file_name, population_size, silent=False, debug=False):
+def save_setting(counts, file_name, population_size, is_guided, is_force_merge_allowed, silent=False, debug=False):
     """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
      file_name -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
 
@@ -119,6 +119,8 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
     :arg counts: (list of int): counts of traces after each analysis part
     :arg file_name: (string): name of the file loaded
     :arg population_size: (int): number of agents tracked
+    :arg is_guided: (bool): whether guided flag was on
+    :arg is_force_merge_allowed: (bool): whether allow_force_merge was on
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns is_new: (bool): flag whether this result is new
@@ -152,7 +154,9 @@ def save_setting(counts, file_name, population_size, silent=False, debug=False):
 
     # PARSE NEW ENTRY
     now = str(datetime.now())
-    new_entry = {"distance_from_calculated_arena": get_distance_from_calculated_arena(),
+    new_entry = {"is_guided": is_guided,
+                 "force_merge_allowed": is_force_merge_allowed,
+                 "distance_from_calculated_arena": get_distance_from_calculated_arena(),
                  "min_trace_len": get_min_trace_len(),
                  "max_trace_gap": get_max_trace_gap(),
                  "min_trace_length": get_min_trace_length(),
@@ -224,9 +228,10 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
             # write header
             ## TODO parse the population size
             file.write(
-                f"track_file; timestamp of the run; distance_from_calculated_arena; max_trace_gap; min_trace_length; "
-                f"bee_max_step_len; bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
-                f"max_step_distance_to_merge_overlapping_traces; force_merge_vicinity; screen_size; loaded traces; inside arena; zero length; "
+                f"track_file; timestamp of the run; was_guided; was_force_merge_allowed; distance_from_calculated_arena; "
+                f"max_trace_gap; min_trace_length; bee_max_step_len; bee_max_step_len_per_frame; "
+                f"max_trace_gap_to_interpolate_distance; max_step_distance_to_merge_overlapping_traces; "
+                f"force_merge_vicinity; screen_size; loaded traces; inside arena; zero length; "
                 f"jumps forth and back fixed; traces swapped; after first gaps and redundant; "
                 f"after merging overlapping traces; population size \n")
             assert isinstance(results, dict)
@@ -239,6 +244,17 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                         print("timestamp", timestamp)
                     assert isinstance(results[track_file][timestamp], dict)
                     record = results[track_file][timestamp]
+                    try:
+                        guided = record['is_guided']
+                        print("")
+                    except KeyError as err:
+                        guided = "Unknown"
+
+                    try:
+                        force_merge_allowed = record['force_merge_allowed']
+                    except KeyError as err:
+                        force_merge_allowed = "Unknown"
+
                     try:
                         population_size = record['population_size']
                     except KeyError as err:
@@ -264,7 +280,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
                     except KeyError as err:
                         force_merge_vicinity = ""
 
-                    file.write(f"{track_file}; {timestamp}; {record['distance_from_calculated_arena']}; "
+                    file.write(f"{track_file}; {timestamp}; {guided}; {force_merge_allowed}; {record['distance_from_calculated_arena']}; "
                                f"{record['max_trace_gap']}; {min_trace_len}; {record['min_trace_length']}; {record['bee_max_step_len']}; "
                                f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
                                f"{record['max_step_distance_to_merge_overlapping_traces']}; {force_merge_vicinity}; "
