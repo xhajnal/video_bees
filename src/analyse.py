@@ -166,7 +166,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # VECT - to move the locations according the cropping the video
     # trace_offset - number of first frames of the video to skip
     crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
-    video_params = [crop_offset, trim_offset] if crop_offset is not None else True
+    video_params = [trim_offset, crop_offset] if crop_offset is not None else True
     # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
 
     ## SHOW THE VIDEO
@@ -176,8 +176,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=True, points=(), video_params=True)
     # show from given frame
     # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
-    # show dealigment to the original video
-    show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=video_params)
+    # show alignment to the original video
+    ## TODO uncomment to show the original video with original tracking
+    # show_video(input_video=video_file, traces=traces, frame_range=[0, 8500], wait=True, video_params=video_params)
 
     ### ANALYSIS
     if show_plots:
