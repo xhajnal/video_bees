@@ -11,6 +11,10 @@ from scipy import spatial
 from termcolor import colored
 
 
+def get_last_digit(number):
+    return int(str(number)[-1])
+
+
 def calculate_cosine_distance(a, b):
     ## TODO have look on the warning
     ## scipy\spatial\distance.py:620: RuntimeWarning: invalid value encountered in double_scalars
@@ -551,18 +555,22 @@ def convert_frame_number_back(frame, csv_file_path):
 
 
 def get_colors(number_of_colors):
-    """ Returns a list of colors."""
+    """ Returns a list of colors up to 10 colors."""
+
+    colors = list(map(hex_to_rgb, ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']))
+
     if number_of_colors <= 10:
-        colors = list(map(hex_to_rgb, ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'][:number_of_colors]))
+        colors = colors[:number_of_colors]
     # if number_of_colors == 1:
     #     colors = [[0, 0, 255]]
     # elif number_of_colors == 2:
     #     colors = [[0, 0, 255], [255, 102, 0]]
     # elif number_of_colors == 3:
     #     colors = [[0, 0, 255], [255, 102, 0], [0, 255, 0]]
-    else:
-        colors = distinctipy.get_colors(number_of_colors)
-        colors = list(map(lambda x: [round(x[0] * 255), round(x[1] * 255), round(x[2] * 255)], colors))
+    # else:
+        # VERY VERY SLOW
+        # colors = distinctipy.get_colors(number_of_colors)
+        # colors = list(map(lambda x: [round(x[0] * 255), round(x[1] * 255), round(x[2] * 255)], colors))
 
     return colors
 

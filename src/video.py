@@ -6,7 +6,7 @@ from os.path import exists
 import cv2
 from termcolor import colored
 
-from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr
+from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit
 from trace import Trace
 
 
@@ -61,7 +61,7 @@ def play_opencv(input_video, frame_range, speed, points):
 
             for index, point in enumerate(points):
                 point = list(map(round, point))
-                cv2.circle(frame, point, 4, color=colors[index], thickness=-1, lineType=cv2.LINE_AA)
+                cv2.circle(frame, point, 4, color=colors[get_last_digit(index)], thickness=-1, lineType=cv2.LINE_AA)
 
         # Display each frame
         if frame_range:
@@ -234,6 +234,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
     ## INITIALISE ANNOTATION
     locations_of_traces = []
+    ## TODO fix this as it is SUPER slow for big number of traces
     colors = get_colors(len(traces))
     print("traces colours (R,G,B):", colors)
     colors = list(map(rgb_to_bgr, colors))
@@ -279,11 +280,11 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                 # Round the position to whole pixels
                 pointA = list(map(lambda x: round(x), to_vect(crop_offset, trace.locations[location_index])))
 
-                # print(trace_index, trace.trace_id, colors[trace_index], pointA)
+                # print(trace_index, trace.trace_id, colors[get_last_digit(trace_index)], pointA)
 
                 # cv2.line(frame, pointA, pointB, (255, 255, 0), thickness=3, lineType=cv2.LINE_AA)
                 try:
-                    cv2.circle(frame, pointA, 4, color=colors[trace_index], thickness=-1, lineType=cv2.LINE_AA)
+                    cv2.circle(frame, pointA, 4, color=colors[get_last_digit(trace_index)], thickness=-1, lineType=cv2.LINE_AA)
                 except:
                     print(pointA)
 
@@ -292,7 +293,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                     if index == 0:
                         continue
                     try:
-                        cv2.line(frame, locations_of_traces[trace_index][index-1], point, color=colors[trace_index], thickness=1, lineType=cv2.LINE_AA)
+                        cv2.line(frame, locations_of_traces[trace_index][index-1], point, color=colors[get_last_digit(trace_index)], thickness=1, lineType=cv2.LINE_AA)
                     except IndexError as err:
                         print("index", index)
                         print(len(locations_of_traces[trace_index]))
