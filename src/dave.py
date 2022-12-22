@@ -18,7 +18,7 @@ def run(is_first_run):
     # already done and SAVED
     # GOT VIDEO
     analyse('../data/Video_tracking/190822/20190822_111607344_1BEE_generated_20210430_080914_nn.csv', 1, is_first_run=a)
-    return
+    
     # 156 -> 87 -> 11 -> 1
     # 156 -> 69 -> 9 -> 1 (4/10/22)
     # done and SAVED
