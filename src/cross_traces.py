@@ -667,31 +667,26 @@ def track_reappearance(traces, show=True, debug=False):
 
 
 ## CROSS-TRACE ANALYSIS
-def cross_trace_analyse(traces, scraped_traces, silent=False, debug=False):
+def cross_trace_analyse(traces, silent=False, debug=False):
     """ Checks traces against each other.
 
     :arg traces: (list): a list of Traces
-    :arg scraped_traces: (list): a list of scraped traces obtained by parse_traces()
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     print(colored("CROSS-TRACE ANALYSIS", "blue"))
     start_time = time()
-    for index, trace in enumerate(traces):
+    for index, trace1 in enumerate(traces):
         for index2, trace2 in enumerate(traces):
-            if index == index2:
+            if index >= index2:
                 continue
-            if abs(trace.frame_range[1] - trace2.frame_range[0]) < 100:
-                # print(traces[index])
-                # print(traces[index]["23325"])
-                # print()
-                # print(traces[index][str(trace.frame_range[1])][1])
+            if abs(trace1.frame_range[1] - trace2.frame_range[0]) < 100:
+                # print(traces[index][str(trace1.frame_range[1])][1])
                 # print(traces[index2][str(trace2.frame_range[0])][1])
-                point_distance = math.dist(list(map(float, (scraped_traces[trace.trace_id][trace.frame_range[1]][1]))),
-                                           list(map(float, (scraped_traces[trace2.trace_id][trace2.frame_range[0]][1]))))
-                # message = f"The beginning of trace {trace2.trace_id} is close to end of trace {trace.trace_id} " \
-                message = f"The beginning of trace {index}({trace.trace_id}) is close to end of trace {index2}({trace2.trace_id}) " \
-                          f"by {abs(trace.frame_range[1] - trace2.frame_range[0])} frames while the x,y distance is " \
+                point_distance = math.dist(list(map(float, (trace1.locations[-1]))),
+                                           list(map(float, (trace2.locations[0]))))
+                message = f"The beginning of trace {index}({trace1.trace_id}) is close to end of trace {index2}({trace2.trace_id}) " \
+                          f"by {abs(trace1.frame_range[1] - trace2.frame_range[0])} frames while the x,y distance is " \
                           f"{round(point_distance,3)}. Consider joining them."
                 if not silent:
                     if index2 == index + 1:

@@ -11,6 +11,7 @@ def write_dave():
 
     path = '../data/Video_tracking/'
 
+    print("a = is_first_run")
     for population_size in [1, 2, 5, 7, 10, 15]:
         if population_size == 1:
             print(f"# ############################################# SINGLE BEE #######################################################")
@@ -35,9 +36,9 @@ def write_dave():
                 file2 = str("_".join(file2.split("_")[:3]))
                 # print(file2)
                 if glob(f"{path}/{folder}/*{file2}*.mp4", recursive=False):
-                    if_video = ", has_video=True, video_params=True"
+                    if_video = ", has_tracked_video=True, is_first_run=is_first_run"
                 else:
-                    if_video = ""
+                    if_video = ", is_first_run=a"
 
                 try:
                     file_results = load_setting(file_name=f"{original_file}")

@@ -1,6 +1,8 @@
 import json
 import os.path
 import pathlib
+import pickle
+from copy import copy
 from os.path import exists
 from pathlib import Path
 from time import time
@@ -17,8 +19,9 @@ from single_trace import single_trace_checker, check_inside_of_arena, track_jump
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
     trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, get_whole_frame_range, \
     track_swapping_loop, get_video_whole_frame_range
-from dave_io import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv, is_new_config, parse_traces, \
-    get_video_path
+from dave_io import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv, is_new_config, \
+    parse_traces, \
+    get_video_path, pickle_load
 from triplets import merge_overlapping_triplets_of_traces
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
@@ -32,14 +35,19 @@ global allow_force_merge
 global rerun
 
 # USER - please set up the following 8 flags
-batch_run = False           # sets silent, not debug, not show_plots, rerun
+batch_run = False           # sets silent, not debug, not show_plots, not guided, rerun
 guided = True               # human guided version
 silent = False              # minimal print
 debug = False               # maximal print
 show_plots = True           # showing plots
 show_all_plots = False      # showing all plots - also those in the loops
-allow_force_merge = False    # allows force merge gaps and overlaps
+allow_force_merge = False   # allows force merge gaps and overlaps
 rerun = True                # will execute also files with a setting which is already in the results
+
+
+def set_batch_run(do_batch_run):
+    global batch_run
+    batch_run = do_batch_run
 
 
 def set_show_plots(do_show_plots):
@@ -77,19 +85,29 @@ def set_guided(do_guided):
     guided = do_guided
 
 
-def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False):
+def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False, is_first_run=None):
     """ Runs the whole file analysis.
 
     :arg csv_file_path: (str): path to csv file
     :arg population_size: (int): expected number of agents
     :arg swaps: (list of int): list of frame number of swaps to auto-pass
     :arg has_tracked_video: (bool): flag whether a video with tracking is available
+    :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
     """
     print(colored(f"Gonna analyse: {csv_file_path}", "magenta"))
 
     #################
     # Set run setting
     #################
+    if is_first_run is True:
+        set_batch_run(True)
+    elif is_first_run is False:
+        traces_file = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", os.path.basename(csv_file_path).replace(".csv", ".p")))
+        set_batch_run(False)
+        set_guided(True)
+    else:
+        pass
+
     if batch_run:  # sets silent, not debug, not show_plots, not guided, rerun
         set_silent(True)
         set_debug(False)
@@ -111,6 +129,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     #################
     # Internal params
     #################
+    set_silent(False)
     counts = []
     removed_short_traces = []
     removed_full_traces = []
@@ -126,27 +145,30 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     ####################
     # PARSE CSV & CONFIG
     ####################
-    try:
-        ## call the file as this is the file calling it
-        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), csv_file_path), newline='') as csv_file:
-            #################
-            # Check whether this is new setting
-            #################
-            if not rerun:
-                if not is_new_config(file_name=csv_file_path):
-                    return
-            # parse traces from csv file
-            scraped_traces = parse_traces(csv_file)
-    except FileNotFoundError:
-        print(colored(f"File not found!", "magenta"))
-        return
+    if is_first_run is False:
+        traces = pickle_load(traces_file)
+    else:
+        try:
+            ## call the file as this is the file calling it
+            with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), csv_file_path), newline='') as csv_file:
+                #################
+                # Check whether this is new setting
+                #################
+                if not rerun:
+                    if not is_new_config(file_name=csv_file_path):
+                        return
+                # parse traces from csv file
+                scraped_traces = parse_traces(csv_file)
+        except FileNotFoundError:
+            print(colored(f"File not found!", "magenta"))
+            return
 
-    # Store traces as list of Traces
-    traces = []
-    for index, trace in enumerate(scraped_traces.keys()):
-        # print(trace)
-        # print(scraped_traces[trace])
-        traces.append(Trace(scraped_traces[trace], index))
+        # Store traces as list of Traces
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            # print(trace)
+            # print(scraped_traces[trace])
+            traces.append(Trace(scraped_traces[trace], index))
 
     # TODO delete this
     # full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug)
@@ -171,14 +193,14 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
     ## SHOW THE VIDEO
     # simple show
-    # show_video(input_video, traces=(), frame_range=(), wait=True, points=(), video_params=True)
+    # show_video(input_video=video_file, traces=(), frame_range=(), wait=True, points=(), video_params=True)
     # show slower
-    # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=True, points=(), video_params=True)
+    # show_video(input_video=video_file, traces=(), frame_range=(), video_speed=0.1, wait=True, points=(), video_params=True)
     # show from given frame
     # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
     # show alignment to the original video
     ## TODO uncomment to show the original video with original tracking
-    # show_video(input_video=video_file, traces=traces, frame_range=[0, 8500], wait=True, video_params=video_params)
+    # show_video(input_video=video_file, traces=traces, frame_range=[4000, 8500], wait=True, points=(), video_params=video_params)
 
     ### ANALYSIS
     if show_plots:
@@ -230,7 +252,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # traces[i].show_trace_in_xy()
 
     ## CROSS-TRACE ANALYSIS
-    cross_trace_analyse(traces, scraped_traces, silent=silent, debug=debug)
+    cross_trace_analyse(traces, silent=silent, debug=debug)
 
     #############################
     # CHECK FOR SWAPPING THE BEES
@@ -382,12 +404,12 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     print(colored(f"ANALYSIS FINISHED. There are {len(all_final_traces)} traces left.", "green"))
 
     ## SAVE RESULTS
-    is_new = save_setting(counts, file_name=csv_file_path, population_size=original_population_size, is_guided=guided,
-                          is_force_merge_allowed=allow_force_merge, silent=silent, debug=debug)
+    is_new = save_setting(counts, file_name=csv_file_path, population_size=original_population_size, is_first_run=is_first_run,
+                          is_guided=guided, is_force_merge_allowed=allow_force_merge, silent=silent, debug=debug)
     if is_new:
-        convert_results_from_json_to_csv(silent=silent, debug=debug)
-        # save_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug)
-        pickle_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug)
+        convert_results_from_json_to_csv(silent=silent, debug=debug, is_first_run=is_first_run)
+        # save_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug, is_first_run=is_first_run)
+        pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run)
 
     # ANNOTATE THE VIDEO
     # Check we have found the video

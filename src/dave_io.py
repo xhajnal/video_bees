@@ -109,7 +109,7 @@ def load_setting(file_name=None, time_stamp=None):
     return results
 
 
-def save_setting(counts, file_name, population_size, is_guided, is_force_merge_allowed, silent=False, debug=False):
+def save_setting(counts, file_name, population_size, is_guided, is_force_merge_allowed, silent=False, debug=False, is_first_run=None):
     """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
      file_name -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
 
@@ -125,6 +125,9 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     :arg debug: (bool): if True extensive output is shown
     :returns is_new: (bool): flag whether this result is new
     """
+    if is_first_run is True:
+        return True
+
     print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))
     start_time = time()
 
@@ -210,11 +213,14 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     return True
 
 
-def convert_results_from_json_to_csv(silent=False, debug=False):
+def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=None):
     """ Stores the json results file as csv to show the results in a human-readable format.
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
     """
+    if is_first_run is True:
+        return
+
     print(colored("STORES THE JSON RESULTS FILE AS A CSV", "blue"))
     start_time = time()
 
@@ -295,7 +301,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False):
     print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(f'../output/results.csv')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n","yellow"))
 
 
-def save_traces(traces, file_name, silent=False, debug=False):
+def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None):
     """ Saves the traces as csv file in loopy manner.
 
         :arg traces (list) list of traces
@@ -303,6 +309,10 @@ def save_traces(traces, file_name, silent=False, debug=False):
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
     """
+
+    if is_first_run is True:
+        return
+
     print(colored("SAVE TRACES AS CSV", "blue"))
     start_time = time()
 
@@ -366,16 +376,18 @@ def save_traces(traces, file_name, silent=False, debug=False):
         print(colored(f"Saving {len(traces)} traces as csv in {os.path.abspath(f'../output/{file_name}')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
 
-def pickle_traces(traces, file_name, silent=False, debug=False):
+def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run=None):
     """ Saves the traces as pickle.
 
-        :arg traces (list) list of traces
-        :arg file_name (string) name of the file to be pickled in "output" folder
+        :arg traces: (list): list of traces
+        :arg csv_file_path: (string): path to the file to be pickled in "output" folder
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
     """
     print(colored("SAVE TRACES AS PICKLE", "blue"))
     start_time = time()
+
+    file_name = os.path.basename(csv_file_path)
 
     try:
         os.mkdir("../output")
@@ -394,7 +406,16 @@ def pickle_traces(traces, file_name, silent=False, debug=False):
         except OSError:
             pass
 
-    file_path = str(os.path.splitext(f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}")[0]) + ".p"
+    if is_first_run is True:
+        try:
+            os.mkdir(os.path.join(os.path.dirname(csv_file_path), "after_first_run"))
+        except OSError:
+            pass
+
+        file_path = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", file_name.replace(".csv", ".p")))
+    else:
+        file_path = str(os.path.splitext(f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}")[0]) + ".p"
+
     if debug:
         print("file", file_path)
     with open(file_path, 'wb') as file:
