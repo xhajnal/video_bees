@@ -15,7 +15,10 @@ from config import *
 
 
 def get_video_path(file_path):
-    """ Obtain the path of the video files. This may be case specific."""
+    """ Obtain the path of the video files. This may be case specific.
+
+    :arg file_path: (str): filepath of the analysed file (csv)
+    """
     # get the name of the file without suffix
     video_file = Path(file_path).stem
     # get the stem of the filename - digital identifier
@@ -48,15 +51,25 @@ def get_video_path(file_path):
     return video_file, output_video_file
 
 
-def is_new_config(file_name):
-    """ Returns whether this config is new in the results."""
+def is_new_config(file_name, is_first_run=None):
+    """ Returns whether this config is new in the results.
+
+    :arg file_name: (str): filename of the record
+    :arg is_first_run: (bool): iff True, "results_after_first_run.txt" will be used instead of standard "results.txt"
+
+    """
+    if not (is_first_run is True):
+        results_file = "../output/results.txt"
+    else:
+        results_file = "../output/results_after_first_run.txt"
+
     ## LOAD SAVED RESULTS
     try:
-        with open("../output/results.txt") as file:
+        with open(results_file) as file:
             results = json.load(file)
     except FileNotFoundError as err:
         # f = open("../output/results.p", "a")
-        file = open("../output/results.txt", "a")
+        file = open(results_file, "a")
         file.close()
         results = {}
 
@@ -111,9 +124,10 @@ def load_setting(file_name=None, time_stamp=None):
 
 def save_setting(counts, file_name, population_size, is_guided, is_force_merge_allowed, video_available, silent=False, debug=False, is_first_run=None):
     """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
-     file_name -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
+     file_path -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
 
      for exact enumeration have a look in the code.
+     for FIRST RUN the results are stored in "../output/results_after_first_run.txt"
 
 
     :arg counts: (list of int): counts of traces after each analysis part
@@ -126,9 +140,6 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     :arg debug: (bool): if True extensive output is shown
     :returns is_new: (bool): flag whether this result is new
     """
-    if is_first_run is True:
-        return True
-
     print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))
     start_time = time()
 
@@ -141,18 +152,18 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     assert len(counts) == 7
 
     ## LOAD SAVED RESULTS TO UPDATE IT
+    if not (is_first_run is True):
+        results_txt_file = "../output/results.txt"
+    else:
+        results_txt_file = "../output/results_after_first_run.txt"
+
     try:
-        # with open("../output/results.p", 'rb') as file:
-        #     results = pickle.load(file)
-        #     if debug:
-        #         print("RESULTS", results)
-        with open("../output/results.txt") as file:
+        with open(results_txt_file) as file:
             results = json.load(file)
             if debug:
                 print("RESULTS", results)
     except FileNotFoundError as err:
-        # f = open("../output/results.p", "a")
-        file = open("../output/results.txt", "a")
+        file = open(results_txt_file, "a")
         file.close()
         results = {}
 
@@ -202,7 +213,7 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     # with open("../output/results.p", 'wb') as file:
     #     pickle.dump(results, file)
 
-    with open("../output/results.txt", 'w') as file:
+    with open(results_txt_file, 'w') as file:
         file.write(json.dumps(results))
 
     # if debug:
@@ -210,7 +221,7 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     # print(results)
 
     print(colored(
-        f"Updating the results using this run. Saved in {os.path.abspath(f'../output/results.txt')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n",
+        f"Updating the results using this run. Saved in {os.path.abspath(results_txt_file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n",
         "yellow"))
     return True
 
@@ -220,19 +231,24 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
     """
-    if is_first_run is True:
-        return
 
     print(colored("STORES THE JSON RESULTS FILE AS A CSV", "blue"))
     start_time = time()
 
-    with open("../output/results.txt") as file:
+    if not (is_first_run is True):
+        results_txt_file = "../output/results.txt"
+        results_csv_file = "../output/results.csv"
+    else:
+        results_txt_file = "../output/results_after_first_run.txt"
+        results_csv_file = "../output/results_after_first_run.csv"
+
+    with open(results_txt_file) as file:
         results = json.load(file)
         if debug:
-            print("results.txt", results)
+            print(results_txt_file, results)
 
     try:
-        with open("../output/results.csv", "w") as file:
+        with open(results_csv_file, "w") as file:
             # write header
             ## TODO parse the population size
             file.write(
@@ -306,7 +322,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
         print(colored(f"Could not write into csv file! Try to close it first.", "red"))
         return
 
-    print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(f'../output/results.csv')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n","yellow"))
+    print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(results_csv_file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n","yellow"))
 
 
 def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None):
@@ -391,6 +407,7 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
         :arg csv_file_path: (string): path to the file to be pickled in "output" folder
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
+        :arg is_first_run: (bool): iff True, traces are stored in 'after_first_run' folder next to the input file
     """
     print(colored("SAVE TRACES AS PICKLE", "blue"))
     start_time = time()
@@ -436,7 +453,7 @@ def pickle_load(file):
     """ Returns loaded pickled data
 
     Args:
-        file (string or Path): filename/filepath
+        file (string or Path): filename/filepath of the file to be loaded
     """
 
     filename, file_extension = os.path.splitext(file)
@@ -449,6 +466,17 @@ def pickle_load(file):
             return pickle.load(f)
     else:
         raise Exception("File extension does not match", f"{file} does not seem to be pickle file!")
+
+
+def load_result_traces(file_path):
+    """ Returns saved traces.
+
+    Args:
+        file_path (string or Path): filename/filepath of the bee file to load respective result file
+    """
+    digit = parse_population_size(file_path)
+    file_name = Path(os.path.basename(file_path)).stem
+    return pickle_load(f"../output/traces/{digit}/{file_name}")
 
 
 def parse_traces(csv_file):
