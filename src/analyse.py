@@ -215,7 +215,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ## TODO uncomment to show the original video with original tracking
         # show_video(input_video=video_file, traces=traces, frame_range=[4000, 8500], wait=True, points=(), video_params=video_params)
 
-
         ############
         ### ANALYSIS
         ############
@@ -430,6 +429,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         all_final_traces = load_result_traces(csv_file_path)
         traces = all_final_traces
         removed_full_traces = traces
+        crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
 
     # ANNOTATE THE VIDEO
     # Check we have found the video
