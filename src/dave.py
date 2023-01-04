@@ -1,4 +1,4 @@
-from analyse import analyse
+from analyse import analyse, set_just_annotate
 
 
 def run_both():
@@ -7,7 +7,14 @@ def run_both():
     run(is_first_run=False)
 
 
-def run(is_first_run):
+def run_just_annotate():
+    """ Runs just annotation from pickled file."""
+    set_just_annotate(True)
+    run()
+    set_just_annotate(False)
+
+
+def run(is_first_run=None):
     """ Runs the analysis of all the files.
     
     :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
@@ -18,7 +25,7 @@ def run(is_first_run):
     # already done and SAVED
     # GOT VIDEO
     analyse('../data/Video_tracking/190822/20190822_111607344_1BEE_generated_20210430_080914_nn.csv', 1, is_first_run=a)
-    
+
     # 156 -> 87 -> 11 -> 1
     # 156 -> 69 -> 9 -> 1 (4/10/22)
     # done and SAVED
@@ -168,7 +175,6 @@ def run(is_first_run):
     # 63 -> 40 -> 1 *
     analyse("../data/Video_tracking/190929/20190929_160530530_1BEE_generated_20211018_081442_nn.csv", 1, has_tracked_video=True, is_first_run=is_first_run)
 
-
     ## 190930
     # 33 -> 22 -> 1 *
     # TODO rerun the video
@@ -264,7 +270,6 @@ def run(is_first_run):
     # 65 -> 56 -> 2 (16/10/22)
     analyse("../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv", 2, [41159], has_tracked_video=True, is_first_run=is_first_run)
 
-    #
     # 79 -> 70 -> 28
     # 79 -> 70 -> 43
     # 1 jump back and forth
@@ -1244,3 +1249,4 @@ def run(is_first_run):
 
 if __name__ == "__main__":
     run_both()
+    run_just_annotate()
