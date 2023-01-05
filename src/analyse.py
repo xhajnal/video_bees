@@ -34,8 +34,9 @@ global guided
 global allow_force_merge
 global rerun
 global just_annotate
-
 just_annotate = False
+global force_new_video
+force_new_video = False
 
 # USER - please set up the following 8 flags
 batch_run = False           # sets silent, not debug, not show_plots, not guided, rerun
@@ -93,6 +94,11 @@ def set_just_annotate(do_just_annotate):
     just_annotate = do_just_annotate
 
 
+def set_force_new_video(do_force_new_video):
+    global force_new_video
+    force_new_video = do_force_new_video
+
+
 def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False, is_first_run=None):
     """ Runs the whole file analysis.
 
@@ -101,12 +107,15 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     :arg swaps: (list of int): list of frame number of swaps to auto-pass
     :arg has_tracked_video: (bool): flag whether a video with tracking is available
     :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
+     ##:arg force_new_video: (bool): iff True, a new video will be created, even a video with the same amount of traces is there
     """
     global just_annotate
     if just_annotate:
         print(colored(f"Gonna annotate: {csv_file_path}", "magenta"))
     else:
         print(colored(f"Gonna analyse: {csv_file_path}", "magenta"))
+
+    global force_new_video
 
     #################
     # Set run setting
@@ -115,7 +124,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         set_batch_run(True)
     elif is_first_run is False:
         traces_file = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", os.path.basename(csv_file_path).replace(".csv", ".p")))
-        set_batch_run(True)
+        set_batch_run(False)
         set_guided(True)
     else:
         pass
@@ -440,7 +449,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # print(updated_output_video_file)
         if has_tracked_video is True:
             # annotate_video(input_video, output_video,              traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
-            annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]))
+            annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), force_new_video=force_new_video)
         else:
             # annotate_video(input_video, output_video,               traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
-            annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), trim_offset, crop_offset)
+            annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), trim_offset, crop_offset, force_new_video=force_new_video)

@@ -1,4 +1,4 @@
-from analyse import analyse, set_just_annotate
+from analyse import analyse, set_just_annotate, set_force_new_video
 
 
 def run_both():
@@ -10,8 +10,10 @@ def run_both():
 def run_just_annotate():
     """ Runs only annotation from the pickled file."""
     set_just_annotate(True)
+    set_force_new_video(True)
     run()
     set_just_annotate(False)
+    set_force_new_video(False)
 
 
 def run(is_first_run=None):

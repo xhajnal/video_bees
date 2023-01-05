@@ -46,7 +46,7 @@ def get_video_path(file_path):
         except OSError:
             pass
         output_video_file = os.path.join("..", "output", "video", os.path.basename(video_file))
-        print("output_video_file:", output_video_file)
+        # print("default output_video_file:", output_video_file)
 
     return video_file, output_video_file
 

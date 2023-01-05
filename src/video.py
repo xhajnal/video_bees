@@ -169,7 +169,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         p.join()
 
 
-def annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False):
+def annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False, force_new_video=False):
     """ Annotates given video with the tracked position of individual bees.
 
     :arg input_video: (Path or str): path to the input video
@@ -181,15 +181,26 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     :arg trim_offset: (int): number of the first frames to trim from original video
     :arg crop_offset: (tuple): a pair of pints, a vector to offset the location in order to match the input video
     :arg show: (bool): if True showing the frames
+    :arg force_new_video: (bool): iff True, a new video will be created, even a video with the same amount of traces is there
     """
     if traces and not show:
         print(colored("ANNOTATES THE VIDEO WITH NEW TRACES", "blue"))
 
     if output_video:
         ## annotate only if the annotated video does not exist
-        if exists(output_video):
-            print(colored("Chosen video already exists, not overwriting it.", "yellow"))
-            return
+        # print("output_video_file:", output_video)
+        if force_new_video:
+            if exists(output_video):
+                number = 1
+                spam = os.path.splitext(output_video)
+                while exists(str(spam[0]+'_ver_'+str(number)+spam[1])):
+                    number = number + 1
+                output_video = str(spam[0]+'_ver_'+str(number)+spam[1])
+        else:
+            if exists(output_video):
+                print(colored("Chosen video already exists, not overwriting it.", "yellow"))
+                return
+        print("output_video_file:", output_video)
 
     if frame_range:
         if frame_range[1] < trace_offset:
