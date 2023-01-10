@@ -228,10 +228,13 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
             print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
 
         fps = video.get(5)
-        print('Frames per second : ', fps, 'FPS')
+        print('Frames per second: ', fps, 'FPS')
 
         frame_count = video.get(7)
-        print('Frame count : ', frame_count)
+        print('Frame count: ', frame_count)
+
+        if frame_range:
+            print('Show frames: ', frame_range)
 
     # Obtain frame size information using get() method
     frame_width = int(video.get(3))

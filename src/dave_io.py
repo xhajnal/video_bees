@@ -275,7 +275,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
 
                     try:
                         guided = record['is_guided']
-                        print("")
+                        # print("")
                     except KeyError as err:
                         guided = "Unknown"
 

@@ -268,7 +268,7 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
 
     print(colored(f"trim_out_additional_agents_over_long_traces2 analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
-    print(colored(f"Returning traces of length {len(traces)}, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration. \n", "green"))
+    print(colored(f"Returning {len(traces)} traces, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration. \n", "green"))
     return traces
 
 
@@ -389,7 +389,7 @@ def trim_out_additional_agents_over_long_traces_old(traces, population_size, sil
     print(colored(
         f"trim_out_additional_agents_over_long_traces analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.",
         "yellow"))
-    print(colored(f"Returning traces of length {len(traces)}, {len(traces_indices_to_be_deleted)} shorter than in previous iteration.", "green"))
+    print(colored(f"Returning {len(traces)} traces, {len(traces_indices_to_be_deleted)} shorter than in previous iteration.", "green"))
     print()
     return traces
 
@@ -607,7 +607,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
     traces = delete_indices(trace_indices_to_merge, traces)
 
     print(colored(f"GAPING TRACES analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
-    print(colored(f"Returning traces of length {len(traces)}, {len(trace_indices_to_merge)} shorter than in previous iteration.", "green"))
+    print(colored(f"Returning {len(traces)} traces, {len(trace_indices_to_merge)} shorter than in previous iteration.", "green"))
     print()
     return traces
 

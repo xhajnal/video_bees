@@ -55,6 +55,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             is_overlap = False
             show_range = gaps[key]
             show_range = margin_range(show_range, max(100, 0.2*range_len(show_range)))
+            show_range = list(map(round, show_range))
         print()
         print(colored(f"We have found a {'overlapping' if is_overlap else 'gaping'} traces {key[0]}({traces[key[0]].trace_id}),{key[1]}({traces[key[1]].trace_id}).", "blue"))
 

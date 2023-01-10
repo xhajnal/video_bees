@@ -124,6 +124,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         set_batch_run(True)
     elif is_first_run is False:
         traces_file = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", os.path.basename(csv_file_path).replace(".csv", ".p")))
+        set_show_all_plots(False)
         set_batch_run(False)
         set_guided(True)
     else:
@@ -227,7 +228,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ############
         ### ANALYSIS
         ############
-        if show_plots:
+        if show_all_plots:
             # scatter_detection(traces, whole_frame_range, from_to_frame=[0, 2000], subtitle="Initial.")
             # show_plot_locations(traces, whole_frame_range, from_to_frame=[0, 1800], subtitle="Initial.")
             scatter_detection(traces, whole_frame_range, subtitle="Initial.")
@@ -241,7 +242,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         counts.append(len(traces) + len(removed_full_traces))
 
         # TODO uncomment the following
-        # if show_plots:
+        # if show_all_plots:
         #     show_plot_locations(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
         #     scatter_detection(traces, whole_frame_range, subtitle="Traces outside of arena gone.")
 
@@ -251,7 +252,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         traces, removed_short_traces = single_trace_checker(traces, min_range_len=get_min_trace_len(), vicinity=get_vicinity_of_short_traces(), silent=silent, debug=debug)
         counts.append(len(traces) + len(removed_full_traces))
         # TODO uncomment the following
-        # if show_plots:
+        # if show_all_plots:
         #     scatter_detection(traces, whole_frame_range, subtitle="After deleting traces with zero len in xy.")
 
         ############################
@@ -264,7 +265,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, index, whole_frame_range, show_plots=True, silent=silent, debug=debug)
         print(colored(f"We have found and fixed {number_of_jump_detected} jumps. "
                       f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
-        # if show_plots:
+        # if show_all_plots:
         #     scatter_detection(traces, whole_frame_range, subtitle="After dealing with fake jumps there and back.")
         # Storing the number of jumps detected
         counts.append(number_of_jump_detected)
@@ -282,7 +283,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # CHECK FOR SWAPPING THE BEES
         #############################
         ## TODO uncomment the following
-        # if show_plots:
+        # if show_all_plots:
         #     show_overlaps(traces, whole_frame_range)
 
         if has_tracked_video and guided:
@@ -294,7 +295,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
         ## TODO uncomment the following
         # ## ALL TRACES SHOW
-        # if show_plots:
+        # if show_all_plots:
         #     show_plot_locations(traces, whole_frame_range, subtitle="After swapping.")
         #     scatter_detection(traces, whole_frame_range, subtitle="After swapping.")
 
@@ -302,7 +303,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
         ##################################################################
         ## TODO uncomment the following if want the plot
-        # if show_plots:
+        # if show_all_plots:
         #     show_plot_locations(traces, whole_frame_range, subtitle="before TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER")
         before_number_of_traces = len(traces)
         after_number_of_traces = 0
@@ -325,7 +326,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             print()
 
         ## ALL TRACES SHOW
-        if show_plots:
+        if show_all_plots:
             # scatter_detection(traces, whole_frame_range)
             show_gaps(traces, whole_frame_range, silent=silent, debug=debug, subtitle="After Cross analysis phase 1.")
             show_overlaps(traces, whole_frame_range, silent=silent, debug=debug, subtitle="After Cross analysis phase 1.")
@@ -392,7 +393,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         else:
             new_population_size = population_size
 
-        # if show_plots:
+        # if show_all_plots:
         #     scatter_detection(traces, whole_frame_range, subtitle="After merging overlapping traces.")
 
         # print("SECOND Gaping traces analysis")
@@ -415,7 +416,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params)
 
         ## VISUALISATIONS
-        if show_plots:
+        if show_all_plots:
             track_reappearance(traces, show=True)
             scatter_detection(traces, whole_frame_range, subtitle="Final.")
             show_overlaps(traces, whole_frame_range, subtitle="Final.", silent=silent, debug=debug)

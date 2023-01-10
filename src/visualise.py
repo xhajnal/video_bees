@@ -32,7 +32,7 @@ def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_mid
 
     :arg traces: (list): a list of Traces
     :arg whole_frame_range: [int, int]: frame range of the whole video (with margins) 
-    :arg from_to_frame: (list): if set, showing only frames in given range
+    :arg from_to_frame: (list): if given, showing only frames in given range
     :arg show_middle_point: (bool): if True, a point in the middle of the trace is highlighted
     :arg subtitle: (string): subtitle of the plot
     :arg silent: (bool) if True minimal output is shown
