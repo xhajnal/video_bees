@@ -1,4 +1,4 @@
-from analyse import analyse, set_just_annotate, set_force_new_video
+from analyse import analyse, set_just_annotate, set_force_new_video, set_just_align
 
 
 def run_both():
@@ -16,12 +16,20 @@ def run_just_annotate():
     set_force_new_video(False)
 
 
+def align_first():
+    """ Runs alignment only. """
+    set_just_align(True)
+    run()
+    set_just_align(False)
+
+
 def run(is_first_run=None):
     """ Runs the analysis of all the files.
     
     :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
     """
     a = is_first_run
+
     ############################################# SINGLE BEE #######################################################
     ## SINGLE BEE 190822
     # already done and SAVED
@@ -75,7 +83,8 @@ def run(is_first_run=None):
 
     # WTF 748 -> 449 -> 3
     # WTF 748 -> 449 -> 1 (not guided)
-    analyse('../data/Video_tracking/190916/20190916_163119085_1BEE_generated_20210618_080129_nn.csv', 1, is_first_run=a)
+    # could not align
+    # analyse('../data/Video_tracking/190916/20190916_163119085_1BEE_generated_20210618_080129_nn.csv', 1, is_first_run=a)
 
     ## 190917
     # 16 -> 6 -> 1 *
@@ -617,7 +626,8 @@ def run(is_first_run=None):
 
     ## 190926
     # 547 -> 411 -> 260
-    analyse("../data/Video_tracking/190926/20190926_124309395_5BEES_generated_20210927_082242_nn.csv", 5, is_first_run=a)
+    # bad alignment
+    # analyse("../data/Video_tracking/190926/20190926_124309395_5BEES_generated_20210927_082242_nn.csv", 5, is_first_run=a)
 
     # 623 -> 513 -> 313
     analyse("../data/Video_tracking/190926/20190926_132749818_5BEES_generated_20210927_090107_nn.csv", 5, is_first_run=a)
@@ -1015,7 +1025,8 @@ def run(is_first_run=None):
 
     ## 191001
     # -> ->
-    analyse("../data/Video_tracking/191001/20191001_112031240_10BEES_generated_20211026_092048_nn.csv", 10, is_first_run=a)
+    # wrong alignment
+    # analyse("../data/Video_tracking/191001/20191001_112031240_10BEES_generated_20211026_092048_nn.csv", 10, is_first_run=a)
 
     # -> ->
     analyse("../data/Video_tracking/191001/20191001_140821748_10BEES_generated_20211028_094845_nn.csv", 10, is_first_run=a)
@@ -1243,12 +1254,14 @@ def run(is_first_run=None):
     analyse("../data/Video_tracking/191018/20191018_133057695_15BEES_generated_20220126_102759_nn.csv", 15, is_first_run=a)
 
     # -> ->
-    analyse("../data/Video_tracking/191018/20191018_142523619_15BEES_generated_20220125_103406_nn.csv", 15, is_first_run=a)
+    # wrong alignment
+    # analyse("../data/Video_tracking/191018/20191018_142523619_15BEES_generated_20220125_103406_nn.csv", 15, is_first_run=a)
 
     # -> ->
     analyse("../data/Video_tracking/191018/20191018_143615609_15BEES_generated_20220126_104502_nn.csv", 15, is_first_run=a)
 
 
 if __name__ == "__main__":
+    # align_first()
     run_both()
     run_just_annotate()

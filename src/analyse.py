@@ -35,6 +35,8 @@ global allow_force_merge
 global rerun
 global just_annotate
 just_annotate = False
+global just_align
+just_align = False
 global force_new_video
 force_new_video = False
 
@@ -94,6 +96,11 @@ def set_just_annotate(do_just_annotate):
     just_annotate = do_just_annotate
 
 
+def set_just_align(do_just_align):
+    global just_align
+    just_align = do_just_align
+
+
 def set_force_new_video(do_force_new_video):
     global force_new_video
     force_new_video = do_force_new_video
@@ -110,8 +117,12 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
      ##:arg force_new_video: (bool): iff True, a new video will be created, even a video with the same amount of traces is there
     """
     global just_annotate
+    global just_align
+
     if just_annotate:
         print(colored(f"Gonna annotate: {csv_file_path}", "magenta"))
+    elif just_align:
+        print(colored(f"Gonna align: {csv_file_path}", "magenta"))
     else:
         print(colored(f"Gonna analyse: {csv_file_path}", "magenta"))
 
@@ -212,6 +223,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # trace_offset - number of first frames of the video to skip
         crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
         video_params = [trim_offset, crop_offset] if crop_offset is not None else True
+        if just_align:
+            return
         # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
 
         ## SHOW THE VIDEO
