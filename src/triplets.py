@@ -73,7 +73,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                               f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
                 return
-            print("triplets:", dictionary)
+            print(f"triplets ({len(dictionary)}): {dictionary}")
 
             if debug:
                 print("dictionary", dictionary)

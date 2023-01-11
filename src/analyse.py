@@ -136,6 +136,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # Set run setting
     #################
     if is_first_run is True:
+        set_silent(True)
+        set_debug(False)
         set_show_plots(False)
         set_show_all_plots(False)
         set_rerun(False)
@@ -169,7 +171,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     #################
     # Internal params
     #################
-    set_silent(False)
     counts = []
     removed_short_traces = []
     removed_full_traces = []
