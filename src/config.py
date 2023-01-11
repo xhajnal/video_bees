@@ -72,3 +72,25 @@ def get_force_merge_vicinity():
 def get_screen_size():
     """ Returns size of the screen as [[xmin, xmax],[ymin, ymax]] ."""
     return [[0, 900], [0, 900]]
+
+
+def hash_config():
+    """ Creates a hash of the given config file."""
+    setting = (get_distance_from_calculated_arena(),
+               get_min_trace_len(),
+               get_vicinity_of_short_traces(),
+               get_max_trace_gap(),
+               get_min_trace_length(),
+               get_bee_max_step_len(),
+               get_bee_max_step_len_per_frame(),
+               get_max_trace_gap_to_interpolate_distance(),
+               get_max_step_distance_to_merge_overlapping_traces(),
+               get_force_merge_vicinity(),
+               tuple([item for sublist in get_screen_size() for item in sublist]))
+
+    # print(setting)
+    return abs(hash(setting))
+
+
+if __name__ == "__main__":
+    print(hash_config())

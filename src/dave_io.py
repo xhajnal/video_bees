@@ -56,10 +56,28 @@ def get_video_path(file_path):
     return video_file, output_video_file
 
 
-def is_new_config(file_name, is_first_run=None):
+def pickled_exist(csv_file_path, is_first_run=None):
+    """ Return whether the pickled file of the current config exists.
+
+    :arg csv_file_name: (str): filename of the original csv file
+    :arg is_first_run: (bool): iff True, "results_after_first_run.txt" will be used instead of standard "results.txt"
+    """
+    hash = str(hash_config())
+    path = os.path.dirname(csv_file_path)
+    file_name = Path(os.path.basename(csv_file_path)).stem
+    if is_first_run is True:
+        return os.path.isfile(os.path.join(path, hash, file_name, ".p"))
+    else:
+        return os.path.isfile(os.path.join("../output/traces/", hash, file_name, ".p"))
+
+
+def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available, is_first_run=None):
     """ Returns whether this config is new in the results.
 
     :arg file_name: (str): filename of the record
+    :arg is_guided: (bool): whether guided flag was on
+    :arg is_force_merge_allowed: (bool): whether allow_force_merge was on
+    :arg video_available: (bool) whether video was available
     :arg is_first_run: (bool): iff True, "results_after_first_run.txt" will be used instead of standard "results.txt"
 
     """
@@ -82,14 +100,28 @@ def is_new_config(file_name, is_first_run=None):
         return True
 
     # GET SETTING
-    setting = {"distance_from_calculated_arena": get_distance_from_calculated_arena(),
+    setting = {"had_video": video_available,
+               "is_guided": is_guided,
+               "force_merge_allowed": is_force_merge_allowed,
+               "distance_from_calculated_arena": get_distance_from_calculated_arena(),
+               "min_trace_len": get_min_trace_len(),
                "max_trace_gap": get_max_trace_gap(),
                "min_trace_length": get_min_trace_length(),
                "bee_max_step_len": get_bee_max_step_len(),
                "bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
                "max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
                "max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
+               "force_merge_vicinity": get_force_merge_vicinity(),
                "screen_size": get_screen_size()}
+
+    # setting = {"distance_from_calculated_arena": get_distance_from_calculated_arena(),
+    #            "max_trace_gap": get_max_trace_gap(),
+    #            "min_trace_length": get_min_trace_length(),
+    #            "bee_max_step_len": get_bee_max_step_len(),
+    #            "bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
+    #            "max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
+    #            "max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
+    #            "screen_size": get_screen_size()}
 
     same_setting_found = False
 
@@ -355,12 +387,12 @@ def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None)
     except OSError:
         pass
 
-    digit = parse_population_size(file_name)
-    if digit is not False:
-        try:
-            os.mkdir(f"../output/traces/{digit}")
-        except OSError:
-            pass
+    # digit = parse_population_size(file_name)
+    # if digit is not False:
+    #     try:
+    #         os.mkdir(f"../output/traces/{digit}")
+    #     except OSError:
+    #         pass
 
     trackings = []
     frames_tracked = []
@@ -384,7 +416,8 @@ def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None)
         # print("trackings", trackings)
         print("frames_tracked", frames_tracked)
 
-    with open(f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}", "w") as file:
+    # with open(f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}", "w") as file:
+    with open(f"../output/traces/{hash_config()}/{file_name}", "w") as file:
         file.write(",date,err,frame_count,frame_number,frame_timestamp,name,oid,type,x,y\n")
         for index, frame in enumerate(trackings):
             # obtain the ids of traces with the given frame
@@ -418,23 +451,8 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
     start_time = time()
 
     file_name = os.path.basename(csv_file_path)
-
-    try:
-        os.mkdir("../output")
-    except OSError:
-        pass
-
-    try:
-        os.mkdir("../output/traces")
-    except OSError:
-        pass
-
-    digit = parse_population_size(file_name)
-    if digit is not False:
-        try:
-            os.mkdir(f"../output/traces/{digit}")
-        except OSError:
-            pass
+    file_name.replace(".csv", ".p")
+    hash = str(hash_config())
 
     if is_first_run is True:
         try:
@@ -442,9 +460,39 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
         except OSError:
             pass
 
-        file_path = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", file_name.replace(".csv", ".p")))
+        try:
+            os.mkdir(os.path.join(os.path.dirname(csv_file_path), "after_first_run", hash))
+        except OSError:
+            pass
+
+        file_path = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", hash, file_name))
     else:
-        file_path = str(os.path.splitext(f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}")[0]) + ".p"
+        try:
+            os.mkdir("../output")
+        except OSError:
+            pass
+
+        try:
+            os.mkdir("../output/traces")
+        except OSError:
+            pass
+
+        try:
+            os.mkdir(f"../output/traces/{hash}")
+        except OSError:
+            pass
+
+        file_path = f"../output/traces/{hash}/{file_name}"
+
+        ## Old save place
+        # digit = parse_population_size(file_name)
+        # if digit is not False:
+        #     try:
+        #         os.mkdir(f"../output/traces/{digit}")
+        #     except OSError:
+        #         pass
+
+        # file_path = f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}"
 
     if debug:
         print("file", file_path)

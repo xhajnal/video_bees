@@ -154,7 +154,7 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                     print("trace1.frame_range", trace1.frame_range)
                     print("trace2.frame_range", trace2.frame_range)
                     print("trace3.frame_range", trace3.frame_range)
-                    print("Gonna delete ", dictionary[pick_key2])
+                    print("Will delete ", dictionary[pick_key2])
                     print(dictionary)
                 del dictionary[pick_key2]
                 if debug:
@@ -327,8 +327,8 @@ def merge_overlapping_triplets_of_traces(traces, whole_frame_range, population_s
                                              silent=silent, debug=debug)
                 # Remove the merged trace
                 if debug:
-                    # print(colored(f"Gonna delete trace {trace2_id}.", "blue"))
-                    print(colored(f"Gonna delete trace {duplet_indices[1]}({trace2_id}).", "blue"))
+                    # print(colored(f"Will delete trace {trace2_id}.", "blue"))
+                    print(colored(f"Will delete trace {duplet_indices[1]}({trace2_id}).", "blue"))
                     print()
 
                 traces_indices_to_be_removed.append(duplet_indices[1])

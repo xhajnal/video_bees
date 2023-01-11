@@ -139,3 +139,5 @@ test/test-sorted.csv
 test/help_video.mp4
 auxiliary/point.txt
 src/video2.py
+
+src/fix_folders2.py

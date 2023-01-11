@@ -21,7 +21,7 @@ from cross_traces import put_gaping_traces_together, track_reappearance, cross_t
     track_swapping_loop, get_video_whole_frame_range
 from dave_io import pickle_traces, save_traces, save_setting, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, \
-    get_video_path, pickle_load, load_result_traces
+    get_video_path, pickle_load, load_result_traces, pickled_exist
 from triplets import merge_overlapping_triplets_of_traces
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
@@ -136,7 +136,10 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # Set run setting
     #################
     if is_first_run is True:
-        set_batch_run(True)
+        set_show_plots(False)
+        set_show_all_plots(False)
+        set_rerun(False)
+        set_guided(False)
     elif is_first_run is False:
         traces_file = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", os.path.basename(csv_file_path).replace(".csv", ".p")))
         set_show_all_plots(False)
@@ -180,11 +183,15 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     # print(output_video_file)
 
     if not just_annotate:
-        ####################
-        # PARSE CSV & CONFIG
-        ####################
+        #########################
+        # LOAD PICKLE / PARSE CSV
+        #########################
         if is_first_run is False:
             traces = pickle_load(traces_file)
+        ## First run and the pickled file already exists, we can skip this
+        elif is_first_run is True and pickled_exist(csv_file_path, is_first_run=is_first_run):
+            print(colored("This file already has saved pickled file, hence was succesfully run", "green"))
+            return
         else:
             try:
                 ## call the file as this is the file calling it
@@ -193,7 +200,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                     # Check whether this is new setting
                     #################
                     if not rerun:
-                        if not is_new_config(file_name=csv_file_path, is_first_run=is_first_run):
+                        if not is_new_config(file_name=csv_file_path, is_guided=guided, is_force_merge_allowed=allow_force_merge, video_available=has_tracked_video, is_first_run=is_first_run):
                             return
                     # parse traces from csv file
                     scraped_traces = parse_traces(csv_file)

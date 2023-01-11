@@ -208,7 +208,7 @@ def trim_out_additional_agents_over_long_traces3(traces, population_size, silent
 
         if to_be_deleted:
             if debug:
-                print(colored(f"Gonna delete range index {shortest_index}, {shortest_range}", "yellow"))
+                print(colored(f"Will delete range index {shortest_index}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(shortest_index)
 
     if debug:
@@ -260,7 +260,7 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
 
         if to_be_deleted:
             if debug:
-                print(colored(f"Gonna delete range index {shortest_index}, {shortest_range}", "yellow"))
+                print(colored(f"Will delete range index {shortest_index}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(shortest_index)
 
     if debug:
@@ -603,7 +603,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
             print(colored(f"jumping to step {step_to}", "blue"))
 
     if debug:
-        print(f"Gonna delete the following traces as we have merged them: {trace_indices_to_merge}")
+        print(f"Will delete the following traces as we have merged them: {trace_indices_to_merge}")
     traces = delete_indices(trace_indices_to_merge, traces)
 
     print(colored(f"GAPING TRACES analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
@@ -799,7 +799,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, allow_f
                     print("traces[pick_key2[0]].frame_range", traces[pick_key2[0]].frame_range)
                     print("traces[pick_key2[1]].frame_range", traces[pick_key2[1]].frame_range)
 
-                    print("Gonna delete ", dictionary[pick_key2])
+                    print("Will delete ", dictionary[pick_key2])
                     print(dictionary)
                 del dictionary[pick_key2]
                 if debug:
@@ -855,8 +855,8 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, allow_f
                 #
                 # Remove the merged trace
                 if debug:
-                    # print(colored(f"Gonna delete trace {trace2_id}.", "blue"))
-                    print(colored(f"Gonna delete trace {pick_key2[1]}({trace2_id}).", "blue"))
+                    # print(colored(f"Will delete trace {trace2_id}.", "blue"))
+                    print(colored(f"Will delete trace {pick_key2[1]}({trace2_id}).", "blue"))
                     print()
                 traces = delete_indices([pick_key2[1]], traces)
                 # Show scatter plot of traces having two traces merged
