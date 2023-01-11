@@ -7,7 +7,7 @@ from video import show_video
 from visualise import scatter_detection, show_plot_locations
 
 
-def full_guided(traces, input_video, show=True, silent=False, debug=False, video_params=False):
+def full_guided(traces, input_video, show=True, silent=False, debug=False, video_params=False, to_skip_tuples=()):
     """ Goes a gap and overlap one by one in a user-guided manner
 
         :arg traces: (list): a list of Traces
@@ -16,6 +16,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+        :arg to_skip_tuples: (tuple): pairs of trace ids, which to be skipped (as they have been already checked)
     """
     print(colored("VIDEO-GUIDED SOLVER", "blue"))
     if not input_video:
@@ -25,6 +26,8 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
     removed_traces = []
     traces_indices_to_be_removed = []
     last_edited_index = -1
+
+    to_skip_tuples = list(to_skip_tuples)
 
     gaps = get_gaps_of_traces(traces, get_all_gaps=False)
     overlaps = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda a: a.frame_range, traces)), skip_whole_in=True)
@@ -36,7 +39,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         if last_edited_index == key[0]:
             # Actually delete the given traces
             delete_indices(traces_indices_to_be_removed, traces, debug=False)
-            traces, spam = full_guided(traces, input_video, show=show, silent=silent, debug=debug, video_params=video_params)
+            traces, spam, to_skip_tuples = full_guided(traces, input_video, show=show, silent=silent, debug=debug, video_params=video_params, to_skip_tuples=to_skip_tuples)
             removed_traces.extend(spam)
             return traces, removed_traces
 
@@ -44,6 +47,9 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         trace2 = traces[key[1]]
         trace1_index = key[0]
         trace2_index = key[1]
+
+        if [trace1.trace_id, trace2.trace_id] in to_skip_tuples:
+            continue
 
         min_range = min([trace1.frame_range[0], trace2.frame_range[0]])
         max_range = max([trace1.frame_range[1], trace2.frame_range[1]])
@@ -57,7 +63,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             show_range = margin_range(show_range, max(100, 0.2*range_len(show_range)))
             show_range = list(map(round, show_range))
         print()
-        print(colored(f"We have found a {'overlapping' if is_overlap else 'gaping'} traces {key[0]}({traces[key[0]].trace_id}),{key[1]}({traces[key[1]].trace_id}).", "blue"))
+        print(colored(f"We have found a {'overlapping' if is_overlap else 'gaping'} traces {key[0]}({trace1.trace_id}),{key[1]}({trace2.trace_id}).", "blue"))
 
         frame_range = overlaps_and_gaps[key]
 
@@ -82,6 +88,8 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             if spam:
                 traces_indices_to_be_removed.extend(spam)
                 last_edited_index = spam[0]
+            else:
+                to_skip_tuples.append([trace1.trace_id, trace2.trace_id])
 
         elif "y" in to_merge_by_user.lower():
             if is_overlap:
@@ -95,4 +103,4 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
     # Actually delete the given traces now
     delete_indices(traces_indices_to_be_removed, traces, debug=False)
 
-    return traces, removed_traces
+    return traces, removed_traces, to_skip_tuples

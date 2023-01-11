@@ -212,8 +212,11 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     trim_offset = 0 if trim_offset is None else trim_offset
     crop_offset = (0, 0) if crop_offset is None else crop_offset
 
+
+    trace_ranges = []
     for trace in traces:
         assert isinstance(trace, Trace)
+        trace_ranges.append(trace.frame_range)
 
     # PARAMS
     len_of_trace_shown_behind = 30  # number of frames the path is shown behind
@@ -235,6 +238,8 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
         if frame_range:
             print('Show frames: ', frame_range)
+
+        print('Ranges of Traces: ', trace_ranges)
 
     # Obtain frame size information using get() method
     frame_width = int(video.get(3))
