@@ -123,6 +123,10 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         print(colored(f"Gonna annotate: {csv_file_path}", "magenta"))
     elif just_align:
         print(colored(f"Gonna align: {csv_file_path}", "magenta"))
+    elif is_first_run is True:
+        print(colored(f"Gonna first run: {csv_file_path}", "magenta"))
+    elif is_first_run is False:
+        print(colored(f"Gonna second run: {csv_file_path}", "magenta"))
     else:
         print(colored(f"Gonna analyse: {csv_file_path}", "magenta"))
 
