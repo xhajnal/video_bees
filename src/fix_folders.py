@@ -17,13 +17,21 @@ for folder in next(os.walk('.'))[1]:
 
     # move all files from the loopy folder one up
     for file in glob.glob(f"deep*/*"):
-        print("file", file)
+        # print("file", file)
         shutil.move(file, f"{os.path.basename(file)}")
+
+    # remove the old folder
+    try:
+        print(os.listdir(glob.glob(f"deep*")[0]))
+        if len(os.listdir(glob.glob(f"deep*")[0])) == 0:
+            os.removedirs(glob.glob(f"deep*")[0])
+    except IndexError:
+        pass
 
     # move all the csv files to folder original
     for file in glob.glob(f"*.csv"):
-        print("file", os.path.basename(file))
+        # print("file", os.path.basename(file))
         shutil.move(f"{os.path.basename(file)}", f"original/{os.path.basename(file)}")
 
     os.chdir("..")
-    break
+    print()
