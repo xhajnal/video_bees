@@ -31,9 +31,10 @@ def get_video_path(file_path):
 
     video_file = glob.glob(os.path.join(folder, f'*{video_file}*.mp4'))
     # Remove file with "movie_from"
-    for index, file in enumerate(video_file):
-        if "movie_from_" in file:
-            del video_file[index]
+    if len(video_file) >= 2:
+        for index, file in enumerate(video_file):
+            if "movie_from_" in file:
+                del video_file[index]
 
     if len(video_file) > 1:
         raise Exception(f"There are more input videos with given identifier: {video_file}. We do not know which to pick.")
