@@ -221,14 +221,18 @@ def merge_overlapping_triplets_of_traces(traces, population_size, guided=False, 
                 if input_video:
                     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
                     show_video(input_video, [trace1, trace2, trace3], frame_range=margin_range(double_overlap_range, 15), video_speed=0.01, wait=True, video_params=video_params)
-                    to_show_longer_video = input("Do you want to see longer video? (yes or no):")
-                    if "y" in to_show_longer_video.lower():
-                        show_video(input_video, [trace1, trace2, trace3],
-                                   frame_range=[min_overlap_range - 15, max_overlap_range + 15], video_speed=0.01,
-                                   wait=True, video_params=video_params)
 
                 # Ask whether we should merge any of these traces
-                to_merge_by_user = input("Are we gonna merge any of the shown traces? (yes or no):")
+                if input_video:
+                    to_merge_by_user = input("Are we gonna merge any of the shown traces? (yes or no) (press l to see longer video):")
+
+                    if "l" in to_merge_by_user:
+                        # to_show_longer_video = input("Do you want to see longer video? (yes or no):")
+                        show_video(input_video, [trace1, trace2, trace3], frame_range=[min_overlap_range - 15, max_overlap_range + 15], video_speed=0.01, wait=True, video_params=video_params)
+                        to_merge_by_user = input("Merge these traces now? (yes or no)")
+                else:
+                    to_merge_by_user = input("Are we gonna merge any of the shown traces? (yes or no):")
+
                 if "y" in to_merge_by_user.lower():
                     # Ask for the index of the first trace to be merged and verify it
                     first_trace_to_merge = input("Write an index of one of the traces to be merged (number before the bracket):")

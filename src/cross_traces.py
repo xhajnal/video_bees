@@ -140,7 +140,7 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
                         scatter_detection([trace1, trace2],
                                           get_video_whole_frame_range([trace1, trace2]),
                                           subtitle="Traces to be swapped.")
-                        show_plot_locations([trace1, trace2], whole_frame_range= [0,0],
+                        show_plot_locations([trace1, trace2], whole_frame_range=[0, 0],
                                             from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30,
                                                            dictionary[overlapping_pair_of_traces][0] + index + 30],
                                             show_middle_point=True,

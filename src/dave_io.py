@@ -357,7 +357,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
 
                     file.write(f"{track_file}; {timestamp}; {had_video}; {guided}; {force_merge_allowed}; "
                                f"{record['distance_from_calculated_arena']}; {record['max_trace_gap']}; {min_trace_len};"
-                               f" {record['min_trace_length_to_merge']}; {record['bee_max_step_len']}; "
+                               f"{record['min_trace_length_to_merge']}; {record['bee_max_step_len']}; "
                                f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
                                f"{record['max_step_distance_to_merge_overlapping_traces']}; {force_merge_vicinity}; "
                                f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "

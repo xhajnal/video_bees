@@ -84,6 +84,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         if "l" in to_merge_by_user.lower():
             show_video(input_video=input_video, traces=[trace1, trace2], frame_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15),
                        video_speed=0.02, wait=True, video_params=video_params)
+            to_merge_by_user = input("Merge these traces now? (yes or no)")
 
         if "n" in to_merge_by_user.lower():
             spam = ask_to_delete_a_trace(traces, input_video, key, video_params=video_params)
