@@ -101,28 +101,22 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
         return True
 
     # GET SETTING
-    setting = {"had_video": video_available,
-               "is_guided": is_guided,
-               "force_merge_allowed": is_force_merge_allowed,
-               "distance_from_calculated_arena": get_distance_from_calculated_arena(),
-               "min_trace_len": get_min_trace_len(),
-               "max_trace_gap": get_max_trace_gap(),
-               "min_trace_length": get_min_trace_length(),
-               "bee_max_step_len": get_bee_max_step_len(),
-               "bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
-               "max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
-               "max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
-               "force_merge_vicinity": get_force_merge_vicinity(),
-               "screen_size": get_screen_size()}
-
-    # setting = {"distance_from_calculated_arena": get_distance_from_calculated_arena(),
-    #            "max_trace_gap": get_max_trace_gap(),
-    #            "min_trace_length": get_min_trace_length(),
-    #            "bee_max_step_len": get_bee_max_step_len(),
-    #            "bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
-    #            "max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
-    #            "max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
-    #            "screen_size": get_screen_size()}
+    setting = {'had_video': video_available,
+               'is_guided': is_guided,
+               'force_merge_allowed': is_force_merge_allowed,
+               'distance_from_calculated_arena': get_distance_from_calculated_arena(),
+               'min_trace_len': get_min_trace_len(),
+               'bee_min_trace_len': get_min_trace_len(),  ## TODO add
+               'bee_max_step_len': get_bee_max_step_len(),
+               'bee_max_step_len_per_frame': get_bee_max_step_len_per_frame(),
+               'min_trace_length_to_merge': get_min_trace_length_to_merge(),
+               'max_trace_gap': get_max_trace_gap(),
+               'max_step_distance_to_merge_overlapping_traces': get_max_step_distance_to_merge_overlapping_traces(),
+               'force_merge_vicinity_distance': get_force_merge_vicinity_distance(),
+               'vicinity_of_short_traces': get_vicinity_of_short_traces(),
+               'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),  ## TODO add
+               'max_trace_gap_to_interpolate_distance': get_max_trace_gap_to_interpolate_distance(),
+               'screen_size': get_screen_size()}
 
     same_setting_found = False
 
@@ -207,28 +201,31 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
 
     # PARSE NEW ENTRY
     now = str(datetime.now())
-    new_entry = {"had_video": video_available,
-                 "is_guided": is_guided,
-                 "force_merge_allowed": is_force_merge_allowed,
-                 "distance_from_calculated_arena": get_distance_from_calculated_arena(),
-                 "min_trace_len": get_min_trace_len(),
-                 "max_trace_gap": get_max_trace_gap(),
-                 "min_trace_length": get_min_trace_length(),
-                 "bee_max_step_len": get_bee_max_step_len(),
-                 "bee_max_step_len_per_frame": get_bee_max_step_len_per_frame(),
-                 "max_trace_gap_to_interpolate_distance": get_max_trace_gap_to_interpolate_distance(),
-                 "max_step_distance_to_merge_overlapping_traces": get_max_step_distance_to_merge_overlapping_traces(),
-                 "force_merge_vicinity": get_force_merge_vicinity(),
-                 "screen_size": get_screen_size(),
-                 "loaded": counts[0],
-                 "inside arena": counts[1],
-                 "zero length": counts[2],
-                 "jumps forth and back fixed": counts[3],
-                 "traces swapped": counts[4],
-                 "after first gaps and redundant": counts[5],
-                 "after merging overlapping traces": counts[6],
-                 # "after second gaps and redundant": counts[7],
-                 "population_size": population_size}
+    new_entry = {'had_video': video_available,
+                 'is_guided': is_guided,
+                 'force_merge_allowed': is_force_merge_allowed,
+                 'distance_from_calculated_arena': get_distance_from_calculated_arena(),
+                 'min_trace_len': get_min_trace_len(),
+                 'bee_min_trace_len': get_min_trace_len(),  ## TODO add
+                 'bee_max_step_len': get_bee_max_step_len(),
+                 'bee_max_step_len_per_frame': get_bee_max_step_len_per_frame(),
+                 'min_trace_length_to_merge': get_min_trace_length_to_merge(),
+                 'max_trace_gap': get_max_trace_gap(),
+                 'max_step_distance_to_merge_overlapping_traces': get_max_step_distance_to_merge_overlapping_traces(),
+                 'force_merge_vicinity_distance': get_force_merge_vicinity_distance(),
+                 'vicinity_of_short_traces': get_vicinity_of_short_traces(),
+                 'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),  ## TODO add
+                 'max_trace_gap_to_interpolate_distance': get_max_trace_gap_to_interpolate_distance(),
+                 'screen_size': get_screen_size(),
+                 'loaded': counts[0],
+                 'inside arena': counts[1],
+                 'zero length': counts[2],
+                 'jumps forth and back fixed': counts[3],
+                 'traces swapped': counts[4],
+                 'after first gaps and redundant': counts[5],
+                 'after merging overlapping traces': counts[6],
+                 # 'after second gaps and redundant': counts[7],
+                 'population_size': population_size}
 
     ## UPDATE THE RESULTS
     if file_name not in results.keys():
@@ -287,25 +284,16 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
 
     try:
         with open(results_csv_file, "w") as file:
-            # write header
-            ## TODO parse the population size
+            # write csv header
             file.write(
                 f"track_file; timestamp of the run; had_video; was_guided; was_force_merge_allowed; "
-                f"distance_from_calculated_arena; max_trace_gap; min_trace_length; bee_max_step_len; "
-                f"bee_max_step_len_per_frame; max_trace_gap_to_interpolate_distance; "
-                f"max_step_distance_to_merge_overlapping_traces; force_merge_vicinity; screen_size; loaded traces; "
-                f"inside arena; zero length; jumps forth and back fixed; traces swapped; after first gaps and redundant; "
-                f"after merging overlapping traces; population size \n")
+                f"distance_from_calculated_arena; min_trace_length; bee_max_step_length; bee_max_step_len_per_frame; "
+                f"min_trace_length_to_merge; max_trace_gap; max_step_distance_to_merge_overlapping_traces; "
+                f"force_merge_vicinity_distance; vicinity_of_short_traces; maximal_distance_to_check_for_trace_swapping; "
+                f"max_trace_gap_to_interpolate_distance; screen_size; "
+                f"loaded traces; inside arena; zero length; jumps forth and back fixed; traces swapped; "
+                f"after first gaps and redundant; after merging overlapping traces; population size \n")
 
-            # f"{track_file}; {timestamp}; {had_video}; {guided}; {force_merge_allowed}; "
-            # f"{record['distance_from_calculated_arena']}; {record['max_trace_gap']}; {min_trace_len};"
-            # f" {record['min_trace_length']}; {record['bee_max_step_len']}; "
-            # f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
-            # f"{record['max_step_distance_to_merge_overlapping_traces']}; {force_merge_vicinity}; "
-            # f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "
-            # f"{record['jumps forth and back fixed']}; {record['traces swapped']}; "
-            # f"{record['after first gaps and redundant']};"
-            # f" {record['after merging overlapping traces']}; {population_size}\n")
             assert isinstance(results, dict)
             for track_file in results.keys():
                 if debug:
@@ -354,13 +342,22 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                         zero_len = ""
 
                     try:
-                        force_merge_vicinity = record['force_merge_vicinity']
+                        force_merge_vicinity = record['force_merge_vicinity_distance']
                     except KeyError as err:
                         force_merge_vicinity = ""
 
+                    ## HEADER LOOKS LIKE - copied
+                    # f"track_file; timestamp of the run; had_video; was_guided; was_force_merge_allowed; "
+                    # f"distance_from_calculated_arena; min_trace_length; bee_max_step_length; bee_max_step_len_per_frame; "
+                    # f"min_trace_length_to_merge; max_trace_gap; max_step_distance_to_merge_overlapping_traces; "
+                    # f"force_merge_vicinity_distance; vicinity_of_short_traces; maximal_distance_to_check_for_trace_swapping; "
+                    # f"max_trace_gap_to_interpolate_distance; screen_size; "
+                    # f"loaded traces; inside arena; zero length; jumps forth and back fixed; traces swapped; "
+                    # f"after first gaps and redundant; after merging overlapping traces; population size \n")
+
                     file.write(f"{track_file}; {timestamp}; {had_video}; {guided}; {force_merge_allowed}; "
                                f"{record['distance_from_calculated_arena']}; {record['max_trace_gap']}; {min_trace_len};"
-                               f" {record['min_trace_length']}; {record['bee_max_step_len']}; "
+                               f" {record['min_trace_length_to_merge']}; {record['bee_max_step_len']}; "
                                f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
                                f"{record['max_step_distance_to_merge_overlapping_traces']}; {force_merge_vicinity}; "
                                f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "

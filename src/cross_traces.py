@@ -535,7 +535,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     for trace in traces:
                         if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
                             continue
-                        if has_overlap(gap_range, [trace.frame_range[0] - get_force_merge_vicinity(), trace.frame_range[1] + get_force_merge_vicinity()]):
+                        if has_overlap(gap_range, [trace.frame_range[0] - get_force_merge_vicinity_distance(), trace.frame_range[1] + get_force_merge_vicinity_distance()]):
                             force_merge = False
                             break
                     if force_merge and not silent:
@@ -550,9 +550,9 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                         to_merge = False
                         reason = f"gap too long (> {get_max_trace_gap()})"
                     # length of the second trace is longer than a given number (100)
-                    if force_merge and trace2.frame_range_len < get_min_trace_length():
+                    if force_merge and trace2.frame_range_len < get_min_trace_length_to_merge():
                         to_merge = False
-                        reason = f"2nd trace too short (< {get_min_trace_length()})"
+                        reason = f"2nd trace too short (< {get_min_trace_length_to_merge()})"
                     # CHECK FOR DISTANCE OF TRACES IN X,Y
                     # if the distance of traces in frames is high
                     if to_merge:
@@ -827,7 +827,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, allow_f
                     if key == pick_key2:
                         continue
                     searched_overlap = dictionary[key]
-                    if has_overlap(picked_frame_range, [searched_overlap[0] - get_force_merge_vicinity(), searched_overlap[1] + get_force_merge_vicinity()]):
+                    if has_overlap(picked_frame_range, [searched_overlap[0] - get_force_merge_vicinity_distance(), searched_overlap[1] + get_force_merge_vicinity_distance()]):
                         there_is_overlap = True
                         break
                 if not there_is_overlap:
