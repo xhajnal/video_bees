@@ -12,7 +12,7 @@ from termcolor import colored
 
 from guided_traces import full_guided
 from video import annotate_video, show_video, align_the_video, parse_video_info
-from config import get_min_trace_len, get_vicinity_of_short_traces
+from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
@@ -143,7 +143,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         set_rerun(False)
         set_guided(False)
     elif is_first_run is False:
-        traces_file = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", os.path.basename(csv_file_path).replace(".csv", ".p")))
+        traces_file = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", str(hash_config()), os.path.basename(csv_file_path).replace(".csv", ".p")))
         set_show_all_plots(False)
         set_batch_run(False)
         set_guided(True)

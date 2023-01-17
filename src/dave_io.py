@@ -296,6 +296,16 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                 f"max_step_distance_to_merge_overlapping_traces; force_merge_vicinity; screen_size; loaded traces; "
                 f"inside arena; zero length; jumps forth and back fixed; traces swapped; after first gaps and redundant; "
                 f"after merging overlapping traces; population size \n")
+
+            # f"{track_file}; {timestamp}; {had_video}; {guided}; {force_merge_allowed}; "
+            # f"{record['distance_from_calculated_arena']}; {record['max_trace_gap']}; {min_trace_len};"
+            # f" {record['min_trace_length']}; {record['bee_max_step_len']}; "
+            # f"{record['bee_max_step_len_per_frame']}; {record['max_trace_gap_to_interpolate_distance']}; "
+            # f"{record['max_step_distance_to_merge_overlapping_traces']}; {force_merge_vicinity}; "
+            # f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "
+            # f"{record['jumps forth and back fixed']}; {record['traces swapped']}; "
+            # f"{record['after first gaps and redundant']};"
+            # f" {record['after merging overlapping traces']}; {population_size}\n")
             assert isinstance(results, dict)
             for track_file in results.keys():
                 if debug:
@@ -337,6 +347,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                         min_trace_len = record['min_trace_len']
                     except KeyError as err:
                         min_trace_len = ""
+
                     try:
                         zero_len = record['zero length']
                     except KeyError as err:
