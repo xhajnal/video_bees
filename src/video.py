@@ -334,22 +334,16 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                     if frame_range:
                         video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + frame_range[0])
                     else:
-                        video.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                    locations_of_traces = []
-                    for trace in traces:
-                        locations_of_traces.append([])
+                        video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset)
+                    locations_of_traces = [[]]*len(traces)
 
                 if key == ord('a') or key == ord('A'):
-                    video.set(cv2.CAP_PROP_POS_FRAMES, max(frame_number - 100, trim_offset + frame_range[0]))
-                    locations_of_traces = []
-                    for trace in traces:
-                        locations_of_traces.append([])
+                    video.set(cv2.CAP_PROP_POS_FRAMES, max(trim_offset + frame_number - 100, trim_offset + frame_range[0]))
+                    locations_of_traces = [[]]*len(traces)
 
                 if key == ord('d') or key == ord('D'):
-                    video.set(cv2.CAP_PROP_POS_FRAMES, min(frame_number + 100, trim_offset + frame_range[1]))
-                    locations_of_traces = []
-                    for trace in traces:
-                        locations_of_traces.append([])
+                    video.set(cv2.CAP_PROP_POS_FRAMES, min(trim_offset + frame_number + 100, trim_offset + frame_range[1]))
+                    locations_of_traces = [[]]*len(traces)
 
                 if key == ord('+'):
                     speed = 1.1 * speed
