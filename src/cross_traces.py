@@ -8,6 +8,7 @@ from operator import countOf
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from config import *
+from fake import get_whole_frame_range
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, \
     get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten2
 from trace import Trace
@@ -16,7 +17,7 @@ from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
 
-def get_whole_frame_range(traces):
+def compute_whole_frame_range(traces):
     """ Returns frame range of the whole video.
 
         :arg traces: (list): list of Traces
@@ -35,11 +36,11 @@ def get_video_whole_frame_range(traces):
 
         :arg traces: (list): list of Traces
     """
-    a = get_whole_frame_range(traces)
+    a = compute_whole_frame_range(traces)
     return [a[0] - 2000, a[1] + 2000]
 
 
-def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
+def track_swapping_loop(traces, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
     """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
@@ -50,12 +51,14 @@ def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, inp
         :arg debug: (bool): if True extensive output is shown
         :arg video_params: (bool or tuple): i if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
     """
+    whole_frame_range = get_whole_frame_range()
+
     start_time = time()
     keep_looking = True
     number_of_swaps = 0
 
     while keep_looking:
-        keep_looking = track_swapping(traces, whole_frame_range, automatically_swap=automatically_swap, input_video=input_video, silent=silent, debug=debug, video_params=video_params)
+        keep_looking = track_swapping(traces, automatically_swap=automatically_swap, input_video=input_video, silent=silent, debug=debug, video_params=video_params)
         if keep_looking:
             number_of_swaps = number_of_swaps + 1
 
@@ -66,7 +69,7 @@ def track_swapping_loop(traces, whole_frame_range, automatically_swap=False, inp
     return number_of_swaps
 
 
-def track_swapping(traces, whole_frame_range, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
+def track_swapping(traces, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
         :arg traces: (list): list of Traces
@@ -79,6 +82,10 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
         :return: traces: (list): list of trimmed Traces
     """
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
+
+    # Obtained variables
+    whole_frame_range = get_whole_frame_range()
+
     # Check
     if len(traces) < 2:
         print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
@@ -133,7 +140,7 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
                         scatter_detection([trace1, trace2],
                                           get_video_whole_frame_range([trace1, trace2]),
                                           subtitle="Traces to be swapped.")
-                        show_plot_locations([trace1, trace2], [0, 0],
+                        show_plot_locations([trace1, trace2], whole_frame_range= [0,0],
                                             from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30,
                                                            dictionary[overlapping_pair_of_traces][0] + index + 30],
                                             show_middle_point=True,
@@ -141,6 +148,7 @@ def track_swapping(traces, whole_frame_range, automatically_swap=False, input_vi
                         # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
                         show_video(input_video, traces=[trace1, trace2], frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
                                    video_speed=0.1, wait=True, video_params=video_params)
+
                         to_show_longer_video = input("Do you want to see longer video? (yes or no):")
                         if "y" in to_show_longer_video.lower():
                             show_video(input_video, traces=[trace1, trace2], frame_range=[trace1.frame_range[0]-15, trace2.frame_range[1]+15],
@@ -235,7 +243,10 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
         trace.check_trace_consistency()
         ranges.append(trace.frame_range)
     ranges = sorted(ranges)
+
+    dict_start_time = time()
     dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=False)
+    print(colored(f"Creation of the dictionary of m overlaps over n intervals took {round(time() - dict_start_time, 3)} seconds.", "yellow"))
 
     indices_of_intervals_to_be_deleted = []
 
@@ -420,7 +431,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
 
     trace_indices_to_merge = []
 
-    video_range = get_whole_frame_range(traces)
+    video_range = compute_whole_frame_range(traces)
     if debug:
         print(video_range)
 
@@ -701,7 +712,7 @@ def cross_trace_analyse(traces, silent=False, debug=False):
     print()
 
 
-def merge_overlapping_traces(traces, whole_frame_range, population_size, allow_force_merge=True, silent=False, debug=False, show=False):
+def merge_overlapping_traces(traces, population_size, allow_force_merge=True, silent=False, debug=False, show=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
         :arg traces (list) list of traces
@@ -717,6 +728,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, allow_f
     start_time = time()
     starting_number_of_traces = len(traces)
 
+    whole_frame_range = get_whole_frame_range()
     count_one = [-9]  # indices of traces which have only one occurrence
     number_of_traces = -9
     force_merge = False
@@ -869,7 +881,7 @@ def merge_overlapping_traces(traces, whole_frame_range, population_size, allow_f
 
             if show:
                 try:
-                    scatter_detection(traces, whole_frame_range, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}.")
+                    scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {traces[pick_key2[0]].trace_id} and {pick_key2[1]} of id {trace2_id}.")
                 except UnboundLocalError:
                     pass
 

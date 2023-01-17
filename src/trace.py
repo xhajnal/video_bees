@@ -2,7 +2,9 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
+# from fake import get_whole_frame_range
 from config import *
+from fake import get_whole_frame_range
 from misc import has_overlap, take
 
 
@@ -218,7 +220,7 @@ class Trace:
         plt.title(f'Histogram of step lengths. Trace id {self.trace_id}.')
         plt.show()
 
-    def show_trace_in_xy(self, whole_frame_range, from_to_frame=False, where=False, show=True, subtitle="",
+    def show_trace_in_xy(self, whole_frame_range=False, from_to_frame=False, where=False, show=True, subtitle="",
                          show_middle_point=False, silent=False, debug=False):
         """ Plots the trace in three plots, trace in x-axis and y-axis separately, time on horizontal axis in frame numbers.
             Last plot is the trace in x,y.
@@ -233,6 +235,10 @@ class Trace:
         :arg debug: (bool) if True extensive output is shown
         :returns: list of pairs [figure, axis] for each of three plots
         """
+        # Obtained variables
+        if whole_frame_range is False:
+            whole_frame_range = get_whole_frame_range()
+
         if subtitle is False:
             subtitle = ""
 

@@ -6,12 +6,13 @@ import numpy as np
 from _socket import gethostname
 from termcolor import colored
 
+from fake import get_real_whole_frame_range, get_whole_frame_range
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices, has_overlap
 from trace import Trace
 
 
-def remove_full_traces(traces, removed_traces, real_whole_frame_range, population_size, silent=False, debug=False):
+def remove_full_traces(traces, removed_traces, population_size, silent=False, debug=False):
     """ Removes traces of full range
 
         :arg traces: (list): a list of Traces
@@ -24,6 +25,8 @@ def remove_full_traces(traces, removed_traces, real_whole_frame_range, populatio
         :returns traces: (list): a list of old Traces
         :returns new_population_size: (int): population size of new traces
         """
+    real_whole_frame_range = get_real_whole_frame_range()
+
     print(colored("REMOVING TRACES OF FULL RANGE", "blue"))
     deleted = 0
     for index, trace in enumerate(traces):
@@ -194,7 +197,7 @@ def dummy_collision_finder(csv_file, size):
     return frame_numbers_of_collided_agents
 
 
-def track_jump_back_and_forth(trace, trace_index, whole_frame_range, show_plots=False, silent=False, debug=False):
+def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False, debug=False):
     """ Tracks when the tracking of the bee jumped at some place and then back quickly.
 
     :arg trace: (Trace): a Traces to check
@@ -205,6 +208,7 @@ def track_jump_back_and_forth(trace, trace_index, whole_frame_range, show_plots=
     :arg debug: (bool): if True extensive output is shown
     """
     assert isinstance(trace, Trace)
+    whole_frame_range = get_whole_frame_range()
     # if not silent:
     #     print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace {trace_index}({trace.trace_id})", "blue"))
     start_time = time()
@@ -245,7 +249,7 @@ def track_jump_back_and_forth(trace, trace_index, whole_frame_range, show_plots=
 
                     # show jump in plot
                     if show_plots and debug:
-                        trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[location_index]-2, trace.frames_list[location_index2]+2], show=True, subtitle=f" jump to {trace.frames_list[jump_to_index]}")
+                        trace.show_trace_in_xy(from_to_frame=[trace.frames_list[location_index]-2, trace.frames_list[location_index2]+2], show=True, subtitle=f" jump to {trace.frames_list[jump_to_index]}")
 
                     # smoothen the jump
                     spam = np.linspace(trace.locations[location_index], trace.locations[location_index2], num=location_index2 - location_index + 1, endpoint=True)

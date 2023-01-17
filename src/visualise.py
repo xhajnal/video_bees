@@ -5,6 +5,7 @@ from termcolor import colored
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
+from fake import get_whole_frame_range
 from trace import Trace
 from traces_logic import get_gaps_of_traces, get_traces_from_range
 from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
@@ -26,7 +27,7 @@ def get_fontsize(number_of_traces):
     return fontsize
 
 
-def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_middle_point=False, subtitle=False, silent=False, debug=False):
+def show_plot_locations(traces, whole_frame_range=False, from_to_frame=False, show_middle_point=False, subtitle=False, silent=False, debug=False):
     """ Plots the traces in three plots, traces in x-axis and y-axis separately,
     time on horizontal axis in frame numbers. Last plot is the traces in x,y.
 
@@ -38,24 +39,27 @@ def show_plot_locations(traces, whole_frame_range, from_to_frame=False, show_mid
     :arg silent: (bool) if True minimal output is shown
     :arg debug: (bool) if True extensive output is shown
     """
+    if whole_frame_range is False:
+        whole_frame_range = get_whole_frame_range()
+
     if debug:
         print(colored("SHOW PLOT LOCATIONS", "blue"))
     start_time = time()
     for index, trace in enumerate(traces):
         if len(traces) == 1:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=True, show_middle_point=show_middle_point, subtitle=subtitle, silent=silent, debug=debug)
+            figs = trace.show_trace_in_xy(whole_frame_range=whole_frame_range, from_to_frame=from_to_frame, show=True, show_middle_point=show_middle_point, subtitle=subtitle, silent=silent, debug=debug)
         elif index == 0:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, show=False, show_middle_point=show_middle_point, subtitle=subtitle, silent=silent, debug=debug)
+            figs = trace.show_trace_in_xy(whole_frame_range=whole_frame_range, from_to_frame=from_to_frame, show=False, show_middle_point=show_middle_point, subtitle=subtitle, silent=silent, debug=debug)
         elif index < len(traces) - 1:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show_middle_point=show_middle_point, show=False, subtitle=subtitle, silent=silent, debug=debug)
+            figs = trace.show_trace_in_xy(whole_frame_range=whole_frame_range, from_to_frame=from_to_frame, where=figs, show_middle_point=show_middle_point, show=False, subtitle=subtitle, silent=silent, debug=debug)
         else:
-            figs = trace.show_trace_in_xy(whole_frame_range, from_to_frame=from_to_frame, where=figs, show_middle_point=show_middle_point, show=True, subtitle=subtitle, silent=silent, debug=debug)
+            figs = trace.show_trace_in_xy(whole_frame_range=whole_frame_range, from_to_frame=from_to_frame, where=figs, show_middle_point=show_middle_point, show=True, subtitle=subtitle, silent=silent, debug=debug)
 
     if debug:
         print(colored(f"Showing location of {len(traces)} traces, It took {gethostname()} {round(time() - start_time, 3)} seconds.\n", "yellow"))
 
 
-def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=False, show_trace_index=True,
+def scatter_detection(traces, whole_frame_range=False, from_to_frame=False, subtitle=False, show_trace_index=True,
                       show_trace_id=True, show_trace_range=True):
     """ Creates a scatter plot of detected traces of each agent.
 
@@ -67,6 +71,9 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     :arg show_trace_id: (bool): if True trace id is shown above the trace
     :arg show_trace_range: (bool): if True frame number of beginning af the trace and end of the trace is shown above the trace
     """
+    if whole_frame_range is False:
+        whole_frame_range = get_whole_frame_range()
+
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
 
@@ -125,7 +132,7 @@ def scatter_detection(traces, whole_frame_range, from_to_frame=False, subtitle=F
     plt.show()
 
 
-def show_overlaps(traces, whole_frame_range, from_to_frame=False, skip_whole_in=False, subtitle=False, silent=False, debug=False,
+def show_overlaps(traces, whole_frame_range=False, from_to_frame=False, skip_whole_in=False, subtitle=False, silent=False, debug=False,
                   show_overlap_indices=True, show_overlap_ids=True, show_overlap_range=True):
     """ Creates a scatter plot of overlaps of traces.
 
@@ -140,6 +147,9 @@ def show_overlaps(traces, whole_frame_range, from_to_frame=False, skip_whole_in=
     :arg show_overlap_ids: (bool): if True trace id-s are shown above the overlap
     :arg show_overlap_range: (bool): if True frame number of beginning af the overlap and end of the overlap is shown above the overlap
     """
+    if whole_frame_range is False:
+        whole_frame_range = get_whole_frame_range()
+
     # Check
     if len(traces) < 2:
         # print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
@@ -251,7 +261,7 @@ def show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index
     plt.show()
 
 
-def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, silent=False, debug=False,
+def show_gaps(traces, whole_frame_range=False, show_all_gaps=False, subtitle=False, silent=False, debug=False,
               show_gap_indices=True, show_gap_range=True):
     """ Creates a scatter plot of gaps of traces.
 
@@ -264,6 +274,9 @@ def show_gaps(traces, whole_frame_range, show_all_gaps=False, subtitle=False, si
     :arg show_gap_indices: (bool): if True trace indices is shown above the gap
     :arg show_gap_range: (bool): if True frame number of beginning af the gap and end of the gap is shown above the gap
     """
+    if whole_frame_range is False:
+        whole_frame_range = get_whole_frame_range()
+
     # Check
     if len(traces) < 2:
         # print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))

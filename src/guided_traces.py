@@ -7,7 +7,7 @@ from video import show_video
 from visualise import scatter_detection, show_plot_locations
 
 
-def full_guided(traces, input_video, show=True, silent=False, debug=False, video_params=False, to_skip_tuples=()):
+def full_guided(traces, input_video, show=True, silent=False, debug=False, video_params=False, to_skip_tuples=(), has_tracked_video=False):
     """ Goes a gap and overlap one by one in a user-guided manner
 
         :arg traces: (list): a list of Traces
@@ -17,6 +17,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         :arg debug: (bool): if True extensive output is shown
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :arg to_skip_tuples: (tuple): pairs of trace ids, which to be skipped (as they have been already checked)
+        :arg has_tracked_video: (bool): flag whether a video with tracking is available
     """
     print(colored("VIDEO-GUIDED SOLVER", "blue"))
     if not input_video:
@@ -39,7 +40,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         if last_edited_index == key[0]:
             # Actually delete the given traces
             delete_indices(traces_indices_to_be_removed, traces, debug=False)
-            traces, spam, to_skip_tuples = full_guided(traces, input_video, show=show, silent=silent, debug=debug, video_params=video_params, to_skip_tuples=to_skip_tuples)
+            traces, spam, to_skip_tuples = full_guided(traces, input_video, show=show, silent=silent, debug=debug, video_params=video_params, to_skip_tuples=to_skip_tuples, has_tracked_video=has_tracked_video)
             removed_traces.extend(spam)
             return traces, removed_traces
 
@@ -68,21 +69,22 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         frame_range = overlaps_and_gaps[key]
 
         # Video-guided visualisations
-        scatter_detection([trace1, trace2], [min_range - 200, max_range + 200], show_trace_index=False,
+        scatter_detection([trace1, trace2], whole_frame_range=[min_range - 200, max_range + 200], show_trace_index=False,
                           subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue, {trace2_index}({trace2.trace_id}) orange.")
-        show_plot_locations([trace1, trace2], [0, 0], from_to_frame=show_range,
+        show_plot_locations([trace1, trace2], whole_frame_range=[0, 0], from_to_frame=show_range,
                             subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
                             silent=True)
 
         # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
         # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
         show_video(input_video=input_video, traces=[trace1, trace2], frame_range=margin_range(frame_range, 15), video_speed=0.02, wait=True, video_params=video_params)
-        to_show_longer_video = input("Do you want to see longer video? (yes or no):")
-        if "y" in to_show_longer_video.lower():
+
+        # to_show_longer_video = input("Do you want to see longer video? (yes or no):")
+        to_merge_by_user = input("Merge these traces? (yes or no) (press l to see a longer video before):")
+        if "l" in to_merge_by_user.lower():
             show_video(input_video=input_video, traces=[trace1, trace2], frame_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15),
                        video_speed=0.02, wait=True, video_params=video_params)
 
-        to_merge_by_user = input("Merge these traces? (yes or no):")
         if "n" in to_merge_by_user.lower():
             spam = ask_to_delete_a_trace(traces, input_video, key, video_params=video_params)
             if spam:
