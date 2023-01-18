@@ -1,3 +1,4 @@
+import analyse
 import csv
 import glob
 import json
@@ -309,7 +310,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
 
 
             assert isinstance(results, dict)
-            for track_file in results.keys():
+            for index, track_file in enumerate(results.keys()):
                 if debug:
                     print("track_file", track_file)
                 assert isinstance(results[track_file], dict)
@@ -353,6 +354,21 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                             min_trace_length_to_merge = 50
                         else:
                             min_trace_length_to_merge = ""
+                    try:
+                        vicinity_of_short_traces = record['vicinity_of_short_traces']
+                    except KeyError as err:
+                        if hash_config() == 5622099551276768363:
+                            vicinity_of_short_traces = 200
+                        else:
+                            vicinity_of_short_traces = ""
+
+                    try:
+                        maximal_distance_to_check_for_trace_swapping = record['maximal_distance_to_check_for_trace_swapping']
+                    except KeyError as err:
+                        if hash_config() == 5622099551276768363:
+                            maximal_distance_to_check_for_trace_swapping = 100
+                        else:
+                            maximal_distance_to_check_for_trace_swapping = ""
 
                     try:
                         min_trace_len = record['min_trace_len']
@@ -400,13 +416,14 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                                f"{record['bee_max_step_len']}; {record['bee_max_step_len_per_frame']}; "
                                f"{min_trace_length_to_merge}; "
                                f"{record['max_trace_gap']}; {record['max_step_distance_to_merge_overlapping_traces']}; "
-                               f"{force_merge_vicinity_distance}; {record['vicinity_of_short_traces']}; "
-                               f"{record['maximal_distance_to_check_for_trace_swapping']}; "
+                               f"{force_merge_vicinity_distance}; {vicinity_of_short_traces}; "
+                               f"{maximal_distance_to_check_for_trace_swapping}; "
                                f" {record['max_trace_gap_to_interpolate_distance']}; "
                                f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "
                                f"{record['jumps forth and back fixed']}; {record['traces swapped']}; "
                                f"{record['after first gaps and redundant']};"
                                f" {record['after merging overlapping traces']}; {population_size}\n")
+                file.write(f"{index+1}\n")
     except OSError:
         print(colored(f"Could not write into csv file! Try to close it first.", "red"))
         return
@@ -602,5 +619,6 @@ def parse_traces(csv_file):
     print(colored(f"Loaded {len(traces)} traces. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces
 
-# if __name__ == "__main__":
-#     convert_results_from_json_to_csv()
+
+if __name__ == "__main__":
+    convert_results_from_json_to_csv()

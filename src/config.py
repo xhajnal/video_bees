@@ -51,14 +51,14 @@ def get_max_step_distance_to_merge_overlapping_traces():
 
 
 def get_force_merge_vicinity_distance():
-    """ Returns range for which there should be no overlap in order to force merge traces."""
+    """ Returns min range for which there should be no overlap in order to force merge traces."""
     # TODO apply this to gaping traces
     # Usage: merge_overlapping_traces
     return 508
 
 
 def get_vicinity_of_short_traces():
-    """ Returns number of frames short traces need to be far from other short trace to be trimmed."""
+    """ Returns number of frames short traces need to be at least far from other short trace to be trimmed."""
     return 200
 
 
