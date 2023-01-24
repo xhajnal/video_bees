@@ -269,7 +269,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         #####################################################################
         # FIND TRACES OF ZERO LENGTH and SHORT FRAME RANGE TRACES, TRACE INFO
         #####################################################################
-        traces, removed_short_traces = single_trace_checker(traces, min_range_len=get_min_trace_len(), vicinity=get_vicinity_of_short_traces(), silent=silent, debug=debug)
+        traces, removed_short_traces = single_trace_checker(traces, min_trace_range_len=get_min_trace_len(), vicinity=get_vicinity_of_short_traces(), silent=silent, debug=debug)
         counts.append(len(traces) + len(removed_full_traces))
         # TODO uncomment the following
         # if show_all_plots:

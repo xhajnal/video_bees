@@ -41,7 +41,7 @@ def remove_full_traces(traces, removed_traces, population_size, silent=False, de
     return traces, removed_traces, population_size - deleted
 
 
-def single_trace_checker(traces, min_range_len=False, vicinity=False, silent=False, debug=False):
+def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, silent=False, debug=False):
     """ Checks a single trace.
 
     :arg traces: (list): a list of Traces
@@ -65,12 +65,12 @@ def single_trace_checker(traces, min_range_len=False, vicinity=False, silent=Fal
             if not silent:
                 print(colored("Trace length of 0 in x,y. Will delete trace of this agent!", "red"))  ## this can be FP
             traces_with_zero_len_in_xy.append(index)
-        if min_range_len is not False:
-            if trace.frame_range_len < min_range_len:
+        if min_trace_range_len is not False:
+            if trace.frame_range_len < min_trace_range_len:
                 removed_short_traces.append(trace)
                 removed_short_traces_indices.append(index)
                 if not silent:
-                    print(colored(f"Trace length in frames {trace.frame_range_len}<{min_range_len}. Will delete trace of this agent!", "red"))  ## this can be FP
+                    print(colored(f"Trace length in frames {trace.frame_range_len}<{min_trace_range_len}. Will delete trace of this agent!", "red"))  ## this can be FP
         if trace.max_step_len > get_bee_max_step_len():
             if not silent:
                 print(colored(f"This agent has moved {trace.max_step_len} in a single step on frame {trace.max_step_len_frame_number}, you might consider fixing it!", "yellow"))

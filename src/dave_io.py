@@ -125,6 +125,16 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
         result = results[file_name][timestamp]
         if same_setting_found:
             break
+
+        ## ONLY ONE TIME SETTING FIX
+        for key in setting.keys():
+            # print(f"setting[{key}]", setting[key])
+            # print(f"result[{key}]", result[key])
+            try:
+                a = result[key]
+            except KeyError as err:
+                result[key] = setting[key]
+
         for key in setting.keys():
             # print(f"setting[{key}]", setting[key])
             # print(f"result[{key}]", result[key])
@@ -132,6 +142,9 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
                 same_setting_found = False
                 break
             same_setting_found = True
+
+    with open(results_file, 'w') as file:
+        file.write(json.dumps(results))
 
     if same_setting_found:
         print(colored(f"Already found the same setting - skipping this file. \n", "magenta"))
