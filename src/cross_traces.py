@@ -856,7 +856,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, si
                 go_next = True
                 to_merge = False
                 force_merge = False
-                reason = f"single huge distance (>{get_max_step_distance_to_merge_overlapping_traces()})"
+                reason = f"single huge point distance ({len(distances)} {round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()})"
 
                 # the distance of the traces is greater than the given threshold, we move on
                 del dictionary[pick_key2]
@@ -1004,6 +1004,6 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
     if debug:
         print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     if not silent:
-        print(colored(f"The overlap of the traces is {end_index2 - start_index2} frames long and the TOTAL overlap's distance is {round(sum(distances), 3)} point wise.", "yellow"))
+        print(colored(f"The overlap of the traces is {end_index2 - start_index2 + 1} frames long and its TOTAL distance is {round(sum(distances), 3)} point wise.", "yellow"))
 
     return distances

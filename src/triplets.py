@@ -319,7 +319,7 @@ def merge_overlapping_triplets_of_traces(traces, population_size, guided=False, 
                 go_next = True
                 to_merge = False
                 force_merge = False
-                reason = f"single huge distance (>{get_max_step_distance_to_merge_overlapping_traces()})"
+                reason = f"single huge point distance ({round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()})"
 
                 # delete traces which have been picked to be deleted and merged as well
                 delete_indices(traces_indices_to_be_removed, traces, debug=False)
