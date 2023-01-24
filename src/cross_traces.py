@@ -10,7 +10,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from config import *
 from fake import get_whole_frame_range
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, \
-    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten2
+    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
 from video import show_video
@@ -550,7 +550,6 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                             force_merge = False
                             break
                     if force_merge and not silent:
-                        # TODO switch colour to yellow
                         print(colored("USING FORCED GAP MERGE", "magenta"))
                 else:
                     force_merge = False
@@ -760,7 +759,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, si
                     print(f"trace {trace_index} ({trace.trace_id}) of frame range {trace.frame_range}")
                 print()
             # Flattened indices of overlapping pairs of traces
-            keys = flatten2(tuple(dictionary.keys()))
+            keys = flatten(tuple(dictionary.keys()))
 
             # Count occurrences of trace indices in overlapping pairs
             counts = {}
@@ -844,7 +843,6 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, si
                         break
                 if not there_is_overlap:
                     if not silent:
-                        # TODO switch colour to yellow
                         print(colored("USING FORCED OVERLAP MERGE", "magenta"))
                     force_merge = True
             else:

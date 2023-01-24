@@ -11,6 +11,7 @@ from video import show_video
 
 
 def get_traces_from_range(traces, interval):
+    # TODO make tests
     """ Returns the traces with frame range in given range
 
     :param traces: (list): a list of Traces
@@ -27,6 +28,7 @@ def get_traces_from_range(traces, interval):
 
 
 def get_gaps_of_traces(traces, get_all_gaps=False, debug=False):
+    # TODO make tests
     """ Returns a dictionary of pairs of traces indices -> range of their gap.
     Including only gaps which do not contain a whole traces - hence only shortest gaps.
 
@@ -141,7 +143,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
         for frame in range(frame_gap_size):
             trace1.locations.append(in_middle_point)
 
-    ## DEPRICATED
+    ## DEPRECATED
     # set a point of location of the gap as a point in the middle between the border points
     # in_middle_point = [abs(trace2.locations[0][0] + trace1.locations[-1][0])/2, abs(trace2.locations[0][1] + trace1.locations[-1][1])/2]
     # # fill the gap location as the chosen point
@@ -181,6 +183,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
 
 
 def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, trace2_index,  silent=False, debug=False):
+    # TODO make tests
     """ Puts two overlapping traces together.
 
     :arg trace1: (Trace): a Trace to be merged with the following trace

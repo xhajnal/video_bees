@@ -1,5 +1,6 @@
 import math
 
+import analyse
 from dave_io import parse_traces
 from single_trace import single_trace_checker
 from trace import Trace
@@ -99,6 +100,14 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(is_before([1, 7], [2, 7]) is False)
         self.assertTrue(is_before([3, 6], [3, 9]) is False)
         self.assertTrue(is_before([1, 7], [1, 7]) is False)
+
+        self.assertEqual(index_of_shortest_range([]), -1)
+        self.assertEqual(index_of_shortest_range([(1, 1)]), 0)
+        self.assertTrue(index_of_shortest_range([(1, 1), (2, 2)]) == 0 or index_of_shortest_range([(1, 1), (2, 2)]) == 1)
+        self.assertEqual(index_of_shortest_range([(1, 1), (2, 3)]), 0)
+        self.assertEqual(index_of_shortest_range([(1, 1), (2, 3), (2, 2)]), 0)
+        self.assertEqual(index_of_shortest_range([(1, 5), (2, 3), (2, 2)]), 2)
+
 
         self.assertEqual(merge_dictionary({8: 1}, {9: 9}), {8: 1, 9: 9})
         self.assertEqual(merge_dictionary({7: 1, 8: 1}, {9: 9}), {7: 1, 8: 1, 9: 9})

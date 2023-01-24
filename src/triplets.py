@@ -6,7 +6,7 @@ from operator import countOf
 from fake import get_whole_frame_range
 from config import *
 from cross_traces import compare_two_traces
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, flatten2, margin_range
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, flatten, margin_range
 from trace import Trace
 
 from traces_logic import merge_two_overlapping_traces, ask_to_delete_a_trace
@@ -94,7 +94,7 @@ def merge_overlapping_triplets_of_traces(traces, population_size, guided=False, 
                     pass
 
             # Flattened indices of overlapping pairs of traces
-            keys = flatten2(tuple(dictionary.keys()))
+            keys = flatten(tuple(dictionary.keys()))
 
             # Count occurrences of trace indices in overlapping pairs
             counts = {}

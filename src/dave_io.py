@@ -107,7 +107,7 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
                'force_merge_allowed': is_force_merge_allowed,
                'distance_from_calculated_arena': get_distance_from_calculated_arena(),
                'min_trace_len': get_min_trace_len(),
-               'bee_min_trace_len': get_min_trace_len(),  ## TODO add
+               'bee_min_trace_len': get_min_trace_len(),
                'bee_max_step_len': get_bee_max_step_len(),
                'bee_max_step_len_per_frame': get_bee_max_step_len_per_frame(),
                'min_trace_length_to_merge': get_min_trace_length_to_merge(),
@@ -115,7 +115,7 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
                'max_step_distance_to_merge_overlapping_traces': get_max_step_distance_to_merge_overlapping_traces(),
                'force_merge_vicinity_distance': get_force_merge_vicinity_distance(),
                'vicinity_of_short_traces': get_vicinity_of_short_traces(),
-               'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),  ## TODO add
+               'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),
                'max_trace_gap_to_interpolate_distance': get_max_trace_gap_to_interpolate_distance(),
                'screen_size': get_screen_size()}
 
@@ -227,7 +227,7 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
                  'max_step_distance_to_merge_overlapping_traces': get_max_step_distance_to_merge_overlapping_traces(),
                  'force_merge_vicinity_distance': get_force_merge_vicinity_distance(),
                  'vicinity_of_short_traces': get_vicinity_of_short_traces(),
-                 'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),  ## TODO add
+                 'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),
                  'max_trace_gap_to_interpolate_distance': get_max_trace_gap_to_interpolate_distance(),
                  'screen_size': get_screen_size(),
                  'loaded': counts[0],

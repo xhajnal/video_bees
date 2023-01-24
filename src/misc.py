@@ -12,10 +12,12 @@ from termcolor import colored
 
 
 def get_last_digit(number):
+    # TODO make tests
     return int(str(number)[-1])
 
 
 def calculate_cosine_distance(a, b):
+    # TODO make tests
     ## TODO have look on the warning
     ## scipy\spatial\distance.py:620: RuntimeWarning: invalid value encountered in double_scalars
     return float(spatial.distance.cosine(a, b))
@@ -92,29 +94,32 @@ def take(n, iterable):
 
 
 ## DEPRECATED
-def flatten(data):
-    """ Returns flatten data - makes a single tuple from multiple. """
+def old_flatten(data):
+    # TODO make tests
+    """ Returns old_flatten data - makes a single tuple from multiple. """
     if isinstance(data, tuple):
         if len(data) == 0:
             return ()
         else:
-            return flatten(data[0]) + flatten(data[1:])
+            return old_flatten(data[0]) + old_flatten(data[1:])
     else:
         return (data,)
 
 
-def flatten2(data):
+def flatten(data):
+    # TODO make tests
     """ Returns flatten data - makes a single tuple from multiple. """
     a = []
     for item in data:
         a = a + list(item)
     return tuple(a)
 
+# print(old_flatten(((1,2,3),(4,5,9))))
 # print(flatten(((1,2,3),(4,5,9))))
-# print(flatten2(((1,2,3),(4,5,9))))
 
 
 def range_len(interval):
+    # TODO make tests
     """ Returns the length of the range.
 
     :arg interval: (tuple or list): range to compute its length
@@ -124,6 +129,7 @@ def range_len(interval):
 
 
 def margin_range(interval, margin):
+    # TODO make tests
     """ Margins given range adding the margin to both sides
 
     :param interval: tuple of numbers to margin
@@ -178,6 +184,7 @@ def is_in(range1, range2, strict=False):
 
 
 def get_leftmost_point(points):
+    # TODO make tests
     """ Returns the leftmost point and its index of the given points
     :arg points: (list of points): the list of points to return the leftmost point from
     """
@@ -190,7 +197,7 @@ def get_leftmost_point(points):
     return left_most_point, left_most_index
 
 
-## DEPRICATED
+## DEPRECATED
 def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     """ Returns a dictionary index -> m overlapping interval of n intervals.
         No key if there is no interval.
@@ -223,14 +230,6 @@ def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
 
     print(dictionary2)
     return dictionary2
-
-
-def dictionary_of_gaps(intervals, debug=False):
-    """ Returns a dictionary a pair of traces -> range of its gap
-
-        :arg intervals: (list): list of intervals
-        :arg debug: (bool): if True extensive output is shown
-        """
 
 
 def dictionary_of_m_overlaps_of_n_intervals(m, intervals, skip_whole_in=False, debug=False):
@@ -268,6 +267,7 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, skip_whole_in=False, d
         print("dictionary m=2", dictionary)
 
     for j in list(range(3, m + 1)):
+        ## TODO have a look on the optimisation of the following 2 lines
         dictionary2 = copy(dictionary)
         del dictionary
         dictionary = {}
@@ -470,13 +470,13 @@ def index_of_shortest_range(ranges):
 
     :arg ranges: (list): list of ranges
     """
-    # TODO make tests
     shortest_index = -1
     shortest_range_len = sys.maxsize
 
-    for index, range in enumerate(ranges):
-        if range[1] - range[0] < shortest_range_len:
+    for index, interval in enumerate(ranges):
+        if interval[1] - interval[0] < shortest_range_len:
             shortest_index = index
+            shortest_range_len = interval[1] - interval[0]
 
     return shortest_index
 
@@ -502,6 +502,7 @@ def merge_sorted_dictionaries(gaps, overlaps):
     :param overlaps: second dictionary to merge
     :return: merged dictionary
     """
+    # TODO make tests
     overlaps_and_gaps = {}
 
     # MERGE THE DICTIONARIES
@@ -547,6 +548,7 @@ def convert_frame_number_back(frame, csv_file_path):
     :param csv_file_path: (str or path): loopy csv file to be used to convert
     :return: (int) original frame number
     """
+    # TODO make tests
     with open(csv_file_path, newline='') as csv_file:
         reader = csv.DictReader(csv_file)
         for row in reader:
@@ -556,7 +558,6 @@ def convert_frame_number_back(frame, csv_file_path):
 
 def get_colors(number_of_colors):
     """ Returns a list of colors up to 10 colors."""
-
     colors = list(map(hex_to_rgb, ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']))
 
     if number_of_colors <= 10:
