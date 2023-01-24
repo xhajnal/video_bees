@@ -277,7 +277,7 @@ class MyTestCase(unittest.TestCase):
             scatter_detection(traces, [1620, 2127])
             # single_trace_checker(traces, min_range_len=2)
             # scatter_detection(traces, [1620, 2127])
-            single_trace_checker(traces, min_range_len=4, vicinity=6)
+            single_trace_checker(traces, min_trace_range_len=4, vicinity=6)
             # scatter_detection(traces, [1620, 2127])
             scatter_detection(traces, [1620, 1626])
 
