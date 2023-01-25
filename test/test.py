@@ -20,6 +20,14 @@ class MyTestCase(unittest.TestCase):
     #         print("hello")
     #         traces = parse_traces(csv_file)
     def test_misc(self):
+        self.assertEqual(get_last_digit(5), 5)
+        self.assertEqual(get_last_digit(61), 1)
+        self.assertEqual(get_last_digit(848745), 5)
+
+        self.assertEqual(calculate_cosine_similarity([1, 0], [0, 1]), 0)
+        self.assertEqual(calculate_cosine_similarity([1, 1], [1, 1]), 1)
+        self.assertEqual(calculate_cosine_similarity([2, 2], [3, 3]), 1)
+
         self.assertEqual(to_vect([5], [3]), [-2])
         self.assertEqual(to_vect([8, 5], [7, 3]), [-1, -2])
         self.assertEqual(to_vect([5, 8, 5], [10, 7, 3]), [5, -1, -2])
@@ -40,6 +48,25 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(take(1, [8, 9, 10]), [8])
         self.assertEqual(take(2, [8, 9, 10]), [8, 9])
         self.assertEqual(take(3, [8, 9, 10]), [8, 9, 10])
+
+        self.assertEqual(flatten([]), [])
+        self.assertEqual(flatten([8]), [8])
+        self.assertEqual(flatten((8, 7)), (8, 7))
+        self.assertEqual(flatten(((8, 7))), (8, 7))
+        self.assertEqual(flatten(((8, 7))), (8, 7))
+        self.assertEqual(flatten(((8, (7)))), (8, 7))
+        self.assertEqual(flatten(((8, (7, 9)))), (8, 7, 9))
+        self.assertEqual(flatten(((8, 9, (7)))), (8, 9, 7))
+
+        self.assertEqual(range_len((7, 7)), 0)
+        self.assertEqual(range_len((7, 8)), 1)
+        self.assertEqual(range_len((0, 10)), 10)
+        self.assertEqual(range_len((1, 11)), 10)
+
+        self.assertEqual(margin_range((7, 7), 0), (7, 7))
+        self.assertEqual(margin_range((5, 6), 0), (5, 6))
+        self.assertEqual(margin_range((5, 6), 1), (4, 7))
+        self.assertEqual(margin_range((5, 6), 4), (1, 10))
 
         self.assertTrue(is_in([1, 7], [8, 9]) is False)
         self.assertTrue(is_in([1, 7], [7, 9]) is False)
@@ -108,11 +135,35 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(index_of_shortest_range([(1, 1), (2, 3), (2, 2)]), 0)
         self.assertEqual(index_of_shortest_range([(1, 5), (2, 3), (2, 2)]), 2)
 
-
         self.assertEqual(merge_dictionary({8: 1}, {9: 9}), {8: 1, 9: 9})
         self.assertEqual(merge_dictionary({7: 1, 8: 1}, {9: 9}), {7: 1, 8: 1, 9: 9})
         self.assertEqual(merge_dictionary({7: 1, 8: 1}, {7: 9}), {7: 10, 8: 1})
         self.assertEqual(merge_dictionary({7: 1, 8: 1}, {8: 9}), {7: 1, 8: 10})
+
+        # strictly further
+        self.assertEqual(merge_sorted_dictionaries({(6, 7): 1}, {(8, 9): 6}), {(6, 7): 1, (8, 9): 6})
+        self.assertEqual(merge_sorted_dictionaries({(8, 9): 6}, {(6, 7): 1}), {(6, 7): 1, (8, 9): 6})
+        self.assertEqual(merge_sorted_dictionaries({(8, 9): 6, (6, 7): 1}, {}), {(6, 7): 1, (8, 9): 6})
+        self.assertEqual(merge_sorted_dictionaries({}, {(8, 9): 6, (6, 7): 1}), {(6, 7): 1, (8, 9): 6})
+        # more left
+        self.assertEqual(merge_sorted_dictionaries({(8, 7): 1}, {(9, 7): 9}), {(8, 7): 1, (9, 7): 9})
+        self.assertEqual(merge_sorted_dictionaries({(9, 7): 9}, {(8, 7): 1}), {(8, 7): 1, (9, 7): 9})
+        self.assertEqual(merge_sorted_dictionaries({(9, 7): 9, (8, 7): 1}, {}), {(8, 7): 1, (9, 7): 9})
+        # more up
+        self.assertEqual(merge_sorted_dictionaries({(8, 7): 1}, {(8, 8): 9}), {(8, 7): 1, (8, 8): 9})
+        self.assertEqual(merge_sorted_dictionaries({(8, 8): 9}, {(8, 7): 1}), {(8, 7): 1, (8, 8): 9})
+        self.assertEqual(merge_sorted_dictionaries({(8, 8): 9, (8, 7): 1}, {}), {(8, 7): 1, (8, 8): 9})
+        #
+        self.assertEqual(merge_sorted_dictionaries({(8, 8): 9, (10, 11): 0}, {(8, 7): 1}), {(8, 7): 1, (8, 8): 9, (10, 11): 0})
+        self.assertEqual(merge_sorted_dictionaries({(8, 8): 9, (10, 11): 0}, {(8, 7): 1, (15, 16): 7}), {(8, 7): 1, (8, 8): 9, (10, 11): 0, (15, 16): 7})
+
+        self.assertEqual(get_leftmost_point([[0, 0]]), ([0, 0], 0))
+        self.assertEqual(get_leftmost_point([[0, 0], [1, 2]]), ([0, 0], 0))
+        self.assertEqual(get_leftmost_point([[0, 0], [1, 2], [4, 5]]), ([0, 0], 0))
+        self.assertEqual(get_leftmost_point([[1, 2], [4, 5], [0, 0]]), ([0, 0], 2))
+        self.assertEqual(get_leftmost_point([[0, 0], [1, 0]]), ([0, 0], 0))
+        self.assertEqual(get_leftmost_point([[0, 0], [1, 0], [4, 0]]), ([0, 0], 0))
+        self.assertEqual(get_leftmost_point([[1, 0], [4, 0], [0, 0]]), ([0, 0], 2))
 
         # m = 2
         self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)]), {(0, 2): [7, 8], (1, 2): [9, 10]})
@@ -160,6 +211,8 @@ class MyTestCase(unittest.TestCase):
         # self.assertTrue(np.array_equal(get_submatrix(np.array([[1, 2, 3], [4, 5, 6]]), [1]), [4, 5, 6]))
         # self.assertTrue(np.array_equal(get_submatrix(np.array([[1, 2, 3], [4, 5, 6]]), [1, 2]), 6))
         # self.assertTrue(np.array_equal(get_submatrix(np.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]), [1, 1]), [10, 11, 12]))
+
+        self.assertEqual(convert_frame_number_back(1620, '../test/test_converted.csv'), 1621)
 
     def testTraces(self):
         with open('../test/test.csv', newline='') as csv_file:

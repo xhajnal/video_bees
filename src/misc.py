@@ -12,12 +12,10 @@ from termcolor import colored
 
 
 def get_last_digit(number):
-    # TODO make tests
     return int(str(number)[-1])
 
 
 def calculate_cosine_distance(a, b):
-    # TODO make tests
     ## TODO have look on the warning
     ## scipy\spatial\distance.py:620: RuntimeWarning: invalid value encountered in double_scalars
     return float(spatial.distance.cosine(a, b))
@@ -107,11 +105,16 @@ def old_flatten(data):
 
 
 def flatten(data):
-    # TODO make tests
     """ Returns flatten data - makes a single tuple from multiple. """
+    if len(data) <= 1:
+        return list(data)
+
     a = []
     for item in data:
-        a = a + list(item)
+        try:
+            a = a + list(item)
+        except Exception:
+            a = a + [item]
     return tuple(a)
 
 # print(old_flatten(((1,2,3),(4,5,9))))
@@ -119,17 +122,16 @@ def flatten(data):
 
 
 def range_len(interval):
-    # TODO make tests
     """ Returns the length of the range.
 
     :arg interval: (tuple or list): range to compute its length
     """
     assert len(interval) == 2
+    assert interval[1] >= interval[0]
     return interval[1] - interval[0]
 
 
 def margin_range(interval, margin):
-    # TODO make tests
     """ Margins given range adding the margin to both sides
 
     :param interval: tuple of numbers to margin
@@ -184,9 +186,8 @@ def is_in(range1, range2, strict=False):
 
 
 def get_leftmost_point(points):
-    # TODO make tests
-    """ Returns the leftmost point and its index of the given points
-    :arg points: (list of points): the list of points to return the leftmost point from
+    """ Returns the leftmost point and its index of given points
+    :arg points: (list of points): the list of points to return the leftmost point from given points
     """
     left_most_point = points[0]
     left_most_index = 0
@@ -502,7 +503,6 @@ def merge_sorted_dictionaries(gaps, overlaps):
     :param overlaps: second dictionary to merge
     :return: merged dictionary
     """
-    # TODO make tests
     overlaps_and_gaps = {}
 
     # MERGE THE DICTIONARIES
@@ -548,7 +548,6 @@ def convert_frame_number_back(frame, csv_file_path):
     :param csv_file_path: (str or path): loopy csv file to be used to convert
     :return: (int) original frame number
     """
-    # TODO make tests
     with open(csv_file_path, newline='') as csv_file:
         reader = csv.DictReader(csv_file)
         for row in reader:
