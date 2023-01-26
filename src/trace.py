@@ -95,15 +95,15 @@ class Trace:
                     raise err
 
     def get_gap_frame_range(self):
-        # TODO make tests
+        ## TODO make more tests
         """ Returns the range of gaps."""
         if self.gap_frames:
             return (self.gap_frames[0], self.gap_frames[-1])
         else:
-            return None
+            return ()
 
     def get_gap_locations(self):
-        # TODO make tests
+        ## TODO make more tests
         """ Returns a list of locations of gaps."""
         gap_locations = []
         for frame in self.gap_frames:
@@ -113,15 +113,15 @@ class Trace:
         return gap_locations
 
     def get_overlap_frame_range(self):
-        # TODO make tests
+        ## TODO make more tests
         """ Returns the range of overlaps."""
         if self.overlap_frames:
             return (self.overlap_frames[0], self.overlap_frames[-1])
         else:
-            return None
+            return ()
 
     def get_overlap_locations(self):
-        # TODO make tests
+        ## TODO make more tests
         """ Returns a list of locations of overlaps."""
         overlap_locations = []
         for frame in self.overlap_frames:
@@ -131,30 +131,30 @@ class Trace:
         return overlap_locations
 
     def get_location_from_frame(self, frame_number):
-        # TODO make tests
+        ## TODO make more tests
         """ For a given frame range it results locations of the given range."""
         start_index = self.frames_list.index(frame_number)
         return self.locations[start_index]
 
     def get_locations_from_frame_range(self, interval):
-        # TODO make tests
+        ## TODO make more tests
         """ For a given frame range it results locations of the given range."""
         start_index = self.frames_list.index(interval[0])
         end_index = self.frames_list.index(interval[1])
         return self.locations[start_index:end_index + 1]
 
     def get_number_of_frames_tracked(self):
-        # TODO make tests
+        ## TODO make more tests
         """ Returns number of tracked frames."""
         return len(self.frames_list) - len(self.gap_frames)
 
     def check_trace_consistency(self):
-        # TODO make tests
+        ## TODO make more tests
         """ Verifies the consistency of the trace."""
         assert self.frame_range[0] <= self.frame_range[1]
 
     def check_whether_is_done(self, real_whole_frame_range):
-        # TODO make tests
+        ## TODO make more tests
         """ Checks and stores whether this trace has its full length."""
         if self.frame_range == real_whole_frame_range:
             self.is_done = True
@@ -164,7 +164,7 @@ class Trace:
             return False
 
     def recalculate_trace_lengths(self, recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True):
-        # TODO make tests
+        ## TODO make more tests
         """ Recalculates trace length(s) based on locations."""
         # reset values
         if recalculate_length:
