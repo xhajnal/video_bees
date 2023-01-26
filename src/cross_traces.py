@@ -226,16 +226,18 @@ def trim_out_additional_agents_over_long_traces3(traces, population_size, silent
     return traces
 
 
-def trim_out_additional_agents_over_long_traces2(traces, population_size, silent=False, debug=False):
+def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
         :arg traces: (list): list of Traces
+        :arg overlap_dictionary: (dict): dictionary_of_m_overlaps_of_n_intervals
         :arg population_size: (int): expected number of agents
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns: traces: (list): list of trimmed Traces
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES", "blue"))
+    debug = True
     start_time = time()
     ranges = []
     for index1, trace in enumerate(traces):
@@ -245,10 +247,24 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
     ranges = sorted(ranges)
 
     dict_start_time = time()
-    dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=False)
+
+    if overlap_dictionary is None:
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=False)
+    else:
+        assert isinstance(overlap_dictionary, dict)
+        try:
+            ## check that the dictionary is of m overlaps
+            if len(list(overlap_dictionary.keys())[0]) != population_size + 1:
+                raise Exception("Given dictionary is not of m overlaps.")
+        except IndexError:
+            pass
+        dictionary = overlap_dictionary
+
     print(colored(f"Creation of the dictionary of m overlaps over n intervals took {round(time() - dict_start_time, 3)} seconds.", "yellow"))
+    print(dictionary)
 
     indices_of_intervals_to_be_deleted = []
+    keys_to_be_deleted = []
 
     for overlap in dictionary.keys():
         if debug:
@@ -273,14 +289,18 @@ def trim_out_additional_agents_over_long_traces2(traces, population_size, silent
             if debug:
                 print(colored(f"Will delete range index {shortest_index}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(shortest_index)
+            keys_to_be_deleted.append(overlap)
 
     if debug:
         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
+    print(colored(f"keys_to_be_deleted: {keys_to_be_deleted}", "red"))
+    for key in keys_to_be_deleted:
+        del dictionary[key]
 
     print(colored(f"trim_out_additional_agents_over_long_traces2 analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"Returning {len(traces)} traces, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration. \n", "green"))
-    return traces
+    return traces, dictionary
 
 
 # deprecated

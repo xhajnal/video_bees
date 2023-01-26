@@ -172,6 +172,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     removed_short_traces = []
     removed_full_traces = []
     original_population_size = population_size
+    overlap_dictionary = None
 
     ############
     # I/O stuff
@@ -329,7 +330,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         after_number_of_traces = 0
         while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
             before_number_of_traces = len(traces)
-            traces = trim_out_additional_agents_over_long_traces2(traces, population_size, silent=silent, debug=debug)
+            traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=silent, debug=debug)
             if show_all_plots:
                 scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
             traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge, silent=silent, debug=debug)
