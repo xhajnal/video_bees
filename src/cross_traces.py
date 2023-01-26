@@ -175,55 +175,56 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
     return False
 
 
-def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
-    """ Trims out additional appearance of an agent when long traces are over here.
-
-        :arg traces: (list): list of Traces
-        :arg population_size: (int): expected number of agents
-        :arg silent: (bool): if True minimal output is shown
-        :arg debug: (bool): if True extensive output is shown
-        :returns: traces: (list): list of trimmed Traces
-    """
-    print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES 3", "blue"))
-    ranges = []
-    for index1, trace in enumerate(traces):
-        assert isinstance(trace, Trace)
-        trace.check_trace_consistency()
-        ranges.append(trace.frame_range)
-    ranges = sorted(ranges)
-    dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=debug)
-
-    indices_of_intervals_to_be_deleted = []
-
-    for overlap in dictionary.keys():
-        if debug:
-            print(colored(f"Currently checking overlapping indices: {overlap}", "blue"))
-        overlapping_ranges = []
-        for interval_index in overlap:
-            overlapping_ranges.append(ranges[interval_index])
-
-        shortest_index = overlap[index_of_shortest_range(overlapping_ranges)]
-        if debug:
-            print(colored(f" Index_of_shortest_range: {shortest_index}", "blue"))
-        shortest_range = ranges[shortest_index]
-
-        to_be_deleted = True
-        for rangee in overlapping_ranges:
-            if debug:
-                print(colored(f" Checking whether range index {shortest_index}, {shortest_range}, is in {rangee}", "blue"))
-            if not is_in(shortest_range, rangee):
-                to_be_deleted = False
-
-        if to_be_deleted:
-            if debug:
-                print(colored(f"Will delete range index {shortest_index}, {shortest_range}", "yellow"))
-            indices_of_intervals_to_be_deleted.append(shortest_index)
-
-    if debug:
-        print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
-    traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
-
-    return traces
+## DEPRECATED
+# def trim_out_additional_agents_over_long_traces3(traces, population_size, silent=False, debug=False):
+#     """ Trims out additional appearance of an agent when long traces are over here.
+#
+#         :arg traces: (list): list of Traces
+#         :arg population_size: (int): expected number of agents
+#         :arg silent: (bool): if True minimal output is shown
+#         :arg debug: (bool): if True extensive output is shown
+#         :returns: traces: (list): list of trimmed Traces
+#     """
+#     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES 3", "blue"))
+#     ranges = []
+#     for index1, trace in enumerate(traces):
+#         assert isinstance(trace, Trace)
+#         trace.check_trace_consistency()
+#         ranges.append(trace.frame_range)
+#     ranges = sorted(ranges)
+#     dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=debug)
+#
+#     indices_of_intervals_to_be_deleted = []
+#
+#     for overlap in dictionary.keys():
+#         if debug:
+#             print(colored(f"Currently checking overlapping indices: {overlap}", "blue"))
+#         overlapping_ranges = []
+#         for interval_index in overlap:
+#             overlapping_ranges.append(ranges[interval_index])
+#
+#         shortest_index = overlap[index_of_shortest_range(overlapping_ranges)]
+#         if debug:
+#             print(colored(f" Index_of_shortest_range: {shortest_index}", "blue"))
+#         shortest_range = ranges[shortest_index]
+#
+#         to_be_deleted = True
+#         for rangee in overlapping_ranges:
+#             if debug:
+#                 print(colored(f" Checking whether range index {shortest_index}, {shortest_range}, is in {rangee}", "blue"))
+#             if not is_in(shortest_range, rangee):
+#                 to_be_deleted = False
+#
+#         if to_be_deleted:
+#             if debug:
+#                 print(colored(f"Will delete range index {shortest_index}, {shortest_range}", "yellow"))
+#             indices_of_intervals_to_be_deleted.append(shortest_index)
+#
+#     if debug:
+#         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
+#     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
+#
+#     return traces
 
 
 def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=False, debug=False):
@@ -237,7 +238,6 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
         :returns: traces: (list): list of trimmed Traces
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES", "blue"))
-    debug = True
     start_time = time()
     ranges = []
     for index1, trace in enumerate(traces):
@@ -261,7 +261,7 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
         dictionary = overlap_dictionary
 
     print(colored(f"Creation of the dictionary of m overlaps over n intervals took {round(time() - dict_start_time, 3)} seconds.", "yellow"))
-    print(dictionary)
+    # print(dictionary)
 
     indices_of_intervals_to_be_deleted = []
     keys_to_be_deleted = []
@@ -294,7 +294,8 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
     if debug:
         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
-    print(colored(f"keys_to_be_deleted: {keys_to_be_deleted}", "red"))
+    if debug:
+        print(colored(f"keys_to_be_deleted: {keys_to_be_deleted}", "red"))
     for key in keys_to_be_deleted:
         del dictionary[key]
 
