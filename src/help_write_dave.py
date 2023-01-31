@@ -2,6 +2,7 @@ import copy
 import os.path
 from glob import glob
 
+import analyse
 from dave_io import load_setting
 
 
@@ -57,7 +58,7 @@ def write_dave():
                         all_final.append(item["after merging overlapping traces"])
 
                     if len(set(all_loaded)) != 1:
-                        raise Exception(f"{file2} some loaded are not the same")
+                        raise Exception(f"{file2} some 'loaded' are not the same")
                     # if len(set(all_single)) != 1:
                     #     raise Exception(f"{file2} some after single are not the same")
 

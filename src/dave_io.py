@@ -321,7 +321,6 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
             # f"{record['after first gaps and redundant']};"
             # f" {record['after merging overlapping traces']}; {population_size}\n")
 
-
             assert isinstance(results, dict)
             for index, track_file in enumerate(results.keys()):
                 if debug:
@@ -635,3 +634,4 @@ def parse_traces(csv_file):
 
 if __name__ == "__main__":
     convert_results_from_json_to_csv()
+    convert_results_from_json_to_csv(is_first_run=True)

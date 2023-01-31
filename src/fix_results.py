@@ -40,6 +40,7 @@ def check_setting():
         file.write(json.dumps(results))
 
 
+## BEE SPECIFIC
 def fix_order_setting():
     """ Fixes order of records. Trim parts from record."""
     print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))
