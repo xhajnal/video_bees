@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 import analyse
 import csv
 import glob
@@ -96,6 +98,8 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
         # f = open("../output/results.p", "a")
         file = open(results_file, "a")
         file.close()
+        results = {}
+    except JSONDecodeError as err:
         results = {}
 
     if file_name not in results.keys():
@@ -213,6 +217,8 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     except FileNotFoundError as err:
         file = open(results_txt_file, "a")
         file.close()
+        results = {}
+    except JSONDecodeError as err:
         results = {}
 
     # PARSE NEW ENTRY
@@ -335,9 +341,11 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                     print("track_file", track_file)
                 assert isinstance(results[track_file], dict)
                 for hashed_config in results[track_file].keys():
+                    assert isinstance(results[track_file][hashed_config], dict)
                     for timestamp in results[track_file][hashed_config].keys():
                         if debug:
                             print("timestamp", timestamp)
+                            print(results[track_file][hashed_config][timestamp])
                         assert isinstance(results[track_file][hashed_config][timestamp], dict)
                         record = results[track_file][hashed_config][timestamp]
                         try:

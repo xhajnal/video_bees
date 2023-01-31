@@ -47,15 +47,15 @@ def add_this_config_hash_to_results(after_first_run=False):
     new_results = {}
 
     file_name = f"../output/results{'_after_first_run' if after_first_run else ''}.txt"
-    print(file_name)
+    # print(file_name)
 
     with open(file_name) as file:
         results = json.load(file)
 
     for file in results.keys():
         for time_stamp in results[file].keys():
-            print(results[file])
-            print(results[file][time_stamp])
+            # print(results[file])
+            # print(results[file][time_stamp])
 
             # setting = (get_distance_from_calculated_arena(),
             #            get_min_trace_len(),
@@ -87,6 +87,12 @@ def add_this_config_hash_to_results(after_first_run=False):
                 force_merge_vicinity_distance = results[file][time_stamp]['force_merge_vicinity']
             except KeyError:
                 force_merge_vicinity_distance = -1
+
+            try:
+                a = int((list(results[file].keys())[0]))
+                continue
+            except ValueError:
+                pass
 
             this_config_hash = hash_config(this=[results[file][time_stamp]['distance_from_calculated_arena'],
                                                  min_trace_len,
@@ -122,7 +128,9 @@ def add_this_config_hash_to_results(after_first_run=False):
     with open(file_name, 'w') as file:
         file.write(json.dumps(new_results))
 
+
 add_this_config_hash_to_results(after_first_run=True)
+
 
 ## BEE SPECIFIC
 def fix_order_setting():
