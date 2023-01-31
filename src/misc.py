@@ -472,7 +472,7 @@ def is_before(range1, range2):
     return range1[1] < range2[0]
 
 
-def index_of_shortest_range(ranges):
+def get_index_of_shortest_range(ranges):
     """ Return the index of the shortest interval from given list
 
     :arg ranges: (list): list of ranges

@@ -1,5 +1,6 @@
 import math
 import sys
+from copy import copy
 from time import time
 from _socket import gethostname
 from matplotlib import pyplot as plt
@@ -9,7 +10,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 
 from config import *
 from fake import get_whole_frame_range
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, index_of_shortest_range, \
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_index_of_shortest_range, \
     get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
@@ -203,7 +204,7 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
 #         for interval_index in overlap:
 #             overlapping_ranges.append(ranges[interval_index])
 #
-#         shortest_index = overlap[index_of_shortest_range(overlapping_ranges)]
+#         shortest_index = overlap[get_index_of_shortest_range(overlapping_ranges)]
 #         if debug:
 #             print(colored(f" Index_of_shortest_range: {shortest_index}", "blue"))
 #         shortest_range = ranges[shortest_index]
@@ -244,7 +245,10 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
         assert isinstance(trace, Trace)
         trace.check_trace_consistency()
         ranges.append(trace.frame_range)
-    ranges = sorted(ranges)
+    # rangees = copy(ranges)
+    # ranges = sorted(ranges)
+
+    # assert ranges == rangees
 
     dict_start_time = time()
 
@@ -273,23 +277,33 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
         for interval_index in overlap:
             overlapping_ranges.append(ranges[interval_index])
 
-        shortest_index = overlap[index_of_shortest_range(overlapping_ranges)]
+        index_of_shortest_range = overlap[get_index_of_shortest_range(overlapping_ranges)]
         if debug:
-            print(colored(f" Index_of_shortest_range: {shortest_index}", "blue"))
-        shortest_range = ranges[shortest_index]
+            print(colored(f" Index_of_shortest_range: {index_of_shortest_range}", "blue"))
+        shortest_range = ranges[index_of_shortest_range]
+        if debug:
+            print(colored(f" Shortest_range: {shortest_range}", "blue"))
 
-        to_be_deleted = True
-        for rangee in overlapping_ranges:
+        ## NEW
+        if shortest_range == dictionary[overlap]:
             if debug:
-                print(colored(f" Checking whether range index {shortest_index}, {shortest_range}, is in {rangee}", "blue"))
-            if not is_in(shortest_range, rangee):
-                to_be_deleted = False
-
-        if to_be_deleted:
-            if debug:
-                print(colored(f"Will delete range index {shortest_index}, {shortest_range}", "yellow"))
-            indices_of_intervals_to_be_deleted.append(shortest_index)
+                print(colored(f"Will delete range index {index_of_shortest_range}, {shortest_range}", "yellow"))
+            indices_of_intervals_to_be_deleted.append(index_of_shortest_range)
             keys_to_be_deleted.append(overlap)
+
+        ## DEPRECATED
+        # to_be_deleted = True
+        # for rangee in overlapping_ranges:
+        #     if debug:
+        #         print(colored(f" Checking whether range index {index_of_shortest_range}, {shortest_range}, is in {rangee}", "blue"))
+        #     if not is_in(shortest_range, rangee):
+        #         to_be_deleted = False
+        #
+        # if to_be_deleted:
+        #     if debug:
+        #         print(colored(f"Will delete range index {index_of_shortest_range}, {shortest_range}", "yellow"))
+        #     indices_of_intervals_to_be_deleted.append(index_of_shortest_range)
+        #     keys_to_be_deleted.append(overlap)
 
     if debug:
         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
@@ -301,7 +315,8 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
 
     print(colored(f"trim_out_additional_agents_over_long_traces2 analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"Returning {len(traces)} traces, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration. \n", "green"))
-    return traces, dictionary
+    ## TODO fix to return traces, dictionary
+    return traces, None
 
 
 # deprecated
@@ -906,7 +921,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, si
 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
-    return traces
+    return
 
 
 def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False, debug=False, show_all_plots=False):
