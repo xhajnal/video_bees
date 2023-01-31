@@ -46,11 +46,15 @@ def add_this_config_hash_to_results(after_first_run=False):
     """ Adds the config hash to the result."""
     new_results = {}
 
-    with open(f"../output/results{'_after_first_run' if after_first_run else ''}.txt") as file:
+    file_name = f"../output/results{'_after_first_run' if after_first_run else ''}.txt"
+    print(file_name)
+
+    with open(file_name) as file:
         results = json.load(file)
 
     for file in results.keys():
         for time_stamp in results[file].keys():
+            print(results[file])
             print(results[file][time_stamp])
 
             # setting = (get_distance_from_calculated_arena(),
@@ -115,7 +119,7 @@ def add_this_config_hash_to_results(after_first_run=False):
 
     print(new_results)
 
-    with open(f"../output/results{'_after_first_run' if after_first_run else ''}.txt", 'w') as file:
+    with open(file_name, 'w') as file:
         file.write(json.dumps(new_results))
 
 add_this_config_hash_to_results(after_first_run=True)

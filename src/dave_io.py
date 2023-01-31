@@ -637,4 +637,4 @@ def parse_traces(csv_file):
 
 if __name__ == "__main__":
     convert_results_from_json_to_csv(debug=False)
-    # convert_results_from_json_to_csv(is_first_run=True)
+    convert_results_from_json_to_csv(is_first_run=True)
