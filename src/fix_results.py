@@ -42,11 +42,11 @@ def check_setting():
         file.write(json.dumps(results))
 
 
-def add_this_config_hash_to_results():
+def add_this_config_hash_to_results(after_first_run=False):
     """ Adds the config hash to the result."""
     new_results = {}
 
-    with open("../output/results.txt") as file:
+    with open(f"../output/results{'_after_first_run' if after_first_run else ''}.txt") as file:
         results = json.load(file)
 
     for file in results.keys():
@@ -115,10 +115,10 @@ def add_this_config_hash_to_results():
 
     print(new_results)
 
-    with open("../output/results.txt", 'w') as file:
+    with open(f"../output/results{'_after_first_run' if after_first_run else ''}.txt", 'w') as file:
         file.write(json.dumps(new_results))
 
-add_this_config_hash_to_results()
+add_this_config_hash_to_results(after_first_run=True)
 
 ## BEE SPECIFIC
 def fix_order_setting():
