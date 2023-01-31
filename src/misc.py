@@ -106,8 +106,8 @@ def old_flatten(data):
 
 def flatten(data):
     """ Returns flatten data - makes a single tuple from multiple. """
-    if len(data) <= 1:
-        return list(data)
+    if len(data) == 0:
+        return data
 
     a = []
     for item in data:
@@ -119,6 +119,12 @@ def flatten(data):
 
 # print(old_flatten(((1,2,3),(4,5,9))))
 # print(flatten(((1,2,3),(4,5,9))))
+# print(flatten([8]))
+#
+#
+# print(tuple({(12,13):1}.keys()))
+# print(len(tuple({(12,13):1}.keys())))
+# print(flatten(tuple({(12,13):1}.keys())))
 
 
 def range_len(interval):

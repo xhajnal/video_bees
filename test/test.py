@@ -50,7 +50,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(take(3, [8, 9, 10]), [8, 9, 10])
 
         self.assertEqual(flatten([]), [])
-        self.assertEqual(flatten([8]), [8])
+        self.assertEqual(flatten([8]), (8,))
         self.assertEqual(flatten((8, 7)), (8, 7))
         self.assertEqual(flatten(((8, 7))), (8, 7))
         self.assertEqual(flatten(((8, 7))), (8, 7))
@@ -128,12 +128,12 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(is_before([3, 6], [3, 9]) is False)
         self.assertTrue(is_before([1, 7], [1, 7]) is False)
 
-        self.assertEqual(index_of_shortest_range([]), -1)
-        self.assertEqual(index_of_shortest_range([(1, 1)]), 0)
-        self.assertTrue(index_of_shortest_range([(1, 1), (2, 2)]) == 0 or index_of_shortest_range([(1, 1), (2, 2)]) == 1)
-        self.assertEqual(index_of_shortest_range([(1, 1), (2, 3)]), 0)
-        self.assertEqual(index_of_shortest_range([(1, 1), (2, 3), (2, 2)]), 0)
-        self.assertEqual(index_of_shortest_range([(1, 5), (2, 3), (2, 2)]), 2)
+        self.assertEqual(get_index_of_shortest_range([]), -1)
+        self.assertEqual(get_index_of_shortest_range([(1, 1)]), 0)
+        self.assertTrue(get_index_of_shortest_range([(1, 1), (2, 2)]) == 0 or get_index_of_shortest_range([(1, 1), (2, 2)]) == 1)
+        self.assertEqual(get_index_of_shortest_range([(1, 1), (2, 3)]), 0)
+        self.assertEqual(get_index_of_shortest_range([(1, 1), (2, 3), (2, 2)]), 0)
+        self.assertEqual(get_index_of_shortest_range([(1, 5), (2, 3), (2, 2)]), 2)
 
         self.assertEqual(merge_dictionary({8: 1}, {9: 9}), {8: 1, 9: 9})
         self.assertEqual(merge_dictionary({7: 1, 8: 1}, {9: 9}), {7: 1, 8: 1, 9: 9})
@@ -167,6 +167,11 @@ class MyTestCase(unittest.TestCase):
 
         # m = 2
         self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)]), {(0, 2): [7, 8], (1, 2): [9, 10]})
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(9, 11), (6, 8), (7, 10)]), {(1, 2): [7, 8], (0, 2): [9, 10]})
+
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (7, 10), (9, 11)]), {(0, 1): [7, 8], (1, 2): [9, 10]})
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(7, 10), (6, 8), (9, 11)]), {(0, 1): [7, 8], (0, 2): [9, 10]})
+
         self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)], skip_whole_in=True), {(0, 2): [7, 8], (1, 2): [9, 10]})
 
         self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 10), (7, 10)], skip_whole_in=True), {(0, 2): [7, 8]})
