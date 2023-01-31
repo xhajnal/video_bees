@@ -246,6 +246,12 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     if file_name not in results.keys():
         results[file_name] = {}
 
+    ## CHECK WHETHER THERE IS this config
+    try:
+        a = results[file_name][this_config_hash]
+    except KeyError:
+        results[file_name][this_config_hash] = {}
+
     ## Check whether there is no replicate
     for timestamp in results[file_name][this_config_hash]:
         result = results[file_name][timestamp][this_config_hash]
