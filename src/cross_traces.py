@@ -275,7 +275,10 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
             print(colored(f"Currently checking overlapping indices: {overlap}", "blue"))
         overlapping_ranges = []
         for interval_index in overlap:
-            overlapping_ranges.append(ranges[interval_index])
+            try:
+                overlapping_ranges.append(ranges[interval_index])
+            except IndexError as err:
+                raise err
 
         index_of_shortest_range = overlap[get_index_of_shortest_range(overlapping_ranges)]
         if debug:

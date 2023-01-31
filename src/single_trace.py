@@ -162,7 +162,8 @@ def check_inside_of_arena(traces, silent=False, debug=False):
             if (location[0] - mid_x)**2 + (location[1] - mid_y)**2 > (diam/2 + get_distance_from_calculated_arena())**2:
                 traces_to_be_deleted.append(index)
                 # print(colored(f"checking trace {trace.trace_id} location {location} seems to be outside of the arena! Will delete this trace!", "red"))
-                print(colored(f"checking trace {index}({trace.trace_id}) of {trace.frame_range_len} frames: location {location} seems to be outside of the arena! Will delete this trace!", "red"))
+                if not silent:
+                    print(colored(f"checking trace {index}({trace.trace_id}) of {trace.frame_range_len} frames: location {location} seems to be outside of the arena! Will delete this trace!", "red"))
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)
