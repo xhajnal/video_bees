@@ -2,6 +2,8 @@ import json
 from time import time
 from termcolor import colored
 
+import analyse
+from config import hash_config
 from dave_io import convert_results_from_json_to_csv
 
 
@@ -39,6 +41,84 @@ def check_setting():
     with open("../output/results.txt", 'w') as file:
         file.write(json.dumps(results))
 
+
+def add_this_config_hash_to_results():
+    """ Adds the config hash to the result."""
+    new_results = {}
+
+    with open("../output/results.txt") as file:
+        results = json.load(file)
+
+    for file in results.keys():
+        for time_stamp in results[file].keys():
+            print(results[file][time_stamp])
+
+            # setting = (get_distance_from_calculated_arena(),
+            #            get_min_trace_len(),
+            #            get_vicinity_of_short_traces(),
+            #            get_max_trace_gap(),
+            #            get_min_trace_length_to_merge(),
+            #            get_bee_max_step_len(),
+            #            get_bee_max_step_len_per_frame(),
+            #            get_max_trace_gap_to_interpolate_distance(),
+            #            get_max_step_distance_to_merge_overlapping_traces(),
+            #            get_force_merge_vicinity_distance(),
+            #            tuple([item for sublist in get_screen_size() for item in sublist]))
+
+            try:
+                min_trace_len = results[file][time_stamp]['min_trace_len']
+            except KeyError:
+                min_trace_len = -1
+
+            try:
+                min_trace_length_to_merge = results[file][time_stamp]['min_trace_length']
+            except KeyError:
+                try:
+                    min_trace_length_to_merge = results[file][time_stamp]['bee_min_trace_len']
+                except KeyError:
+                    min_trace_length_to_merge = -1
+
+
+            try:
+                force_merge_vicinity_distance = results[file][time_stamp]['force_merge_vicinity']
+            except KeyError:
+                force_merge_vicinity_distance = -1
+
+            this_config_hash = hash_config(this=[results[file][time_stamp]['distance_from_calculated_arena'],
+                                                 min_trace_len,
+                                                 -1,
+                                                 results[file][time_stamp]['max_trace_gap'],
+                                                 min_trace_length_to_merge,
+                                                 results[file][time_stamp]['bee_max_step_len'],
+                                                 results[file][time_stamp]['bee_max_step_len_per_frame'],
+                                                 results[file][time_stamp]['max_trace_gap_to_interpolate_distance'],
+                                                 results[file][time_stamp]['max_step_distance_to_merge_overlapping_traces'],
+                                                 force_merge_vicinity_distance,
+                                                 results[file][time_stamp]['screen_size']])
+
+            try:
+                a = new_results[file]
+            except KeyError:
+                new_results[file] = {}
+
+            try:
+                a = new_results[file][this_config_hash]
+            except KeyError:
+                new_results[file][this_config_hash] = {}
+
+            try:
+                a = new_results[file][this_config_hash][time_stamp]
+            except KeyError:
+                new_results[file][this_config_hash][time_stamp] = {}
+
+            new_results[file][this_config_hash][time_stamp] = results[file][time_stamp]
+
+    print(new_results)
+
+    with open("../output/results.txt", 'w') as file:
+        file.write(json.dumps(new_results))
+
+add_this_config_hash_to_results()
 
 ## BEE SPECIFIC
 def fix_order_setting():
@@ -98,5 +178,6 @@ def fix_order_setting():
 
 
 if __name__ == "__main__":
+    pass
     # check_setting()
-    fix_order_setting()
+    # fix_order_setting()

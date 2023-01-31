@@ -189,6 +189,8 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
     print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))
     start_time = time()
 
+    this_config_hash = hash_config()
+
     ## CHECK
     try:
         os.mkdir("../output")
@@ -245,8 +247,8 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
         results[file_name] = {}
 
     ## Check whether there is no replicate
-    for timestamp in results[file_name]:
-        result = results[file_name][timestamp]
+    for timestamp in results[file_name][this_config_hash]:
+        result = results[file_name][timestamp][this_config_hash]
         if debug:
             print("possibly same result", result)
         if result == new_entry:
@@ -255,7 +257,7 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
                 "yellow"))
             return False
 
-    results[file_name][now] = new_entry
+    results[file_name][this_config_hash][now] = new_entry
 
     ## SAVE THE RESULTS
     # with open("../output/results.p", 'wb') as file:
@@ -299,13 +301,13 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
         with open(results_csv_file, "w") as file:
             # write csv header
             file.write(
-                f"track_file; timestamp of the run; had_video; was_guided; was_force_merge_allowed; "
+                f"track_file; hashed_config; timestamp of the run; had_video; was_guided; was_force_merge_allowed; "
                 f"distance_from_calculated_arena; min_trace_length; bee_max_step_length; bee_max_step_len_per_frame; "
                 f"min_trace_length_to_merge; max_trace_gap; max_step_distance_to_merge_overlapping_traces; "
                 f"force_merge_vicinity_distance; vicinity_of_short_traces; maximal_distance_to_check_for_trace_swapping; "
                 f"max_trace_gap_to_interpolate_distance; screen_size; "
                 f"loaded traces; inside arena; zero length; jumps forth and back fixed; traces swapped; "
-                f"after first gaps and redundant; after merging overlapping traces; population size \n")
+                f"after first gaps and redundant; after merging overlapping traces; population size; ;file_id \n")
 
             # RECORD BELLOW
             # file.write(f"{track_file}; {timestamp}; {had_video}; {guided}; {force_merge_allowed}; "
@@ -326,115 +328,116 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                 if debug:
                     print("track_file", track_file)
                 assert isinstance(results[track_file], dict)
-                for timestamp in results[track_file].keys():
-                    if debug:
-                        print("timestamp", timestamp)
-                    assert isinstance(results[track_file][timestamp], dict)
-                    record = results[track_file][timestamp]
-                    try:
-                        had_video = record['had_video']
-                    except KeyError as err:
-                        had_video = "Unknown"
+                for hashed_config in results[track_file].keys():
+                    for timestamp in results[track_file][hashed_config].keys():
+                        if debug:
+                            print("timestamp", timestamp)
+                        assert isinstance(results[track_file][hashed_config][timestamp], dict)
+                        record = results[track_file][hashed_config][timestamp]
+                        try:
+                            had_video = record['had_video']
+                        except KeyError as err:
+                            had_video = "Unknown"
 
-                    try:
-                        guided = record['is_guided']
-                        # print("")
-                    except KeyError as err:
-                        guided = "Unknown"
+                        try:
+                            guided = record['is_guided']
+                            # print("")
+                        except KeyError as err:
+                            guided = "Unknown"
 
-                    try:
-                        force_merge_allowed = record['force_merge_allowed']
-                    except KeyError as err:
-                        force_merge_allowed = "Unknown"
+                        try:
+                            force_merge_allowed = record['force_merge_allowed']
+                        except KeyError as err:
+                            force_merge_allowed = "Unknown"
 
-                    try:
-                        population_size = record['population_size']
-                    except KeyError as err:
-                        population_size = None
-                        spam = track_file.split('_')
-                        for item in spam:
-                            if "bee" in item.lower():
-                                population_size = ''.join([n for n in item if n.isdigit()])
-                                break
-                        if population_size is None:
-                            raise err
+                        try:
+                            population_size = record['population_size']
+                        except KeyError as err:
+                            population_size = None
+                            spam = track_file.split('_')
+                            for item in spam:
+                                if "bee" in item.lower():
+                                    population_size = ''.join([n for n in item if n.isdigit()])
+                                    break
+                            if population_size is None:
+                                raise err
 
-                    try:
-                        min_trace_length_to_merge = record['min_trace_length_to_merge']
-                    except KeyError as err:
-                        if hash_config() == 5622099551276768363:
-                            min_trace_length_to_merge = 50
-                        else:
-                            min_trace_length_to_merge = ""
-                    try:
-                        vicinity_of_short_traces = record['vicinity_of_short_traces']
-                    except KeyError as err:
-                        if hash_config() == 5622099551276768363:
-                            vicinity_of_short_traces = 200
-                        else:
-                            vicinity_of_short_traces = ""
+                        try:
+                            min_trace_length_to_merge = record['min_trace_length_to_merge']
+                        except KeyError as err:
+                            if hash_config() == 5622099551276768363:
+                                min_trace_length_to_merge = 50
+                            else:
+                                min_trace_length_to_merge = ""
+                        try:
+                            vicinity_of_short_traces = record['vicinity_of_short_traces']
+                        except KeyError as err:
+                            if hash_config() == 5622099551276768363:
+                                vicinity_of_short_traces = 200
+                            else:
+                                vicinity_of_short_traces = ""
 
-                    try:
-                        maximal_distance_to_check_for_trace_swapping = record['maximal_distance_to_check_for_trace_swapping']
-                    except KeyError as err:
-                        if hash_config() == 5622099551276768363:
-                            maximal_distance_to_check_for_trace_swapping = 100
-                        else:
-                            maximal_distance_to_check_for_trace_swapping = ""
+                        try:
+                            maximal_distance_to_check_for_trace_swapping = record['maximal_distance_to_check_for_trace_swapping']
+                        except KeyError as err:
+                            if hash_config() == 5622099551276768363:
+                                maximal_distance_to_check_for_trace_swapping = 100
+                            else:
+                                maximal_distance_to_check_for_trace_swapping = ""
 
-                    try:
-                        min_trace_len = record['min_trace_len']
-                    except KeyError as err:
-                        min_trace_len = ""
+                        try:
+                            min_trace_len = record['min_trace_len']
+                        except KeyError as err:
+                            min_trace_len = ""
 
-                    try:
-                        zero_len = record['zero length']
-                    except KeyError as err:
-                        zero_len = ""
+                        try:
+                            zero_len = record['zero length']
+                        except KeyError as err:
+                            zero_len = ""
 
-                    try:
-                        force_merge_vicinity_distance = record['force_merge_vicinity_distance']
-                    except KeyError as err:
-                        force_merge_vicinity_distance = ""
+                        try:
+                            force_merge_vicinity_distance = record['force_merge_vicinity_distance']
+                        except KeyError as err:
+                            force_merge_vicinity_distance = ""
 
-                    ## SETTING LOOKS LIKE
-                    # {'had_video': video_available,
-                    #  'is_guided': is_guided,
-                    #  'force_merge_allowed': is_force_merge_allowed,
-                    #  'distance_from_calculated_arena': get_distance_from_calculated_arena(),
-                    #  'min_trace_len': get_min_trace_len(),
-                    #  'bee_max_step_len': get_bee_max_step_len(),
-                    #  'bee_max_step_len_per_frame': get_bee_max_step_len_per_frame(),
-                    #  'min_trace_length_to_merge': get_min_trace_length_to_merge(),
-                    #  'max_trace_gap': get_max_trace_gap(),
-                    #  'max_step_distance_to_merge_overlapping_traces': get_max_step_distance_to_merge_overlapping_traces(),
-                    #  'force_merge_vicinity_distance': get_force_merge_vicinity_distance(),
-                    #  'vicinity_of_short_traces': get_vicinity_of_short_traces(),
-                    #  'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),
-                    #  'max_trace_gap_to_interpolate_distance': get_max_trace_gap_to_interpolate_distance(),
-                    #  'screen_size': get_screen_size(),
-                    #  'loaded': counts[0],
-                    #  'inside arena': counts[1],
-                    #  'zero length': counts[2],
-                    #  'jumps forth and back fixed': counts[3],
-                    #  'traces swapped': counts[4],
-                    #  'after first gaps and redundant': counts[5],
-                    #  'after merging overlapping traces': counts[6],
-                    #  # 'after second gaps and redundant': counts[7],
-                    #  'population_size': population_size}
+                        ## SETTING LOOKS LIKE
+                        # {'had_video': video_available,
+                        #  'is_guided': is_guided,
+                        #  'force_merge_allowed': is_force_merge_allowed,
+                        #  'distance_from_calculated_arena': get_distance_from_calculated_arena(),
+                        #  'min_trace_len': get_min_trace_len(),
+                        #  'bee_max_step_len': get_bee_max_step_len(),
+                        #  'bee_max_step_len_per_frame': get_bee_max_step_len_per_frame(),
+                        #  'min_trace_length_to_merge': get_min_trace_length_to_merge(),
+                        #  'max_trace_gap': get_max_trace_gap(),
+                        #  'max_step_distance_to_merge_overlapping_traces': get_max_step_distance_to_merge_overlapping_traces(),
+                        #  'force_merge_vicinity_distance': get_force_merge_vicinity_distance(),
+                        #  'vicinity_of_short_traces': get_vicinity_of_short_traces(),
+                        #  'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),
+                        #  'max_trace_gap_to_interpolate_distance': get_max_trace_gap_to_interpolate_distance(),
+                        #  'screen_size': get_screen_size(),
+                        #  'loaded': counts[0],
+                        #  'inside arena': counts[1],
+                        #  'zero length': counts[2],
+                        #  'jumps forth and back fixed': counts[3],
+                        #  'traces swapped': counts[4],
+                        #  'after first gaps and redundant': counts[5],
+                        #  'after merging overlapping traces': counts[6],
+                        #  # 'after second gaps and redundant': counts[7],
+                        #  'population_size': population_size}
 
-                    file.write(f"{track_file}; {timestamp}; {had_video}; {guided}; {force_merge_allowed}; "
-                               f"{record['distance_from_calculated_arena']}; {min_trace_len}; "
-                               f"{record['bee_max_step_len']}; {record['bee_max_step_len_per_frame']}; "
-                               f"{min_trace_length_to_merge}; "
-                               f"{record['max_trace_gap']}; {record['max_step_distance_to_merge_overlapping_traces']}; "
-                               f"{force_merge_vicinity_distance}; {vicinity_of_short_traces}; "
-                               f"{maximal_distance_to_check_for_trace_swapping}; "
-                               f" {record['max_trace_gap_to_interpolate_distance']}; "
-                               f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "
-                               f"{record['jumps forth and back fixed']}; {record['traces swapped']}; "
-                               f"{record['after first gaps and redundant']};"
-                               f" {record['after merging overlapping traces']}; {population_size}\n")
+                        file.write(f"{track_file}; {hashed_config}; {timestamp}; {had_video}; {guided}; {force_merge_allowed}; "
+                                   f"{record['distance_from_calculated_arena']}; {min_trace_len}; "
+                                   f"{record['bee_max_step_len']}; {record['bee_max_step_len_per_frame']}; "
+                                   f"{min_trace_length_to_merge}; "
+                                   f"{record['max_trace_gap']}; {record['max_step_distance_to_merge_overlapping_traces']}; "
+                                   f"{force_merge_vicinity_distance}; {vicinity_of_short_traces}; "
+                                   f"{maximal_distance_to_check_for_trace_swapping}; "
+                                   f" {record['max_trace_gap_to_interpolate_distance']}; "
+                                   f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "
+                                   f"{record['jumps forth and back fixed']}; {record['traces swapped']}; "
+                                   f"{record['after first gaps and redundant']};"
+                                   f" {record['after merging overlapping traces']}; {population_size}; ;{index+1} \n")
                 file.write(f"{index+1}\n")
     except OSError:
         print(colored(f"Could not write into csv file! Try to close it first.", "red"))
@@ -633,5 +636,5 @@ def parse_traces(csv_file):
 
 
 if __name__ == "__main__":
-    convert_results_from_json_to_csv()
-    convert_results_from_json_to_csv(is_first_run=True)
+    convert_results_from_json_to_csv(debug=False)
+    # convert_results_from_json_to_csv(is_first_run=True)
