@@ -385,8 +385,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             before_number_of_traces = len(traces)
             if len(traces) > population_size:
                 traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=silent, debug=debug)
-            with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
-                file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
+            if before_number_of_traces != len(traces):
+                with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
+                    file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
 
             ## RECOLLECT NUMBER OF TRACES
             after_after_number_of_traces = len(traces)
