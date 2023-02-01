@@ -331,6 +331,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
             before_number_of_traces = len(traces)
             traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=silent, debug=debug)
+            if before_number_of_traces != len(traces):
+                with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
+                    file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
             if show_all_plots:
                 scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
             traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge, silent=silent, debug=debug)
