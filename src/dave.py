@@ -83,7 +83,7 @@ def run(is_first_run=None):
 
     # WTF 748 -> 449 -> 3
     # WTF 748 -> 449 -> 1 (not guided)
-    # could not align
+    # bad alignment
     # analyse('../data/Video_tracking/190916/20190916_163119085_1BEE_generated_20210618_080129_nn.csv', 1, is_first_run=a)
 
     ## 190917
@@ -1025,7 +1025,7 @@ def run(is_first_run=None):
 
     ## 191001
     # -> ->
-    # wrong alignment
+    # bad alignment
     # analyse("../data/Video_tracking/191001/20191001_112031240_10BEES_generated_20211026_092048_nn.csv", 10, is_first_run=a)
 
     # -> ->
