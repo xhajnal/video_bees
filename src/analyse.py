@@ -330,7 +330,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         after_number_of_traces = 0
         while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
             before_number_of_traces = len(traces)
-            traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, None, population_size, silent=silent, debug=debug)
+            traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=silent, debug=debug)
             if show_all_plots:
                 scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
             traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge, silent=silent, debug=debug)
@@ -381,8 +381,13 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                                                      input_video=video_file, silent=silent, debug=debug, show=show_plots,
                                                      show_all_plots=show_all_plots, video_params=video_params)
                 after_number_of_traces = len(traces)
+
+            before_number_of_traces = len(traces)
             if len(traces) > population_size:
-                traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, None, population_size, silent=silent, debug=debug)
+                traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=silent, debug=debug)
+            with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
+                file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
+
             ## RECOLLECT NUMBER OF TRACES
             after_after_number_of_traces = len(traces)
 

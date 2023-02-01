@@ -105,6 +105,11 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
     if file_name not in results.keys():
         return True
 
+    this_config_hash = hash_config()
+
+    if this_config_hash not in results[file_name].keys():
+        return True
+
     # GET SETTING
     setting = {'had_video': video_available,
                'is_guided': is_guided,
@@ -125,8 +130,8 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
 
     same_setting_found = False
 
-    for timestamp in results[file_name]:
-        result = results[file_name][timestamp]
+    for timestamp in results[file_name][this_config_hash]:
+        result = results[file_name][this_config_hash][timestamp]
         if same_setting_found:
             break
 
@@ -155,10 +160,11 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
     return not same_setting_found
 
 
-def load_setting(file_name=None, time_stamp=None):
+def load_setting(file_name=None, hashed_config=None, time_stamp=None):
     """ Load the setting or its part given parameters.
 
     :arg file_name: (string): name of the file to be loaded, if None all file names are loaded
+    :arg hashed_config: (string): hash of the config, if None all configs are loaded
     :arg time_stamp: (string): time stamp to load for a given file, if None all time stamps are loaded
     """
     with open("../output/results.txt") as file:
@@ -166,8 +172,10 @@ def load_setting(file_name=None, time_stamp=None):
 
     if file_name is not None:
         results = results[file_name]
-        if time_stamp is not None:
-            results = results[time_stamp]
+        if hashed_config is not None:
+            results = results[hashed_config]
+            if time_stamp is not None:
+                results = results[time_stamp]
 
     return results
 
@@ -260,7 +268,7 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
 
     ## Check whether there is no replicate
     for timestamp in results[file_name][this_config_hash]:
-        result = results[file_name][timestamp][this_config_hash]
+        result = results[file_name][this_config_hash][timestamp]
         if debug:
             print("possibly same result", result)
         if result == new_entry:
@@ -342,11 +350,18 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                 assert isinstance(results[track_file], dict)
                 for hashed_config in results[track_file].keys():
                     assert isinstance(results[track_file][hashed_config], dict)
-                    for timestamp in results[track_file][hashed_config].keys():
+                    inner_dict = results[track_file][hashed_config]
+                    for timestamp in inner_dict.keys():
                         if debug:
                             print("timestamp", timestamp)
                             print(results[track_file][hashed_config][timestamp])
-                        assert isinstance(results[track_file][hashed_config][timestamp], dict)
+                        try:
+                            assert isinstance(results[track_file][hashed_config][timestamp], dict)
+                        except AssertionError as err:
+
+                            print("results[track_file][hashed_config]", results[track_file][hashed_config])
+                            print("results[track_file][hashed_config][timestamp]", results[track_file][hashed_config][timestamp])
+                            raise err
                         record = results[track_file][hashed_config][timestamp]
                         try:
                             had_video = record['had_video']

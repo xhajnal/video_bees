@@ -272,7 +272,7 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
 
     for overlap in dictionary.keys():
         if debug:
-            print(colored(f"Currently checking overlapping indices: {overlap}", "blue"))
+            print(colored(f" Currently checking overlapping indices: {overlap}", "blue"))
         overlapping_ranges = []
         for interval_index in overlap:
             try:
@@ -290,7 +290,7 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
         ## NEW
         if shortest_range == dictionary[overlap]:
             if debug:
-                print(colored(f"Will delete range index {index_of_shortest_range}, {shortest_range}", "yellow"))
+                print(colored(f" Will delete range index {index_of_shortest_range}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(index_of_shortest_range)
             keys_to_be_deleted.append(overlap)
 
@@ -309,10 +309,10 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
         #     keys_to_be_deleted.append(overlap)
 
     if debug:
-        print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
+        print(colored(f" Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
     if debug:
-        print(colored(f"keys_to_be_deleted: {keys_to_be_deleted}", "red"))
+        print(colored(f" keys_to_be_deleted: {keys_to_be_deleted}", "red"))
     for key in keys_to_be_deleted:
         del dictionary[key]
 
@@ -325,7 +325,8 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
 # deprecated
 def trim_out_additional_agents_over_long_traces_old(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
-    
+
+        :arg traces: (list): list of Traces
         :arg population_size: (int): expected number of agents
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
@@ -753,9 +754,9 @@ def cross_trace_analyse(traces, silent=False, debug=False):
 def merge_overlapping_traces(traces, population_size, allow_force_merge=True, silent=False, debug=False, show=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
-        :arg traces (list) list of traces
+        :arg traces: (list): list of traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
-        :arg population_size (int) expected number of agents
+        :arg population_size: (int): expected number of agents
         :arg allow_force_merge: (bool): iff True force merge is allow
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown

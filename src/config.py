@@ -106,7 +106,7 @@ def hash_config(this=True):
                    this[9],
                    tuple([item for sublist in this[10] for item in sublist]))
 
-    return abs(hash(setting))
+    return str(abs(hash(setting)))
 
 
 if __name__ == "__main__":
