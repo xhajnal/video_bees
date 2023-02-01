@@ -141,3 +141,5 @@ auxiliary/point.txt
 src/video2.py
 
 src/fix_folders2.py
+
+auxiliary/spam.csv

@@ -394,14 +394,14 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                         try:
                             min_trace_length_to_merge = record['min_trace_length_to_merge']
                         except KeyError as err:
-                            if hash_config() == 5622099551276768363:
+                            if hashed_config == 5622099551276768363:
                                 min_trace_length_to_merge = 50
                             else:
                                 min_trace_length_to_merge = ""
                         try:
                             vicinity_of_short_traces = record['vicinity_of_short_traces']
                         except KeyError as err:
-                            if hash_config() == 5622099551276768363:
+                            if hashed_config == 5622099551276768363:
                                 vicinity_of_short_traces = 200
                             else:
                                 vicinity_of_short_traces = ""
@@ -409,7 +409,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                         try:
                             maximal_distance_to_check_for_trace_swapping = record['maximal_distance_to_check_for_trace_swapping']
                         except KeyError as err:
-                            if hash_config() == 5622099551276768363:
+                            if hashed_config == 5622099551276768363:
                                 maximal_distance_to_check_for_trace_swapping = 100
                             else:
                                 maximal_distance_to_check_for_trace_swapping = ""
@@ -665,5 +665,5 @@ def parse_traces(csv_file):
 
 
 if __name__ == "__main__":
-    convert_results_from_json_to_csv(debug=False)
-    convert_results_from_json_to_csv(is_first_run=True)
+    convert_results_from_json_to_csv()
+    # convert_results_from_json_to_csv(is_first_run=True)
