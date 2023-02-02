@@ -3,7 +3,7 @@ import os.path
 from glob import glob
 
 import analyse
-from dave_io import load_setting
+from dave_io import load_result
 
 
 def write_dave():
@@ -42,7 +42,7 @@ def write_dave():
                     if_video = ", is_first_run=a"
 
                 try:
-                    file_results = load_setting(file_name=f"{original_file}")
+                    file_results = load_result(file_name=f"{original_file}")
                     all_loaded = []
                     all_single = []
                     all_final = []

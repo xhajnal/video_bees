@@ -160,15 +160,22 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
     return not same_setting_found
 
 
-def load_setting(file_name=None, hashed_config=None, time_stamp=None):
-    """ Load the setting or its part given parameters.
+def load_result(file_name=None, hashed_config=None, time_stamp=None, is_first_run=None):
+    """ Load the result json from .txt file or its part given parameters.
 
     :arg file_name: (string): name of the file to be loaded, if None all file names are loaded
     :arg hashed_config: (string): hash of the config, if None all configs are loaded
     :arg time_stamp: (string): time stamp to load for a given file, if None all time stamps are loaded
+    :arg is_first_run: (bool): iff True, "results_after_first_run.txt" will be used instead of standard "results.txt"
     """
-    with open("../output/results.txt") as file:
-        results = json.load(file)
+
+    if not (is_first_run is True):
+        results_file = "../output/results.txt"
+    else:
+        results_file = "../output/results_after_first_run.txt"
+
+    with open(results_file) as result_file:
+        results = json.load(result_file)
 
     if file_name is not None:
         results = results[file_name]
@@ -180,7 +187,7 @@ def load_setting(file_name=None, hashed_config=None, time_stamp=None):
     return results
 
 
-def save_setting(counts, file_name, population_size, is_guided, is_force_merge_allowed, video_available, silent=False, debug=False, is_first_run=None):
+def save_current_result(counts, file_name, population_size, is_guided, is_force_merge_allowed, video_available, silent=False, debug=False, is_first_run=None):
     """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
      file_path -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
 
@@ -297,9 +304,10 @@ def save_setting(counts, file_name, population_size, is_guided, is_force_merge_a
 
 
 def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=None):
-    """ Stores the json results file as csv to show the results in a human-readable format.
+    """ Converts and stores the json results file as csv to show the results in a human-readable format.
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
+        :arg is_first_run: (bool): iff True, "results_after_first_run.txt" will be used instead of standard "results.txt"
     """
 
     print(colored("STORES THE JSON RESULTS FILE AS A CSV", "blue"))
@@ -482,6 +490,7 @@ def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None)
         :arg file_name: (string): name of the file to be saved in "output" folder
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
+        :arg is_first_run: (bool): iff True, does not store the traces
     """
 
     if is_first_run is True:
