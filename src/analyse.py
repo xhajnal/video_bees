@@ -372,7 +372,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             after_number_of_traces = -9
             while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
                 before_number_of_traces = len(traces)
-                merge_overlapping_traces(traces, population_size, allow_force_merge=allow_force_merge, silent=silent, debug=debug, show=show_all_plots)
+                merge_overlapping_traces(traces, population_size, allow_force_merge=allow_force_merge, guided=guided,
+                                         input_video=video_file, silent=silent, debug=debug, show=show_all_plots, video_params=video_params)
                 after_number_of_traces = len(traces)
 
             ## MERGE OVERLAPPING TRIPLETS, video-guided trace deleting

@@ -8,7 +8,7 @@ def get_distance_from_calculated_arena():
 ## SINGLE TRACE SETTING
 def get_min_trace_len():
     """ Return minimal value of a trace len in frames to be kept."""
-    return 1
+    return 100
 
 
 def get_bee_max_step_len():
@@ -43,10 +43,19 @@ def get_max_trace_gap():
 
 
 def get_max_step_distance_to_merge_overlapping_traces():
-    """ Returns a maximal distance two traces can differ in any point to be not merged."""
+    """ Returns a maximal distance two traces can differ in any point to be NOT merged."""
     # TODO check this value
     # Usage: overlapping traces
-    return 100
+    return 120
+
+
+def get_min_step_distance_to_merge_overlapping_traces():
+    """ Returns a minimal distance two traces can differ in any point to be merged.
+        In other words, the two traces have to be atl least this near at any point to be merged.
+    """
+    # TODO check this value
+    # Usage: overlapping traces
+    return 49
 
 
 def get_force_merge_vicinity_distance():

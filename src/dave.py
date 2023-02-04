@@ -1,5 +1,7 @@
 from analyse import analyse, set_just_annotate, set_force_new_video, set_just_align
 
+from cross_traces import get_all_overlaps_count, get_all_overlaps_deleted
+
 
 def run_both():
     """ Runs both, the first and the second run."""
