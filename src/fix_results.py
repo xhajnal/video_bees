@@ -104,6 +104,7 @@ def add_this_config_hash_to_results(after_first_run=False):
                                                  results[file][time_stamp]['bee_max_step_len_per_frame'],
                                                  results[file][time_stamp]['max_trace_gap_to_interpolate_distance'],
                                                  results[file][time_stamp]['max_step_distance_to_merge_overlapping_traces'],
+                                                 results[file][time_stamp]['min_step_distance_to_merge_overlapping_traces'],
                                                  force_merge_vicinity_distance,
                                                  results[file][time_stamp]['screen_size']])
 

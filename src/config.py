@@ -51,7 +51,7 @@ def get_max_step_distance_to_merge_overlapping_traces():
 
 def get_min_step_distance_to_merge_overlapping_traces():
     """ Returns a minimal distance two traces can differ in any point to be merged.
-        In other words, the two traces have to be atl least this near at any point to be merged.
+        In other words, the two traces have to be at least this near at any point to be merged.
     """
     # TODO check this value
     # Usage: overlapping traces
@@ -99,6 +99,7 @@ def hash_config(this=True):
                    get_bee_max_step_len_per_frame(),
                    get_max_trace_gap_to_interpolate_distance(),
                    get_max_step_distance_to_merge_overlapping_traces(),
+                   get_min_step_distance_to_merge_overlapping_traces(),
                    get_force_merge_vicinity_distance(),
                    tuple([item for sublist in get_screen_size() for item in sublist]))
     else:
@@ -113,7 +114,8 @@ def hash_config(this=True):
                    this[7],
                    this[8],
                    this[9],
-                   tuple([item for sublist in this[10] for item in sublist]))
+                   this[10],
+                   tuple([item for sublist in this[11] for item in sublist]))
 
     return str(abs(hash(setting)))
 
