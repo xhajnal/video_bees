@@ -43,7 +43,7 @@ def check_setting():
         file.write(json.dumps(results))
 
 
-def add_this_config_hash_to_results(after_first_run=False):
+def add_this_config_hash_to_results(after_first_run=False, debug=False):
     """ Adds the config hash to the result."""
     new_results = {}
 
@@ -54,84 +54,103 @@ def add_this_config_hash_to_results(after_first_run=False):
         results = json.load(file)
 
     for file in results.keys():
-        for time_stamp in results[file].keys():
-            # print(results[file])
-            # print(results[file][time_stamp])
+        for config_hash in results[file].keys():
+            for time_stamp in results[file][config_hash].keys():
+                # print(results[file])
+                # print(results[file][config_hash])
+                # print(results[file][config_hash][time_stamp])
 
-            # setting = (get_distance_from_calculated_arena(),
-            #            get_min_trace_len(),
-            #            get_vicinity_of_short_traces(),
-            #            get_max_trace_gap(),
-            #            get_min_trace_length_to_merge(),
-            #            get_bee_max_step_len(),
-            #            get_bee_max_step_len_per_frame(),
-            #            get_max_trace_gap_to_interpolate_distance(),
-            #            get_max_step_distance_to_merge_overlapping_traces(),
-            #            get_force_merge_vicinity_distance(),
-            #            tuple([item for sublist in get_screen_size() for item in sublist]))
+                # setting = (get_distance_from_calculated_arena(),
+                #            get_min_trace_len(),
+                #            get_vicinity_of_short_traces(),
+                #            get_max_trace_gap(),
+                #            get_min_trace_length_to_merge(),
+                #            get_bee_max_step_len(),
+                #            get_bee_max_step_len_per_frame(),
+                #            get_max_trace_gap_to_interpolate_distance(),
+                #            get_max_step_distance_to_merge_overlapping_traces(),
+                #            get_min_step_distance_to_merge_overlapping_traces(),
+                #            get_force_merge_vicinity_distance(),
+                #            tuple([item for sublist in get_screen_size() for item in sublist]))
 
-            try:
-                min_trace_len = results[file][time_stamp]['min_trace_len']
-            except KeyError:
-                min_trace_len = -1
-
-            try:
-                min_trace_length_to_merge = results[file][time_stamp]['min_trace_length']
-            except KeyError:
                 try:
-                    min_trace_length_to_merge = results[file][time_stamp]['bee_min_trace_len']
+                    min_trace_len = results[file][config_hash][time_stamp]['min_trace_len']
                 except KeyError:
-                    min_trace_length_to_merge = -1
+                    min_trace_len = -1
+
+                try:
+                    get_vicinity_of_short_traces = results[file][config_hash][time_stamp]['get_vicinity_of_short_traces']
+                except KeyError:
+                    get_vicinity_of_short_traces = -1
 
 
-            try:
-                force_merge_vicinity_distance = results[file][time_stamp]['force_merge_vicinity']
-            except KeyError:
-                force_merge_vicinity_distance = -1
+                try:
+                    min_trace_length_to_merge = results[file][config_hash][time_stamp]['min_trace_length']
+                except KeyError:
+                    try:
+                        min_trace_length_to_merge = results[file][config_hash][time_stamp]['bee_min_trace_len']
+                    except KeyError:
+                        min_trace_length_to_merge = -1
 
-            try:
-                a = int((list(results[file].keys())[0]))
-                continue
-            except ValueError:
-                pass
 
-            this_config_hash = hash_config(this=[results[file][time_stamp]['distance_from_calculated_arena'],
-                                                 min_trace_len,
-                                                 -1,
-                                                 results[file][time_stamp]['max_trace_gap'],
-                                                 min_trace_length_to_merge,
-                                                 results[file][time_stamp]['bee_max_step_len'],
-                                                 results[file][time_stamp]['bee_max_step_len_per_frame'],
-                                                 results[file][time_stamp]['max_trace_gap_to_interpolate_distance'],
-                                                 results[file][time_stamp]['max_step_distance_to_merge_overlapping_traces'],
-                                                 results[file][time_stamp]['min_step_distance_to_merge_overlapping_traces'],
-                                                 force_merge_vicinity_distance,
-                                                 results[file][time_stamp]['screen_size']])
+                try:
+                    min_step_distance_to_merge_overlapping_traces = results[file][config_hash][time_stamp]['min_step_distance_to_merge_overlapping_traces']
+                except KeyError:
+                    min_step_distance_to_merge_overlapping_traces = ""
 
-            try:
-                a = new_results[file]
-            except KeyError:
-                new_results[file] = {}
+                try:
+                    force_merge_vicinity_distance = results[file][config_hash][time_stamp]['force_merge_vicinity']
+                except KeyError:
+                    force_merge_vicinity_distance = -1
 
-            try:
-                a = new_results[file][this_config_hash]
-            except KeyError:
-                new_results[file][this_config_hash] = {}
+                # try:
+                #     a = int((list(results[file].keys())[0]))
+                #     print(a)
+                #     continue
+                # except ValueError:
+                #     pass
 
-            try:
-                a = new_results[file][this_config_hash][time_stamp]
-            except KeyError:
-                new_results[file][this_config_hash][time_stamp] = {}
+                this_config_hash = hash_config(this=[results[file][config_hash][time_stamp]['distance_from_calculated_arena'],
+                                                     min_trace_len,
+                                                     get_vicinity_of_short_traces,
+                                                     results[file][config_hash][time_stamp]['max_trace_gap'],
+                                                     min_trace_length_to_merge,
+                                                     results[file][config_hash][time_stamp]['bee_max_step_len'],
+                                                     results[file][config_hash][time_stamp]['bee_max_step_len_per_frame'],
+                                                     results[file][config_hash][time_stamp]['max_trace_gap_to_interpolate_distance'],
+                                                     results[file][config_hash][time_stamp]['max_step_distance_to_merge_overlapping_traces'],
+                                                     min_step_distance_to_merge_overlapping_traces,
+                                                     force_merge_vicinity_distance,
+                                                     results[file][config_hash][time_stamp]['screen_size']])
 
-            new_results[file][this_config_hash][time_stamp] = results[file][time_stamp]
+                try:
+                    a = new_results[file]
+                except KeyError:
+                    # print(f"no file {file}")
+                    new_results[file] = {}
 
-    print(new_results)
+                try:
+                    a = new_results[file][this_config_hash]
+                except KeyError:
+                    # print(f"no hash {this_config_hash}")
+                    new_results[file][this_config_hash] = {}
+
+                try:
+                    a = new_results[file][this_config_hash][time_stamp]
+                except KeyError:
+                    # print(f"no time_stamp {time_stamp}")
+                    new_results[file][this_config_hash][time_stamp] = {}
+
+                new_results[file][this_config_hash][time_stamp] = results[file][config_hash][time_stamp]
+
+    if debug:
+        print(new_results)
 
     with open(file_name, 'w') as file:
         file.write(json.dumps(new_results))
 
 
-add_this_config_hash_to_results(after_first_run=True)
+add_this_config_hash_to_results(after_first_run=True, debug=True)
 
 
 ## BEE SPECIFIC
