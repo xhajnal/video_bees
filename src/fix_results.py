@@ -9,7 +9,7 @@ from dave_io import convert_results_from_json_to_csv
 
 # DEPRECATED
 def check_setting():
-    """ Fixes population size column,
+    """ Fixes population population_size column,
 
     """
     print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))

@@ -1,10 +1,11 @@
 import math
 
 import analyse
+from cross_traces import track_swapping_loop
 from dave_io import parse_traces
-from single_trace import single_trace_checker
+from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
-from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap
+from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range
 import unittest
 import matplotlib.pyplot as plt
 from misc import *
@@ -19,6 +20,8 @@ class MyTestCase(unittest.TestCase):
     #     with open('../test/test.csv', newline='') as csv_file:
     #         print("hello")
     #         traces = parse_traces(csv_file)
+
+    ## NO TRACE TESTS
     def test_misc(self):
         self.assertEqual(get_last_digit(5), 5)
         self.assertEqual(get_last_digit(61), 1)
@@ -219,6 +222,7 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(convert_frame_number_back(1620, '../test/test_converted.csv'), 1621)
 
+    ## SINGLE TRACE TESTS
     def testTraces(self):
         with open('../test/test.csv', newline='') as csv_file:
             traces = parse_traces(csv_file)
@@ -405,6 +409,45 @@ class MyTestCase(unittest.TestCase):
             spam.extend([[0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
             self.assertEqual(merged_trace.locations, spam)
 
+    def testRemoveFullTraces(self):
+        with open('../test/test.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+            traces = []
+            for index, trace in enumerate(scraped_traces.keys()):
+                # print(trace)
+                # print(scraped_traces[trace])
+                traces.append(Trace(scraped_traces[trace], index))
+
+            self.assertEqual(compute_whole_frame_range(traces), [1620, 2127])
+
+            removed_traces = []
+            population_size = 8
+            remove_full_traces(traces, removed_traces, population_size, silent=False, debug=False)
+            self.assertEqual(len(traces), 8)
+            self.assertEqual(len(removed_traces), 0)
+
+        with open('../test/test2.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+            traces = []
+            for index, trace in enumerate(scraped_traces.keys()):
+                # print(trace)
+                # print(scraped_traces[trace])
+                traces.append(Trace(scraped_traces[trace], index))
+
+            self.assertEqual(compute_whole_frame_range(traces), [1620, 1625])
+
+            removed_traces = []
+            population_size = 4
+            remove_full_traces(traces, removed_traces, population_size, silent=False, debug=False)
+            self.assertEqual(len(traces), 2)
+            self.assertEqual(traces[0].trace_id, 2)
+            self.assertEqual(traces[1].trace_id, 3)
+            self.assertEqual(len(removed_traces), 2)
+
+            self.assertEqual(removed_traces[0].trace_id, 0)
+            self.assertEqual(removed_traces[1].trace_id, 1)
+
+
     def testCheckTraces(self):
         with open('../test/test.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
@@ -419,6 +462,28 @@ class MyTestCase(unittest.TestCase):
             single_trace_checker(traces, min_trace_range_len=4, vicinity=6)
             # scatter_detection(traces, [1620, 2127])
             scatter_detection(traces, [1620, 1626])
+
+    ## MULTIPLE TRACES TESTS
+    # TODO HAVE A LOOK HERE
+    def testSwaps(self):
+        with open('../test/test2.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+            traces = []
+            for index, trace in enumerate(scraped_traces.keys()):
+                # print(trace)
+                # print(scraped_traces[trace])
+                traces.append(Trace(scraped_traces[trace], index))
+
+            a = track_swapping_loop(traces, silent=False, debug=True)
+            print(a)
+            #
+            # self.assertEqual(len(traces), 2)
+            # self.assertEqual(traces[0].trace_id, 2)
+            # self.assertEqual(traces[1].trace_id, 3)
+            # self.assertEqual(len(removed_traces), 2)
+            #
+            # self.assertEqual(removed_traces[0].trace_id, 0)
+            # self.assertEqual(removed_traces[1].trace_id, 1)
 
     def testSwapTraces(self):
         with open('../test/test.csv', newline='') as csv_file:

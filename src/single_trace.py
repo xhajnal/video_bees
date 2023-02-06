@@ -10,7 +10,7 @@ from fake import get_real_whole_frame_range, get_whole_frame_range
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices, has_overlap
 from trace import Trace
-from traces_logic import compute_arena
+from traces_logic import compute_arena, compute_whole_frame_range
 
 
 def remove_full_traces(traces, removed_traces, population_size, silent=False, debug=False):
@@ -19,14 +19,19 @@ def remove_full_traces(traces, removed_traces, population_size, silent=False, de
         :arg traces: (list): a list of Traces
         :arg removed_traces: (list): a list of already removed Traces
         :arg real_whole_frame_range: [int, int]: real frame range of the whole video (without margins)
-        :arg population_size: (int): population size of original traces
+        :arg population_size: (int): population population_size of original traces
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns traces: (list): a list of truncated Traces
         :returns traces: (list): a list of old Traces
-        :returns new_population_size: (int): population size of new traces
+        :returns new_population_size: (int): population population_size of new traces
         """
-    real_whole_frame_range = get_real_whole_frame_range()
+    try:
+        real_whole_frame_range = get_real_whole_frame_range()
+    except:
+        real_whole_frame_range = compute_whole_frame_range(traces)
+
+    indices_to_be_deleted = []
 
     print(colored("REMOVING TRACES OF FULL RANGE", "blue"))
     deleted = 0
@@ -35,8 +40,10 @@ def remove_full_traces(traces, removed_traces, population_size, silent=False, de
             # print(colored(f"Removing trace {trace.trace_id}", "blue"))
             print(colored(f"Removing trace {index}({trace.trace_id}))", "blue"))
             removed_traces.append(traces[index])
-            del traces[index]
+            indices_to_be_deleted.append(index)
             deleted = deleted + 1
+
+    delete_indices(indices_to_be_deleted, traces)
 
     print()
     return traces, removed_traces, population_size - deleted
@@ -109,6 +116,7 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
 
 
 ## BEE SPECIFIC
+# TODO add tests
 def check_inside_of_arena(traces, silent=False, debug=False):
     """ Checks all traces whether each is inside the arena.
 
@@ -144,37 +152,40 @@ def check_inside_of_arena(traces, silent=False, debug=False):
     return traces
 
 
-def dummy_collision_finder(csv_file, size):
-    """ Parses  a loopy csv file nn/ai. It prints the frame numbers where the additional agents.
+# TODO add tests
+def simple_additional_bee_finder(csv_file, population_size):
+    """ Parses a loopy csv file _nn.csv
+    It prints the frame numbers where the additional agents.
     The print includes agent's id.
     Returns a list of frames where an additional agent was found.
 
     :arg csv_file: (file): input file
-    :arg size: (int): expected number of agents
-    :returns: frame_numbers_of_collided_agents: list of frames where an additional agent was found
+    :arg population_size: (int): expected number of agents
+    :returns: frame_numbers_of_additional_agents: list of frames where an additional agent was found
     """
-    print(colored("DUMMY COLLISION FINDER", "blue"))
+    print(colored("SIMPLE COLLISION FINDER", "blue"))
     reader = csv.DictReader(csv_file)
     i = 0
-    frame_numbers_of_collided_agents = []
+    frame_numbers_of_additional_agents = []
 
     for row in reader:
         # print(row['oid'])
-        if int(row['oid']) > size - 1:
-            print("A new fake agents appears on frame number", row['frame_number'], "iteration number", i, "with oid",
-                  row['oid'])
-            frame_numbers_of_collided_agents.append(row['frame_number'])
-            size = size + 1
+        if int(row['oid']) > population_size - 1:
+            print("A new fake agents appears on frame number", row['frame_number'], "iteration number", i, "with oid", row['oid'])
+            frame_numbers_of_additional_agents.append(row['frame_number'])
+            population_size = population_size + 1
         i = i + 1
 
-    return frame_numbers_of_collided_agents
+    return frame_numbers_of_additional_agents
 
 
+## TODO add to config - probably only cosmetic to the trace (should not alter the further analysis that much)
+# TODO add tests
 def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False, debug=False):
     """ Tracks when the tracking of the bee jumped at some place and then back quickly.
 
-    :arg trace: (Trace): a Traces to check
-    :arg trace_index: (int): auxiliary information of index in list of traces of the first trace
+    :arg trace: (Trace): a Trace to check
+    :arg trace_index: (int): print auxiliary information of index in list of traces of the trace
     :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
     :arg show_plots: (bool): a flag whether to show the jump in a plot
     :arg silent: (bool): if True minimal output is shown
@@ -210,7 +221,7 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False
                 jump_to_index = location_index2
             if potential_jump_detected:
                 if math.dist(trace.locations[location_index], trace.locations[location_index2]) <= jump_back_dist:
-                    # a jump found
+                    # A jump found
                     number_of_jump_detected = number_of_jump_detected + 1
                     if not silent:
                         print(f" Jump back and forth detected trace {trace_index}({trace.trace_id}),"
@@ -220,18 +231,19 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False
                               f" and jumping back to frame {trace.frames_list[location_index2]} with distance to start"
                               f" {math.dist(trace.locations[location_index], trace.locations[location_index2])}")
 
-                    # show jump in plot
+                    # Show the jump in plot
                     if show_plots and debug:
                         trace.show_trace_in_xy(from_to_frame=[trace.frames_list[location_index]-2, trace.frames_list[location_index2]+2], show=True, subtitle=f" jump to {trace.frames_list[jump_to_index]}")
 
-                    # smoothen the jump
+                    # Smoothen the jump
                     spam = np.linspace(trace.locations[location_index], trace.locations[location_index2], num=location_index2 - location_index + 1, endpoint=True)
                     for index_index, location_index in enumerate(range(location_index, location_index2+1)):
                         trace.locations[location_index] = spam[index_index]
+
                     # if show_plots:
                     #     trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[index]-2, trace.frames_list[index2]+2], show=True, subtitle=f" Smoothened jump to {trace.frames_list[jump_to_index]}")
 
-                    # move forth in frames
+                    # Move forth in frames
                     location_index = location_index2
                     potential_jump_detected = False
         location_index = location_index + 1

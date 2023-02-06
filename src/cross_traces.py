@@ -1,6 +1,4 @@
 import math
-import sys
-from copy import copy
 from time import time
 from _socket import gethostname
 from matplotlib import pyplot as plt
@@ -11,9 +9,10 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from config import *
 from fake import get_whole_frame_range
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_index_of_shortest_range, \
-    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten, margin_range
+    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten
 from trace import Trace
-from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces
+from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
+    compute_whole_frame_range, get_video_whole_frame_range
 from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
@@ -33,29 +32,6 @@ def get_all_overlaps_deleted():
     return all_overlaps_deleted
 
 
-def compute_whole_frame_range(traces):
-    """ Returns frame range of the whole video.
-
-        :arg traces: (list): list of Traces
-    """
-    frame_range = [sys.maxsize, -sys.maxsize]
-    for trace in traces:
-        if trace.frame_range[0] < frame_range[0]:
-            frame_range[0] = trace.frame_range[0]
-        if trace.frame_range[1] > frame_range[1]:
-            frame_range[1] = trace.frame_range[1]
-    return frame_range
-
-
-def get_video_whole_frame_range(traces):
-    """ Returns frame range of the whole video for visualisation - adding margins.
-
-        :arg traces: (list): list of Traces
-    """
-    a = compute_whole_frame_range(traces)
-    return [a[0] - 2000, a[1] + 2000]
-
-
 def track_swapping_loop(traces, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
     """ Calls track_swapping until no swap is available
 
@@ -67,7 +43,7 @@ def track_swapping_loop(traces, automatically_swap=False, input_video=False, sil
         :arg debug: (bool): if True extensive output is shown
         :arg video_params: (bool or tuple): i if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
     """
-    whole_frame_range = get_whole_frame_range()
+    # whole_frame_range = get_whole_frame_range()
 
     start_time = time()
     keep_looking = True
@@ -100,7 +76,7 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
 
     # Obtained variables
-    whole_frame_range = get_whole_frame_range()
+    # whole_frame_range = get_whole_frame_range()
 
     # Check
     if len(traces) < 2:
@@ -243,6 +219,7 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
 #     return traces
 
 
+# TODO add tests
 def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent when long traces are over here.
 
@@ -337,129 +314,130 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
     return traces, None
 
 
-# deprecated
-def trim_out_additional_agents_over_long_traces_old(traces, population_size, silent=False, debug=False):
-    """ Trims out additional appearance of an agent when long traces are over here.
+# DEPRECATED
+# def trim_out_additional_agents_over_long_traces_old(traces, population_size, silent=False, debug=False):
+#     """ Trims out additional appearance of an agent when long traces are over here.
+#
+#         :arg traces: (list): list of Traces
+#         :arg population_size: (int): expected number of agents
+#         :arg silent: (bool): if True minimal output is shown
+#         :arg debug: (bool): if True extensive output is shown
+#         :returns: traces: (list): list of trimmed Traces
+#     """
+#     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES OLD", "blue"))
+#     start_time = time()
+#     # Obtain the ranges with the population_size of frame more than 100 where all the agents are being tracked
+#     ranges = []
+#     for index1, trace in enumerate(traces):
+#         assert isinstance(trace, Trace)
+#         trace.check_trace_consistency()
+#         ranges.append(trace.frame_range)
+#     ranges = sorted(ranges)
+#
+#     if population_size == 2:
+#         ## CHECKING WHETHER THERE ARE TWO OVERLAPPING TRACES
+#         at_least_two_overlaps = []
+#         for index1, range1 in enumerate(ranges[:-1]):
+#             current_overlaps = []
+#             if debug:
+#                 print()
+#             for index2, range2 in enumerate(ranges):
+#                 if index1 == index2:  # Skip the same index
+#                     continue
+#
+#                 if range2[1] <= range1[0]:  # Skip the traces which end before start of this
+#                     continue
+#
+#                 if range2[0] >= range1[1]:  # Beginning of the further intervals is behind the end of current one
+#                     # We go through the set of overlapping intervals
+#                     if debug:
+#                         print("current interval:", range1)
+#                         print("The set of overlapping intervals:", current_overlaps)
+#                     i = -1
+#                     min_range = 0
+#                     # We search for the longest overlapping interval
+#                     for index3, range3 in enumerate(current_overlaps):
+#                         if len(range3) > min_range:
+#                             i = index3
+#                             min_range = len(range3)
+#                     if i == -1:
+#                         if debug:
+#                             print("there was no overlapping interval")
+#                         at_least_two_overlaps.append([])
+#                     else:
+#                         if debug:
+#                             print("picking the longest interval:", current_overlaps[i])
+#                         at_least_two_overlaps.append(current_overlaps[i])
+#                     # Skipping the intervals which starts further than this interval
+#                     break
+#                 else:
+#                     # Check whether the beginning of the two intervals are overlapping
+#                     if max(range1[0], range2[0]) > min(range1[1], range2[1]):
+#                         print(colored(range1, "red"))
+#                         print(colored(range2, "red"))
+#                         print("range1[1]", range1[1])
+#                         print("range2[0]", range2[0])
+#                         print(range2[0] >= range1[1])
+#                     # Add the overlap to the list
+#                     current_overlaps.append([max(range1[0], range2[0]), min(range1[1], range2[1])])
+#                     continue
+#         if debug:
+#             print(at_least_two_overlaps)
+#         # Selecting indices to be deleted
+#         indices_to_be_deleted = []
+#         for index1, range1 in enumerate(at_least_two_overlaps):
+#             if index1 in indices_to_be_deleted:
+#                 continue
+#             for index2, range2 in enumerate(at_least_two_overlaps):
+#                 if index2 in indices_to_be_deleted:
+#                     continue
+#                 if index1 == index2:
+#                     continue
+#                 # Start of the second interval is beyond end of first, we move on
+#                 if range2[0] > range1[1]:
+#                     break
+#                 # Range2 is in Range1
+#                 if range2[0] >= range1[0] and range2[1] <= range1[1]:
+#                     if debug:
+#                         print(f"range index {index2} with value {range2} is in range index {index1} with value {range1}")
+#                     indices_to_be_deleted.append(index2)
+#         # Remove duplicates in the list of overlapping traces
+#         if debug:
+#             print()
+#             print(indices_to_be_deleted)
+#         at_least_two_overlaps = delete_indices(indices_to_be_deleted, at_least_two_overlaps)
+#     elif population_size == 1:
+#         at_least_two_overlaps = []
+#         for index1, range1 in enumerate(ranges):
+#             at_least_two_overlaps.append(range1)
+#     else:
+#         raise NotImplemented("I`m sorry Dave, I`m afraid I cannot do that.")
+#
+#     # Remove intervals which are redundantly overlapping - being over at_least_two_overlaps
+#     if debug:
+#         print()
+#         print(at_least_two_overlaps)
+#     traces_indices_to_be_deleted = []
+#     for index, tracee in enumerate(traces):
+#         for overlap_range in at_least_two_overlaps:
+#             if is_in(tracee.frame_range, overlap_range, strict=True):
+#                 traces_indices_to_be_deleted.append(index)
+#     traces_indices_to_be_deleted = list(reversed(sorted(list(set(traces_indices_to_be_deleted)))))
+#     for index in traces_indices_to_be_deleted:
+#         del traces[index]
+#
+#     for trace in traces:
+#         trace.check_trace_consistency()
+#
+#     print(colored(
+#         f"trim_out_additional_agents_over_long_traces analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.",
+#         "yellow"))
+#     print(colored(f"Returning {len(traces)} traces, {len(traces_indices_to_be_deleted)} shorter than in previous iteration.", "green"))
+#     print()
+#     return traces
 
-        :arg traces: (list): list of Traces
-        :arg population_size: (int): expected number of agents
-        :arg silent: (bool): if True minimal output is shown
-        :arg debug: (bool): if True extensive output is shown
-        :returns: traces: (list): list of trimmed Traces
-    """
-    print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES OLD", "blue"))
-    start_time = time()
-    # Obtain the ranges with the size of frame more than 100 where all the agents are being tracked
-    ranges = []
-    for index1, trace in enumerate(traces):
-        assert isinstance(trace, Trace)
-        trace.check_trace_consistency()
-        ranges.append(trace.frame_range)
-    ranges = sorted(ranges)
 
-    if population_size == 2:
-        ## CHECKING WHETHER THERE ARE TWO OVERLAPPING TRACES
-        at_least_two_overlaps = []
-        for index1, range1 in enumerate(ranges[:-1]):
-            current_overlaps = []
-            if debug:
-                print()
-            for index2, range2 in enumerate(ranges):
-                if index1 == index2:  # Skip the same index
-                    continue
-
-                if range2[1] <= range1[0]:  # Skip the traces which end before start of this
-                    continue
-
-                if range2[0] >= range1[1]:  # Beginning of the further intervals is behind the end of current one
-                    # We go through the set of overlapping intervals
-                    if debug:
-                        print("current interval:", range1)
-                        print("The set of overlapping intervals:", current_overlaps)
-                    i = -1
-                    min_range = 0
-                    # We search for the longest overlapping interval
-                    for index3, range3 in enumerate(current_overlaps):
-                        if len(range3) > min_range:
-                            i = index3
-                            min_range = len(range3)
-                    if i == -1:
-                        if debug:
-                            print("there was no overlapping interval")
-                        at_least_two_overlaps.append([])
-                    else:
-                        if debug:
-                            print("picking the longest interval:", current_overlaps[i])
-                        at_least_two_overlaps.append(current_overlaps[i])
-                    # Skipping the intervals which starts further than this interval
-                    break
-                else:
-                    # Check whether the beginning of the two intervals are overlapping
-                    if max(range1[0], range2[0]) > min(range1[1], range2[1]):
-                        print(colored(range1, "red"))
-                        print(colored(range2, "red"))
-                        print("range1[1]", range1[1])
-                        print("range2[0]", range2[0])
-                        print(range2[0] >= range1[1])
-                    # Add the overlap to the list
-                    current_overlaps.append([max(range1[0], range2[0]), min(range1[1], range2[1])])
-                    continue
-        if debug:
-            print(at_least_two_overlaps)
-        # Selecting indices to be deleted
-        indices_to_be_deleted = []
-        for index1, range1 in enumerate(at_least_two_overlaps):
-            if index1 in indices_to_be_deleted:
-                continue
-            for index2, range2 in enumerate(at_least_two_overlaps):
-                if index2 in indices_to_be_deleted:
-                    continue
-                if index1 == index2:
-                    continue
-                # Start of the second interval is beyond end of first, we move on
-                if range2[0] > range1[1]:
-                    break
-                # Range2 is in Range1
-                if range2[0] >= range1[0] and range2[1] <= range1[1]:
-                    if debug:
-                        print(f"range index {index2} with value {range2} is in range index {index1} with value {range1}")
-                    indices_to_be_deleted.append(index2)
-        # Remove duplicates in the list of overlapping traces
-        if debug:
-            print()
-            print(indices_to_be_deleted)
-        at_least_two_overlaps = delete_indices(indices_to_be_deleted, at_least_two_overlaps)
-    elif population_size == 1:
-        at_least_two_overlaps = []
-        for index1, range1 in enumerate(ranges):
-            at_least_two_overlaps.append(range1)
-    else:
-        raise NotImplemented("I`m sorry Dave, I`m afraid I cannot do that.")
-
-    # Remove intervals which are redundantly overlapping - being over at_least_two_overlaps
-    if debug:
-        print()
-        print(at_least_two_overlaps)
-    traces_indices_to_be_deleted = []
-    for index, tracee in enumerate(traces):
-        for overlap_range in at_least_two_overlaps:
-            if is_in(tracee.frame_range, overlap_range, strict=True):
-                traces_indices_to_be_deleted.append(index)
-    traces_indices_to_be_deleted = list(reversed(sorted(list(set(traces_indices_to_be_deleted)))))
-    for index in traces_indices_to_be_deleted:
-        del traces[index]
-
-    for trace in traces:
-        trace.check_trace_consistency()
-
-    print(colored(
-        f"trim_out_additional_agents_over_long_traces analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.",
-        "yellow"))
-    print(colored(f"Returning {len(traces)} traces, {len(traces_indices_to_be_deleted)} shorter than in previous iteration.", "green"))
-    print()
-    return traces
-
-
+# TODO add tests
 def put_gaping_traces_together(traces, population_size, allow_force_merge=True, silent=False, debug=False):
     """ Puts gaping traces together iff all the agents but one is being tracked.
 
@@ -677,6 +655,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
     return traces
 
 
+# TODO add tests
 def track_reappearance(traces, show=True, debug=False):
     """ Tracks the time it takes for an agent to appear when one is lost (end of a trace)
 
@@ -732,6 +711,7 @@ def track_reappearance(traces, show=True, debug=False):
 
 
 ## CROSS-TRACE ANALYSIS
+# TODO add tests
 def cross_trace_analyse(traces, silent=False, debug=False):
     """ Checks traces against each other.
 
@@ -766,6 +746,7 @@ def cross_trace_analyse(traces, silent=False, debug=False):
     print()
 
 
+# TODO add tests
 def merge_overlapping_traces(traces, population_size, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False):
     """ Puts traces together such that all the agents but one is being tracked.
 
@@ -982,6 +963,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
     return
 
 
+# TODO add tests
 def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False, debug=False, show_all_plots=False):
     """ Compares two traces.
 

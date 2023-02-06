@@ -20,7 +20,7 @@ def play_opencv(input_video, frame_range, speed, points):
     :return:
     """
     video = cv2.VideoCapture(input_video)
-    # window name and size
+    # window name and population_size
     cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
@@ -241,7 +241,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
         print('Ranges of Traces: ', trace_ranges)
 
-    # Obtain frame size information using get() method
+    # Obtain frame population_size information using get() method
     frame_width = int(video.get(3))
     frame_height = int(video.get(4))
     frame_size = (frame_width, frame_height)
@@ -403,7 +403,7 @@ def make_help_video():
         frame_count = vid_capture.get(7)
         print('Frame count : ', frame_count)
 
-    # Obtain frame size information using get() method
+    # Obtain frame population_size information using get() method
     frame_width = int(vid_capture.get(3))
     frame_height = int(vid_capture.get(4))
     frame_size = (frame_width, frame_height)

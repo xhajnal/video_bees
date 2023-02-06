@@ -20,7 +20,7 @@ def get_bee_max_step_len():
 
 def get_bee_max_step_len_per_frame():
     """ Returns maximal step of a bee in a single frame in xy distance in continuous manner.
-        We recommend to set this value lower than get_bee_max_step_len"""
+        We recommend to set this value lower than get_bee_max_step_len """
     # TODO check this value
     # Usage: gaping traces - SHORT gap
     return 20

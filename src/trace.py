@@ -207,7 +207,7 @@ class Trace:
         """ Histogram of lengths of a single step."""
         # # print(self.trace_lengths)
         # plt.bar(list(self.trace_lengths.keys()), self.trace_lengths.values(), color='g')
-        # plt.xlabel('Step size')
+        # plt.xlabel('Step population_size')
         # plt.ylabel('Count of steps')
         # plt.title(f'Histogram of step lengths. Trace id {self.trace_id}.')
         # plt.show()
@@ -224,7 +224,7 @@ class Trace:
         # print(self.trace_lengths.values())
 
         plt.hist(spam, color='g', bins=bins)
-        plt.xlabel('Step size')
+        plt.xlabel('Step population_size')
         plt.ylabel('Count of steps')
         plt.title(f'Histogram of step lengths. Trace id {self.trace_id}.')
         plt.show()

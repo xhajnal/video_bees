@@ -1,5 +1,7 @@
 import copy
 import math
+import sys
+
 import numpy as np
 from termcolor import colored
 from ast import literal_eval as make_tuple
@@ -109,9 +111,9 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
     # gap range is the range of the gap not including the border points of traces
     gap_range = [trace1.frame_range[-1]+1, trace2.frame_range[0]-1]
 
-    # gap size in frames
+    # gap population_size in frames
     frame_gap_size = trace2.frames_list[0] - trace1.frames_list[-1] - 1
-    # gap size in xy (last and first point)
+    # gap population_size in xy (last and first point)
     merge_step = math.dist(trace1.locations[-1], trace2.locations[0])
 
     # trace len is sum of both plus the gap
@@ -124,7 +126,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
         trace1.gap_frames.append(frame)
     trace1.frames_list.extend(trace2.frames_list)
 
-    # Based on the gap size
+    # Based on the gap population_size
     if frame_gap_size <= get_max_trace_gap_to_interpolate_distance():
         # set a point of location of the gap as linear interpolation of two bordering points
         if debug:
@@ -412,7 +414,7 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
 
 
 def compute_arena(traces, debug=False):
-    """ Computes the arena size - center and diameter
+    """ Computes the arena population_size - center and diameter
 
         :arg traces: (list): a list of Traces
         :arg debug: (bool): if True extensive output is shown
@@ -461,3 +463,26 @@ def compute_arena(traces, debug=False):
     center = [mid_x, mid_y]
 
     return center, diam
+
+
+def compute_whole_frame_range(traces):
+    """ Returns frame range of the whole video.
+
+        :arg traces: (list): list of Traces
+    """
+    frame_range = [sys.maxsize, -sys.maxsize]
+    for trace in traces:
+        if trace.frame_range[0] < frame_range[0]:
+            frame_range[0] = trace.frame_range[0]
+        if trace.frame_range[1] > frame_range[1]:
+            frame_range[1] = trace.frame_range[1]
+    return frame_range
+
+
+def get_video_whole_frame_range(traces):
+    """ Returns frame range of the whole video for visualisation - adding margins.
+
+        :arg traces: (list): list of Traces
+    """
+    a = compute_whole_frame_range(traces)
+    return [a[0] - 2000, a[1] + 2000]
