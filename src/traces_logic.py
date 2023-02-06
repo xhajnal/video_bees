@@ -409,3 +409,55 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
             traces_indices_to_be_removed.extend(traces_to_delete)
 
     return traces_indices_to_be_removed
+
+
+def compute_arena(traces, debug=False):
+    """ Computes the arena size - center and diameter
+
+        :arg traces: (list): a list of Traces
+        :arg debug: (bool): if True extensive output is shown
+    """
+    all_locations = []
+    # Get all locations of all traces
+    for trace in traces:
+        all_locations.extend(trace.locations)
+
+    min_x = 999999999999999999
+    min_y = 999999999999999999
+    max_x = -9
+    max_y = -9
+
+    # Compute the boundaries of the traces
+    for location in all_locations:
+        if location[0] < min_x:
+            min_x = location[0]
+        if location[1] < min_y:
+            min_y = location[1]
+        if location[0] > max_x:
+            max_x = location[0]
+        if location[1] > max_y:
+            max_y = location[1]
+
+    if debug:
+        print(f"min max values min_x {min_x} min_y {min_y},  max_x {max_x} max_y {max_y}")
+
+    # Compute the aprox. diameter of the arena
+    diam_x = max_x - min_x
+    diam_y = max_y - min_y
+
+    if debug:
+        print(f"diameter x {diam_x}, diameter y {diam_y}")
+
+    # Set the highest of the diameters as the arena
+    diam = max(diam_x, diam_y)
+
+    # Compute the center of the elipse
+    mid_x = (min_x + max_x) / 2
+    mid_y = (min_y + max_y) / 2
+
+    if debug:
+        print(f"the center values are mid_x {mid_x} mid_y {mid_y}")
+
+    center = [mid_x, mid_y]
+
+    return center, diam
