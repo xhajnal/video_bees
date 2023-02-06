@@ -310,7 +310,7 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
 
     print(colored(f"trim_out_additional_agents_over_long_traces2 analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"Returning {len(traces)} traces, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration. \n", "green"))
-    ## TODO fix to return traces, dictionary
+    ## TODO fix to: return traces, dictionary
     return traces, None
 
 

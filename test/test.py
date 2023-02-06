@@ -1,4 +1,6 @@
 import math
+import unittest
+import matplotlib.pyplot as plt
 
 import analyse
 from cross_traces import track_swapping_loop
@@ -6,8 +8,6 @@ from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range
-import unittest
-import matplotlib.pyplot as plt
 from misc import *
 from visualise import scatter_detection
 
@@ -446,7 +446,6 @@ class MyTestCase(unittest.TestCase):
 
             self.assertEqual(removed_traces[0].trace_id, 0)
             self.assertEqual(removed_traces[1].trace_id, 1)
-
 
     def testCheckTraces(self):
         with open('../test/test.csv', newline='') as csv_file:

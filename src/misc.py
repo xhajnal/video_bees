@@ -15,14 +15,24 @@ def get_last_digit(number):
     return int(str(number)[-1])
 
 
-def calculate_cosine_distance(a, b):
+def calculate_cosine_distance(vect1, vect2):
+    """ Calculates cosine distance of the two vectors
+
+        :arg vect1: (vect): first vector
+        :arg vect2: (vect): second vector
+    """
     ## TODO have look on the warning
     ## scipy\spatial\distance.py:620: RuntimeWarning: invalid value encountered in double_scalars
-    return float(spatial.distance.cosine(a, b))
+    return float(spatial.distance.cosine(vect1, vect2))
 
 
-def calculate_cosine_similarity(a, b):
-    return 1 - calculate_cosine_distance(a, b)
+def calculate_cosine_similarity(vect1, vect2):
+    """ Calculates cosine similarity of the two vectors
+
+    :arg vect1: (vect): first vector
+    :arg vect2: (vect): second vector
+    """
+    return 1 - calculate_cosine_distance(vect1, vect2)
 
 
 def to_vect(point1, point2):

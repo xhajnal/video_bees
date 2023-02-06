@@ -83,7 +83,7 @@ def get_max_trace_gap_to_interpolate_distance():
 
 ## CAMERA / VIDEO SETTING
 def get_screen_size():
-    """ Returns size of the screen as [[xmin, xmax],[ymin, ymax]] . (To be) Used only in visualisations."""
+    """ Returns population_size of the screen as [[xmin, xmax],[ymin, ymax]] . (To be) Used only in visualisations."""
     return [[0, 900], [0, 900]]
 
 

@@ -10,8 +10,8 @@ from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
-    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, track_swapping_loop, \
-    get_video_whole_frame_range, compute_whole_frame_range
+    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, track_swapping_loop
+from traces_logic import compute_whole_frame_range, get_video_whole_frame_range
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, \
     get_video_path, pickle_load, load_result_traces, pickled_exist
@@ -258,6 +258,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ##################################
         # FIND TRACES OUTSIDE OF THE ARENA
         ##################################
+        ## BEE SPECIFIC
         check_inside_of_arena(traces)
         # Storing the number of traces inside of arena
         counts.append(len(traces) + len(removed_full_traces))
