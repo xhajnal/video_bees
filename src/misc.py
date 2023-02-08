@@ -2,7 +2,6 @@ import csv
 import sys
 from copy import copy
 import numpy as np
-from distinctipy import distinctipy
 from interval import Interval
 from mpmath import mpi
 import pandas as pd
@@ -249,11 +248,12 @@ def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     return dictionary2
 
 
-def dictionary_of_m_overlaps_of_n_intervals(m, intervals, skip_whole_in=False, debug=False):
+def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=False, skip_whole_in=False, debug=False):
     """ Returns a dictionary m-tuple of interval indices -> m-overlaps (m overlapping intervals) of n intervals
 
     :arg m: (int): degree of overlaps - how many overlaps
     :arg intervals: (list): list of intervals
+    :arg strict: (bool): if True point intervals are not used
     :arg skip_whole_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg debug: (bool): if True extensive output is shown
     """
@@ -268,18 +268,26 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, skip_whole_in=False, d
         print("intervals", intervals)
         raise err
     assert m > 1
-    dictionary = {}
 
+    ## Make dictionary for m=2
+    dictionary = {}
     for index1, range1 in enumerate(intervals):
         for index2, range2 in enumerate(intervals):
             if index1 >= index2:
                 continue
-            if has_overlap(range1, range2):
+            ## TODO possible optimisation by asking this before the run and calling a separate function if any point trace
+            ## One of the ranges is single point (this should not happen in the analysis as we trim out short traces)
+            if range_len(range1) == 0 or range_len(range2) == 0:
+                if has_overlap(range1, range2):
+                    dictionary[(index1, index2)] = get_overlap(range1, range2)
+            elif has_dot_overlap(range1, range2, strict):
                 # to skip the intervals which are overlapping with whole range
-                if skip_whole_in:
-                    if is_in(range1, range2) or is_in(range2, range1):
-                        continue
-                dictionary[(index1, index2)] = get_overlap(range1, range2)
+                if skip_whole_in and (is_in(range1, range2) or is_in(range2, range1)):
+                    continue
+                dictionary[(index1, index2)] = get_dot_overlap(range1, range2, strict)
+    del range1
+    del range2
+
     if debug:
         print("dictionary m=2", dictionary)
 
@@ -289,13 +297,21 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, skip_whole_in=False, d
         del dictionary
         dictionary = {}
         for overlap_indices in dictionary2.keys():
-            for index, rangee in enumerate(intervals):
+            range2 = dictionary2[overlap_indices]
+            for index, range1 in enumerate(intervals):
                 if index in overlap_indices:
                     continue
-                elif has_overlap(rangee, dictionary2[overlap_indices]):
+                ## TODO possible optimisation by asking this before the run and calling a separate function if any point trace
+                elif range_len(range1) == 0 or range_len(range2) == 0:
+                    ## One of the ranges is single point (this should not happen in the analysis as we trim out short traces)
+                    if has_overlap(range1, range2):
+                        new_index = overlap_indices + (index,)
+                        new_index = tuple(list(sorted(list(new_index))))
+                        dictionary[new_index] = get_overlap(range1, range2)
+                elif has_dot_overlap(range1, range2, strict):
                     new_index = overlap_indices + (index,)
                     new_index = tuple(list(sorted(list(new_index))))
-                    dictionary[new_index] = get_overlap(rangee, dictionary2[overlap_indices])
+                    dictionary[new_index] = get_dot_overlap(range1, range2, strict)
                 if debug:
                     print(f"dictionary m={j}", dictionary)
 
@@ -423,7 +439,7 @@ def get_gap(range1, range2):
 
 
 def get_overlap(range1, range2):
-    """ Returns the overlap of range1 and range2.
+    """ Returns the overlap of two intervals, range1 and range2.
 
     :arg range1: (tuple or list): first interval
     :arg range2: (tuple or list): second interval
@@ -456,6 +472,30 @@ def get_strict_overlap(range1, range2):
     return spam
 
 
+def get_dot_overlap(range1, range2, strict):
+    """ Returns the overlap of range1 and range2 only if it is a range of nonzero length.
+
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :arg strict: (bool): if True point intervals are not used
+    :returns: (tuple): overlap of range1 and range2
+    """
+    if strict:
+        return get_strict_overlap(range1, range2)
+    else:
+        return get_overlap(range1, range2)
+
+
+def has_strict_overlap(range1, range2):
+    """ Returns whether the range1 has a strict overlap (overlap of nonzero len) with range2.
+
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (bool): whether range1 has overlap with range2
+    """
+    return get_strict_overlap(range1, range2) is not False
+
+
 def has_overlap(range1, range2):
     """ Returns whether the range1 has an overlap with range2.
 
@@ -463,11 +503,28 @@ def has_overlap(range1, range2):
     :arg range2: (tuple or list): second interval
     :returns: (bool): whether range1 has overlap with range2
     """
-    assert len(range1) == 2 or isinstance(range1, Interval)
-    assert len(range2) == 2 or isinstance(range2, Interval)
-    interval1 = copy(range1)
-    interval2 = copy(range2)
-    return pd.Interval(interval1[0], interval1[1]).overlaps(pd.Interval(interval2[0], interval2[1]))
+    return get_overlap(range1, range2) is not False
+
+    ## OLD
+    # assert len(range1) == 2 or isinstance(range1, Interval)
+    # assert len(range2) == 2 or isinstance(range2, Interval)
+    # interval1 = copy(range1)
+    # interval2 = copy(range2)
+    # return pd.Interval(*interval1).overlaps(pd.Interval(*interval2)) or pd.Interval(*interval2).overlaps(pd.Interval(*interval1))
+
+
+def has_dot_overlap(range1, range2, strict):
+    """ Returns whether the range1 has an overlap with range2.
+
+        :arg range1: (tuple or list): first interval
+        :arg range2: (tuple or list): second interval
+        :arg strict: (bool): if True point intervals are not used
+        :returns: (bool): whether range1 has overlap with range2
+    """
+    if strict:
+        return has_strict_overlap(range1, range2)
+    else:
+        return has_overlap(range1, range2)
 
 
 def is_before(range1, range2):
@@ -490,10 +547,21 @@ def get_index_of_shortest_range(ranges):
     shortest_index = -1
     shortest_range_len = sys.maxsize
 
+    second_shortest_index = -1
+    second_shortest_range_len = sys.maxsize
+
     for index, interval in enumerate(ranges):
         if interval[1] - interval[0] < shortest_range_len:
             shortest_index = index
             shortest_range_len = interval[1] - interval[0]
+
+        if interval[1] - interval[0] == shortest_range_len or index == 0:
+            second_shortest_index = index
+            second_shortest_range_len = interval[1] - interval[0]
+
+    if shortest_range_len == second_shortest_range_len and shortest_index!=second_shortest_index and len(ranges) >= 2:
+        return (shortest_index, second_shortest_index, )
+        raise Exception("There is no shortest range!")
 
     return shortest_index
 
@@ -607,3 +675,7 @@ def rgb_to_bgr(rgb):
 
     return rgb[2], rgb[1], rgb[0]
 
+
+if __name__ == "__main__":
+    print(has_strict_overlap([5, 6], [6, 10]))
+    print(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True, skip_whole_in=True))

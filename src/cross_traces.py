@@ -9,7 +9,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from config import *
 from fake import get_whole_frame_range
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_index_of_shortest_range, \
-    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten, margin_range
+    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten, margin_range, has_strict_overlap
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
     compute_whole_frame_range, get_video_whole_frame_range
@@ -245,7 +245,7 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
     dict_start_time = time()
 
     if overlap_dictionary is None:
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=False)
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, strict=True, skip_whole_in=False, debug=False)
     else:
         assert isinstance(overlap_dictionary, dict)
         try:
@@ -257,7 +257,8 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
         dictionary = overlap_dictionary
 
     print(colored(f"Creation of the dictionary of m overlaps over n intervals took {round(time() - dict_start_time, 3)} seconds.", "yellow"))
-    # print(dictionary)
+    if debug:
+        print(dictionary)
 
     indices_of_intervals_to_be_deleted = []
     keys_to_be_deleted = []
@@ -265,6 +266,19 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
     for overlap in dictionary.keys():
         if debug:
             print(colored(f" Currently checking overlapping indices: {overlap}", "blue"))
+
+        ## Check whether a trace in the overlap is not already gone
+        skip_this_overlap = False
+        for trace_index in overlap:
+            if trace_index in indices_of_intervals_to_be_deleted:
+                if debug:
+                    print(colored(f" Trace with index {trace_index} is already gonna be deleted, skipping this pair.", "yellow"))
+                skip_this_overlap = True
+
+        if skip_this_overlap:
+            continue
+
+        ## Compute the ranges
         overlapping_ranges = []
         for interval_index in overlap:
             try:
@@ -272,7 +286,14 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
             except IndexError as err:
                 raise err
 
-        index_of_shortest_range = overlap[get_index_of_shortest_range(overlapping_ranges)]
+        # Get the index of the shortest range, skip if there are more shortest ranges
+        spam = get_index_of_shortest_range(overlapping_ranges)
+        if isinstance(spam, tuple):
+            if debug:
+                print(colored("There is no single shortest range!", "red"))
+            continue
+        index_of_shortest_range = overlap[spam]
+
         if debug:
             print(colored(f" Index_of_shortest_range: {index_of_shortest_range}", "blue"))
         shortest_range = ranges[index_of_shortest_range]
@@ -579,7 +600,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     for trace in traces:
                         if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
                             continue
-                        if has_overlap(gap_range, [trace.frame_range[0] - get_force_merge_vicinity_distance(), trace.frame_range[1] + get_force_merge_vicinity_distance()]):
+                        if has_strict_overlap(gap_range, [trace.frame_range[0] - get_force_merge_vicinity_distance(), trace.frame_range[1] + get_force_merge_vicinity_distance()]):
                             force_merge = False
                             break
                     if force_merge and not silent:
@@ -885,7 +906,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
                     if key == pick_key2:
                         continue
                     searched_overlap = dictionary[key]
-                    if has_overlap(picked_frame_range, [searched_overlap[0] - get_force_merge_vicinity_distance(), searched_overlap[1] + get_force_merge_vicinity_distance()]):
+                    if has_strict_overlap(picked_frame_range, [searched_overlap[0] - get_force_merge_vicinity_distance(), searched_overlap[1] + get_force_merge_vicinity_distance()]):
                         there_is_overlap = True
                         break
                 if not there_is_overlap:

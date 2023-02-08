@@ -201,7 +201,7 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
     if not has_overlap(trace1.frame_range, trace2.frame_range):
-        raise Exception("The two traces have no overlap. Try using function 'merge_two_traces' instead.")
+        raise Exception("The two traces have no overlap. Try using function 'merge_two_traces_with_gap' instead.")
     else:
         overlap = get_overlap(trace1.frame_range, trace2.frame_range)
 

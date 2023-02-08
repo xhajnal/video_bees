@@ -8,7 +8,7 @@ from termcolor import colored
 
 from fake import get_real_whole_frame_range, get_whole_frame_range
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
-from misc import delete_indices, has_overlap
+from misc import delete_indices, has_overlap, has_strict_overlap
 from trace import Trace
 from traces_logic import compute_arena, compute_whole_frame_range
 
@@ -53,7 +53,7 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
     """ Checks a single trace.
 
     :arg traces: (list): a list of Traces
-    :arg min_range_len: (int): minimal length of trace in frames
+    :arg min_trace_range_len: (int): minimal length of trace in frames
     :arg vicinity: (int): number of frames a short trace has to be far from another short trace to be removed, set False for no check
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
@@ -97,7 +97,7 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
             for index2, frame_range2 in enumerate(frame_ranges_of_removed_traces):
                 if index == index2:
                     continue
-                if has_overlap([frame_range1[0]-vicinity, frame_range1[1]+vicinity], frame_range2):
+                if has_strict_overlap([frame_range1[0]-vicinity, frame_range1[1]+vicinity], frame_range2):
                     not_to_be_deleted_indices.append(index)
                     break
 
