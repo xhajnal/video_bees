@@ -9,7 +9,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from config import *
 from fake import get_whole_frame_range
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_index_of_shortest_range, \
-    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten
+    get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten, margin_range
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
     compute_whole_frame_range, get_video_whole_frame_range

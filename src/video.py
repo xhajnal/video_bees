@@ -1,7 +1,9 @@
 import json
 import os
+from _socket import gethostname
 from multiprocessing import Process
 from os.path import exists
+from sys import platform
 
 import cv2
 from termcolor import colored
@@ -20,8 +22,11 @@ def play_opencv(input_video, frame_range, speed, points):
     :return:
     """
     video = cv2.VideoCapture(input_video)
-    # window name and population_size
-    cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
+    # window name and size
+    if "lin" in platform:
+        cv2.namedWindow("video", cv2.WINDOW_NORMAL)
+    else:
+        cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
 
@@ -69,6 +74,8 @@ def play_opencv(input_video, frame_range, speed, points):
                 cv2.imshow("video", frame)
         else:
             cv2.imshow("video", frame)
+        if str(gethostname()) == "Skadi":
+            cv2.resizeWindow("video", 1900, 800)
 
         key = cv2.waitKey(round(2*(100/fps)/speed))
 
@@ -169,7 +176,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         p.join()
 
 
-def annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False, force_new_video=False):
+def annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False, force_new_video=False, debug=False):
     """ Annotates given video with the tracked position of individual bees.
 
     :arg input_video: (Path or str): path to the input video
@@ -223,22 +230,33 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
     # Create a video capture object, in this case we are reading the video from a file
     video = cv2.VideoCapture(input_video)
+    if "lin" in platform:
+        cv2.namedWindow("video", cv2.WINDOW_NORMAL)
+    else:
+        cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
+
+    if str(gethostname()) == "Skadi":
+        cv2.moveWindow("video", 0, 0)
+        cv2.resizeWindow("video", 1900, 800)
 
     if video.isOpened() is False:
-        print("Error opening the video file")
+        print(colored("Error opening the video file", "red"))
     else:
         if show:
             print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
 
         fps = video.get(5)
-        print('Frames per second: ', fps, 'FPS')
+        if debug:
+            print('Frames per second: ', fps, 'FPS')
 
         frame_count = video.get(7)
-        print('Frame count: ', frame_count)
+        if debug:
+            print('Frame count: ', frame_count)
 
-        if frame_range:
+        if frame_range and debug:
             print('Show frames: ', frame_range)
 
+        # if debug:
         print('Ranges of Traces: ', trace_ranges)
 
     # Obtain frame population_size information using get() method
@@ -255,7 +273,8 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     locations_of_traces = []
     ## TODO fix this as it is SUPER slow for big number of traces
     colors = get_colors(len(traces))
-    print("traces colours (R,G,B):", colors)
+    if debug:
+        print("traces colours (R,G,B):", colors)
     colors = list(map(rgb_to_bgr, colors))
     # print("traces colours (G,B,R):", colors)
 
@@ -326,6 +345,10 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                     cv2.putText(img=frame, text=str(frame_number), org=(15, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1.0, color=(125, 246, 55), thickness=4)
                     cv2.imshow("video", frame)
 
+                    # if str(gethostname()) == "Skadi":
+                    #     cv2.moveWindow("video", 0, 0)
+                    #     cv2.resizeWindow("video", 1900, 650)
+
                 key = cv2.waitKey(round(2 * (100 / fps) / speed))
 
                 if key == ord('q') or key == ord('Q'):
@@ -381,7 +404,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
         print(colored("Annotation done.", "yellow"))
 
 
-def make_help_video():
+def make_help_video(debug=False):
     """ Annotates given video with the tracked position of individual bees.
     """
     print(colored("MAKE HELP VIDEO", "blue"))
@@ -396,12 +419,14 @@ def make_help_video():
         # Get frame rate information
         # You can replace 5 with CAP_PROP_FPS as well, they are enumerations
         fps = vid_capture.get(5)
-        print('Frames per second : ', fps, 'FPS')
+        if debug:
+            print('Frames per second : ', fps, 'FPS')
 
         # Get frame count
         # You can replace 7 with CAP_PROP_FRAME_COUNT as well, they are enumerations
         frame_count = vid_capture.get(7)
-        print('Frame count : ', frame_count)
+        if debug:
+            print('Frame count : ', frame_count)
 
     # Obtain frame population_size information using get() method
     frame_width = int(vid_capture.get(3))
