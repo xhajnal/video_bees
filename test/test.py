@@ -7,7 +7,8 @@ from cross_traces import track_swapping_loop, trim_out_additional_agents_over_lo
 from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
-from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range
+from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range, \
+    compute_number_of_overlaps, reverse_compute_number_of_overlaps
 from misc import *
 from visualise import scatter_detection
 
@@ -460,15 +461,37 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(removed_traces[0].trace_id, 0)
             self.assertEqual(removed_traces[1].trace_id, 1)
 
+    ## TRACES LOGIC TESTS
+    def testIntervalToCounts(self):
+        with open('../test/test3.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        spam = compute_number_of_overlaps(traces)
+        self.assertEqual(spam, {(0, 1): 1, (1, 2): 2, (2, 3): 3, (3, 4): 2, (4, 5): 1, (5, 6): 2, (6, 7): 1, (7, 8): 2, (8, 9): 2, (9, 10): 3, (10, 11): 3, (11, 12): 2, (12, 13): 3, (13, 14): 2, (14, 15): 1})
+        reverse_compute_number_of_overlaps(spam)
+
+        with open('../test/test3_1.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(compute_number_of_overlaps(traces), {(0, 1): 0, (1, 2): 2, (2, 3): 3, (3, 4): 2, (4, 5): 1, (5, 6): 2, (6, 7): 1, (7, 8): 2, (8, 9): 2, (9, 10): 3, (10, 11): 3, (11, 12): 2, (12, 13): 3, (13, 14): 2, (14, 15): 1})
+
+    ## MULTIPLE TRACES TESTS
     def testTrimOut(self):
         with open('../test/test2.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
-            traces = []
-            for index, trace in enumerate(scraped_traces.keys()):
-                traces.append(Trace(scraped_traces[trace], index))
-            traces, spam = trim_out_additional_agents_over_long_traces2(traces, None, 1, silent=False, debug=True)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
 
-            self.assertEqual(len(traces), 2)
+        traces, spam = trim_out_additional_agents_over_long_traces2(traces, None, 1, silent=False, debug=True)
+
+        self.assertEqual(len(traces), 2)
 
     def testCheckTraces(self):
         with open('../test/test.csv', newline='') as csv_file:
