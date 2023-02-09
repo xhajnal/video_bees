@@ -6,6 +6,7 @@ from termcolor import colored
 from operator import countOf
 from scipy.interpolate import InterpolatedUnivariateSpline
 
+import analyse
 from config import *
 from fake import get_whole_frame_range
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_index_of_shortest_range, \
@@ -20,16 +21,25 @@ from visualise import scatter_detection, show_plot_locations, show_overlap_dista
 global all_overlaps_count
 all_overlaps_count = 0
 
-global all_overlaps_deleted
-all_overlaps_deleted = 0
+global all_seen_overlaps_deleted
+all_seen_overlaps_deleted = 0
+
+
+global all_allowed_overlaps_count
+all_allowed_overlaps_count = 0
 
 
 def get_all_overlaps_count():
     return all_overlaps_count
 
 
-def get_all_overlaps_deleted():
-    return all_overlaps_deleted
+def get_all_seen_overlaps_deleted():
+    return all_seen_overlaps_deleted
+
+
+def get_all_allowed_overlaps_count():
+    return all_allowed_overlaps_count
+
 
 
 def track_swapping_loop(traces, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
@@ -768,8 +778,9 @@ def cross_trace_analyse(traces, silent=False, debug=False):
 
 
 # TODO add tests
-def merge_overlapping_traces(traces, population_size, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False):
-    """ Puts traces together such that all the agents but one is being tracked.
+def merge_alone_overlapping_traces(traces, population_size, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True):
+    """ Merges traces with only a single overlap.
+        # Puts traces together such that all the agents but one is being tracked.
 
         :arg traces: (list): list of traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
@@ -781,6 +792,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+        :arg do_count: (bool): flag whether to count the numbers of events occurring
         :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE OVERLAPPING TRACES", "blue"))
@@ -792,6 +804,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
     number_of_traces = -9
     force_merge = False
 
+    # Go while there is what to merge
     while len(count_one) >= 1 or number_of_traces != len(traces):
         number_of_traces = len(traces)
         # Check whether there are at least 2 traces
@@ -802,8 +815,14 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
             if len(traces) == 0:
                 print(colored("Cannot merge no trace. Skipping the rest of this analysis.\n", "yellow"))
                 return
-        # Find overlapping pairs
+        # Find all overlapping pairs
         dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), strict=False, skip_whole_in=True)
+
+        ## Count the overlapping pairs
+        if do_count:
+            global all_overlaps_count
+            all_overlaps_count = all_overlaps_count + len(list(dictionary.keys()))
+
         # print("dictionary", dictionary)
         if dictionary == {}:
             print(colored("Cannot merge any trace as there is no partial overlap of two traces.", "yellow"))
@@ -818,6 +837,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
                 for trace_index, trace in enumerate(traces):
                     print(f"trace {trace_index} ({trace.trace_id}) of frame range {trace.frame_range}")
                 print()
+
             # Flattened indices of overlapping pairs of traces
             keys = flatten(tuple(dictionary.keys()))
 
@@ -846,41 +866,37 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
                 for trace_index, trace in enumerate(traces):
                     if debug:
                         print(f"trace {trace_index} of range {trace.frame_range}")
+                ## TODO delete the print and change return to break, it will anyway break the
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                               f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
                 return
 
             # Pick the smallest index
-            pick_key = min(count_one)
-
+            picked_trace_index = min(count_one)
             if debug:
-                print("pick_key", pick_key)
+                print("picked_trace_index", picked_trace_index)
 
-            # Find the pair of the smallest index which has a single overlap
+            # Find the first pair having the picked key
             for key in dictionary.keys():
-                if pick_key in key:
-                    pick_key2 = key
+                if picked_trace_index in key:
+                    picked_key = key
                     if debug:
-                        print("pick_key2", pick_key2)
+                        print("pick_key2", picked_key)
                     break
-            trace1 = traces[pick_key2[0]]
-            trace2 = traces[pick_key2[1]]
-            overlap_range = dictionary[pick_key2]
-
-            global all_overlaps_count
-            all_overlaps_count = all_overlaps_count + 1
+            trace1 = traces[picked_key[0]]
+            trace2 = traces[picked_key[1]]
+            overlap_range = dictionary[picked_key]
 
             # if the picked traces are overlapping in whole range of one of the traces we delete it from the dictionary and move on
             if is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range):
-                global all_overlaps_deleted
-                all_overlaps_deleted = all_overlaps_deleted + 1
+                global all_seen_overlaps_deleted
+                all_seen_overlaps_deleted = all_seen_overlaps_deleted + 1
                 if debug:
                     print("trace1.frame_range", trace1.frame_range)
                     print("trace2.frame_range", trace2.frame_range)
-
-                    print("Will delete ", dictionary[pick_key2])
+                    print("Will delete ", dictionary[picked_key])
                     print(dictionary)
-                del dictionary[pick_key2]
+                del dictionary[picked_key]
                 if debug:
                     print(dictionary)
                     print()
@@ -894,16 +910,16 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
                 showw = None
 
             # Check the distances of overlap for a big difference
-            distances = compare_two_traces(trace1, trace2, pick_key2[0], pick_key2[1], silent=silent, debug=debug, show_all_plots=None if force_merge else showw)
+            distances = compare_two_traces(trace1, trace2, picked_key[0], picked_key[1], silent=silent, debug=debug, show_all_plots=None if force_merge else showw)
 
             # Get frame_range
-            picked_frame_range = dictionary[pick_key2]
+            picked_frame_range = dictionary[picked_key]
 
             if allow_force_merge:
                 # check whether there is overlap of overlaps
                 there_is_overlap = False
                 for key in dictionary.keys():
-                    if key == pick_key2:
+                    if key == picked_key:
                         continue
                     searched_overlap = dictionary[key]
                     if has_strict_overlap(picked_frame_range, [searched_overlap[0] - get_force_merge_vicinity_distance(), searched_overlap[1] + get_force_merge_vicinity_distance()]):
@@ -930,10 +946,18 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
                 maximal_dist_check = False
                 minimal_dist_check = False
 
+            # ## TODO delete the following line
+            # minimal_dist_check = True
+
             ## ACTUAL DECISION WHETHER TO MERGE
             if force_merge or (maximal_dist_check and minimal_dist_check):
                 # Merge these two traces
                 to_merge = True
+
+                # Count this
+                global all_allowed_overlaps_count
+                all_allowed_overlaps_count = all_allowed_overlaps_count + 1
+
                 print()
                 print(colored(f"len distances {len(distances)}", "blue"))
                 print(colored(f"distances {distances}", "blue"))
@@ -942,14 +966,14 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
                 # show_video(input_video, traces=[trace1, trace2], frame_range=margin_range(overlap_range, 15),
                 #            video_speed=0.03, wait=True, video_params=video_params)
 
-                merge_two_overlapping_traces(trace1, trace2, pick_key2[0], pick_key2[1], silent=silent, debug=debug)
+                merge_two_overlapping_traces(trace1, trace2, picked_key[0], picked_key[1], silent=silent, debug=debug)
                 #
                 # Remove the merged trace
                 if debug:
                     # print(colored(f"Will delete trace {trace2_id}.", "blue"))
-                    print(colored(f"Will delete trace {pick_key2[1]}({trace2_id}).", "blue"))
+                    print(colored(f"Will delete trace {picked_key[1]}({trace2_id}).", "blue"))
                     print()
-                traces = delete_indices([pick_key2[1]], traces)
+                traces = delete_indices([picked_key[1]], traces)
                 # Show scatter plot of traces having two traces merged
                 go_next = False
             else:
@@ -966,7 +990,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
                     reason = f" both, single huge point distance and all big point distance ({len(distances)} {round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()} & {round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
 
                 # the distance of the traces is greater than the given threshold, we move on
-                del dictionary[pick_key2]
+                del dictionary[picked_key]
 
             if not silent:
                 msg = f"{'' if to_merge else 'NOT '}MERGING THE OVERLAPPING TRACES {'' if to_merge else '(' + reason + ') '}"
@@ -975,9 +999,11 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
 
             if show:
                 try:
-                    scatter_detection(traces, subtitle=f"after merging overlapping traces {pick_key2[0]} of id {trace1.trace_id} and {pick_key2[1]} of id {trace2_id}.")
+                    scatter_detection(traces, subtitle=f"after merging overlapping traces {picked_key[0]} of id {trace1.trace_id} and {picked_key[1]} of id {trace2_id}.")
                 except UnboundLocalError:
                     pass
+
+        do_count = False
 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))

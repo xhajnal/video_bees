@@ -1,6 +1,7 @@
+import analyse
 from analyse import analyse, set_just_annotate, set_force_new_video, set_just_align
 
-from cross_traces import get_all_overlaps_count, get_all_overlaps_deleted
+from cross_traces import get_all_overlaps_count, get_all_seen_overlaps_deleted, get_all_allowed_overlaps_count
 
 
 def run_both():

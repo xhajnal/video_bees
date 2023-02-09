@@ -51,7 +51,7 @@ def get_max_step_distance_to_merge_overlapping_traces():
 
 def get_force_merge_vicinity_distance():
     """ Returns min range for which there should be no overlap in order to force merge traces."""
-    # Usage: merge_overlapping_traces
+    # Usage: merge_alone_overlapping_traces
     return 508
 
 

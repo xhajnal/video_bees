@@ -153,10 +153,10 @@ def merge_overlapping_triplets_of_traces(traces, population_size, guided=False, 
             assert isinstance(trace3, Trace)
 
             # if the picked traces are overlapping in whole range of one of the traces we delete it from the dictionary and move on
+            # this case can easily happen when having the third range to come to be inside of one of the two ranges (due to cumulative building of the dictionary)
             if not guided and (is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range) or
                                is_in(trace2.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace2.frame_range) or
                                is_in(trace1.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace1.frame_range)):
-                ## TODO check whether we get here as skip_whole_in=True
                 if debug:
                     print("trace1.frame_range", trace1.frame_range)
                     print("trace2.frame_range", trace2.frame_range)

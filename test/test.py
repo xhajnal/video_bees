@@ -485,7 +485,6 @@ class MyTestCase(unittest.TestCase):
             # scatter_detection(traces, [1620, 2127])
             scatter_detection(traces, [1620, 1626])
 
-    ## MULTIPLE TRACES TESTS
     # TODO HAVE A LOOK HERE
     def testSwaps(self):
         with open('../test/test2.csv', newline='') as csv_file:

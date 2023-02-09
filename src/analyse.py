@@ -3,6 +3,7 @@ from time import time
 from _socket import gethostname
 from termcolor import colored
 
+from cross_traces import get_all_overlaps_count, get_all_seen_overlaps_deleted, get_all_allowed_overlaps_count
 from guided_traces import full_guided
 from video import annotate_video, parse_video_info
 from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config
@@ -10,7 +11,7 @@ from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
-    trim_out_additional_agents_over_long_traces2, merge_overlapping_traces, track_swapping_loop
+    trim_out_additional_agents_over_long_traces2, merge_alone_overlapping_traces, track_swapping_loop
 from traces_logic import compute_whole_frame_range, get_video_whole_frame_range
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, \
@@ -366,6 +367,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # run until no traces are merged
         before_before_number_of_traces = len(traces)
         after_after_number_of_traces = -9
+        do_count = True
+
         while before_before_number_of_traces != after_after_number_of_traces:
             before_before_number_of_traces = len(traces)
             ## MERGE OVERLAPPING PAIRS
@@ -373,8 +376,13 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             after_number_of_traces = -9
             while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
                 before_number_of_traces = len(traces)
-                merge_overlapping_traces(traces, population_size, allow_force_merge=allow_force_merge, guided=guided,
-                                         input_video=video_file, silent=silent, debug=debug, show=show_all_plots, video_params=video_params)
+                merge_alone_overlapping_traces(traces, population_size, allow_force_merge=allow_force_merge, guided=guided,
+                                               input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
+                                               video_params=video_params, do_count=do_count)
+                if do_count:
+                    with open("../auxiliary/cumulative_all_overlaps_count_only_maximal.txt", "a") as file:
+                        file.write(f"{get_all_overlaps_count()}, {get_all_allowed_overlaps_count()}, {get_all_seen_overlaps_deleted()}\n")
+                do_count = False
                 after_number_of_traces = len(traces)
 
             ## MERGE OVERLAPPING TRIPLETS, video-guided trace deleting
@@ -397,7 +405,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             ## RECOLLECT NUMBER OF TRACES
             after_after_number_of_traces = len(traces)
 
-        # QA of `merge_overlapping_traces`
+        # QA of `merge_alone_overlapping_traces`
         if len(traces) >= 2:
             if not silent:
                 print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)}", "yellow"))
