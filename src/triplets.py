@@ -62,6 +62,7 @@ def merge_overlapping_triplets_of_traces(traces, population_size, guided=False, 
                 print(colored("Cannot merge no trace. Skipping the rest of this analysis.\n", "yellow"))
                 return
         if not guided:
+            # not using strict version as having >3 traces overlap to be a single point
             dictionary = dictionary_of_m_overlaps_of_n_intervals(3, list(map(lambda x: x.frame_range, traces)), skip_whole_in=True)
 
         # Flag whether to try another pair of overlapping intervals
@@ -104,7 +105,7 @@ def merge_overlapping_triplets_of_traces(traces, population_size, guided=False, 
                 print("keys", keys)
                 print("counts", counts)
 
-            # Find traces with single occurrence (within the pairs of overlapping traces)
+            # Find traces with single occurrence (within the tuples of overlapping traces)
             count_two = []
             for key in counts.keys():
                 # Check there is no interval with 3 or more overlaps - hence cannot easily merge
@@ -155,6 +156,7 @@ def merge_overlapping_triplets_of_traces(traces, population_size, guided=False, 
             if not guided and (is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range) or
                                is_in(trace2.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace2.frame_range) or
                                is_in(trace1.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace1.frame_range)):
+                ## TODO check whether we get here as skip_whole_in=True
                 if debug:
                     print("trace1.frame_range", trace1.frame_range)
                     print("trace2.frame_range", trace2.frame_range)

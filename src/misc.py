@@ -248,12 +248,12 @@ def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     return dictionary2
 
 
-def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=False, skip_whole_in=False, debug=False):
+def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=True, skip_whole_in=False, debug=False):
     """ Returns a dictionary m-tuple of interval indices -> m-overlaps (m overlapping intervals) of n intervals
 
     :arg m: (int): degree of overlaps - how many overlaps
     :arg intervals: (list): list of intervals
-    :arg strict: (bool): if True point intervals are not used
+    :arg strict: (bool): if True single point overlaps are not used
     :arg skip_whole_in: (bool): if True skipping the intervals which are overlapping with whole range
     :arg debug: (bool): if True extensive output is shown
     """

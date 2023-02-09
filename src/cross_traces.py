@@ -803,7 +803,7 @@ def merge_overlapping_traces(traces, population_size, allow_force_merge=True, gu
                 print(colored("Cannot merge no trace. Skipping the rest of this analysis.\n", "yellow"))
                 return
         # Find overlapping pairs
-        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=True)
+        dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), strict=False, skip_whole_in=True)
         # print("dictionary", dictionary)
         if dictionary == {}:
             print(colored("Cannot merge any trace as there is no partial overlap of two traces.", "yellow"))

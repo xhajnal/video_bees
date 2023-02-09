@@ -31,7 +31,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
     to_skip_tuples = list(to_skip_tuples)
 
     gaps = get_gaps_of_traces(traces, get_all_gaps=False)
-    overlaps = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda a: a.frame_range, traces)), skip_whole_in=True)
+    overlaps = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda a: a.frame_range, traces)), strict=False, skip_whole_in=True)
 
     overlaps_and_gaps = merge_sorted_dictionaries(gaps, overlaps)
 
