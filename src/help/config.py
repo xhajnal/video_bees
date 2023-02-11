@@ -2,13 +2,13 @@
 def get_distance_from_calculated_arena():
     """ Returns distance from the estimated arena circle to be assigned as outside of the arena."""
     # Usage: outside of arena
-    return 50
+    return 51
 
 
 ## SINGLE TRACE SETTING
 def get_min_trace_len():
     """ Return minimal value of a trace len in frames to be kept."""
-    return 1
+    return 100
 
 
 def get_bee_max_step_len():
@@ -20,7 +20,7 @@ def get_bee_max_step_len():
 
 def get_bee_max_step_len_per_frame():
     """ Returns maximal step of a bee in a single frame in xy distance in continuous manner.
-        We recommend to set this value lower than get_bee_max_step_len"""
+        We recommend to set this value lower than get_bee_max_step_len """
     # TODO check this value
     # Usage: gaping traces - SHORT gap
     return 20
@@ -43,10 +43,19 @@ def get_max_trace_gap():
 
 
 def get_max_step_distance_to_merge_overlapping_traces():
-    """ Returns a maximal distance two traces can differ in any point to be not merged."""
+    """ Returns a maximal distance two traces can differ in any point to be NOT merged."""
     # TODO check this value
     # Usage: overlapping traces
-    return 100
+    return 120
+
+
+def get_min_step_distance_to_merge_overlapping_traces():
+    """ Returns a minimal distance two traces can differ in any point to be merged.
+        In other words, the two traces have to be at least this near at any point to be merged.
+    """
+    # TODO check this value
+    # Usage: overlapping traces
+    return 49
 
 
 def get_force_merge_vicinity_distance():
@@ -90,6 +99,7 @@ def hash_config(this=True):
                    get_bee_max_step_len_per_frame(),
                    get_max_trace_gap_to_interpolate_distance(),
                    get_max_step_distance_to_merge_overlapping_traces(),
+                   get_min_step_distance_to_merge_overlapping_traces(),
                    get_force_merge_vicinity_distance(),
                    tuple([item for sublist in get_screen_size() for item in sublist]))
     else:
@@ -104,9 +114,10 @@ def hash_config(this=True):
                    this[7],
                    this[8],
                    this[9],
-                   tuple([item for sublist in this[10] for item in sublist]))
+                   this[10],
+                   tuple([item for sublist in this[11] for item in sublist]))
 
-    return abs(hash(setting))
+    return str(abs(hash(setting)))
 
 
 if __name__ == "__main__":

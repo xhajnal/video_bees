@@ -143,3 +143,7 @@ src/video2.py
 src/fix_folders2.py
 
 auxiliary/spam.csv
+
+src/help/fix_aligment.py
+
+src/merge_result_dicts.py

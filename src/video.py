@@ -477,21 +477,26 @@ def make_help_video(debug=False):
     print("Finished annotation.")
 
 
+## BEE SPECIFIC
 def parse_video_info(video_file, traces, csv_file_path):
     """ Obtains video parameters either loading from the json or via user-guided video and csv file parser.
+    Use file with "movie" in its name to skip this (returning (None, None))
+
     vect - to move the locations according the cropping the video
     trace_offset - number of first frames of the video to skip
 
     :arg traces (list) list of traces
     :arg video_file: (Path or str): path to the input video
     :arg csv_file_path: (str or Path): path to the csv_file
-    :return: vector of shift to assign to the locations so that align with the not cropped video,
+    :return: tuple:
+            vector of shift to assign to the locations so that align with the not cropped video,
             number of first frames of the video to be skipped
     """
     # there is no video file
     if not video_file:
         return None, None
 
+    # If a trimmed and cropped video is used
     if "movie" not in video_file:
         try:
             try:
@@ -508,7 +513,7 @@ def parse_video_info(video_file, traces, csv_file_path):
             vect, frame_offset = transpositions[video_file]
 
         except KeyError:
-            # video not found
+            # transposition or the file not found, align the video
             vect, frame_offset = align_the_video(traces, video_file, csv_file_path)
 
         return vect, frame_offset
@@ -553,6 +558,7 @@ def align_the_video(traces, video_file, csv_file_path):
     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
     show_video(input_video=video_file, traces=(), frame_range=[da_converted_frame, da_converted_frame], wait=True, points=points, video_params=True)
 
+    # READ THE OUTPUT FILE
     with open("../auxiliary/point.txt", "r") as file:
         lines = file.readlines()
 
@@ -570,6 +576,7 @@ def align_the_video(traces, video_file, csv_file_path):
     vector = to_vect(leftmost_point, leftmost_assigned_point)
     vector = list(map(lambda x: -x, vector))
 
+    ## STORE THE ALIGNMENT
     try:
         os.mkdir("../auxiliary")
     except OSError:
