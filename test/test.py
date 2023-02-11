@@ -8,7 +8,7 @@ from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range, \
-    compute_number_of_overlaps, reverse_compute_number_of_overlaps
+    compute_number_of_overlaps, reverse_compute_number_of_overlaps, get_traces_from_range
 from misc import *
 from visualise import scatter_detection
 
@@ -472,6 +472,19 @@ class MyTestCase(unittest.TestCase):
         spam = compute_number_of_overlaps(traces)
         self.assertEqual(spam, {(0, 1): 1, (1, 2): 2, (2, 3): 3, (3, 4): 2, (4, 5): 1, (5, 6): 2, (6, 7): 1, (7, 8): 2, (8, 9): 2, (9, 10): 3, (10, 11): 3, (11, 12): 2, (12, 13): 3, (13, 14): 2, (14, 15): 1})
         reverse_compute_number_of_overlaps(spam)
+
+        # print(list(map(str, get_traces_from_range(traces, [0, 2]))))
+        # spam = get_traces_from_range(traces, [0, 2], are_inside=False)
+        # for item in spam:
+        #     print(str(item))
+
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=True), [traces[0]])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False), [traces[0], traces[1]])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False, strict=False), [traces[0], traces[1], traces[2], traces[3]])
+
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=True), [traces[4]])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False), [traces[3], traces[4], traces[5]])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False, strict=False), [traces[3], traces[4], traces[5], traces[6]])
 
         with open('../test/test3_1.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)

@@ -80,7 +80,7 @@ def scatter_detection(traces, whole_frame_range=False, from_to_frame=False, subt
     fontsize = get_fontsize(len(traces))
 
     if from_to_frame:
-        traces_to_show = get_traces_from_range(traces, from_to_frame)
+        traces_to_show = get_traces_from_range(traces, from_to_frame, are_inside=True)
     else:
         traces_to_show = traces
 

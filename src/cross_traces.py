@@ -13,7 +13,8 @@ from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals,
     get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten, margin_range, has_strict_overlap
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
-    compute_whole_frame_range, get_video_whole_frame_range
+    compute_whole_frame_range, get_video_whole_frame_range, compute_number_of_overlaps, \
+    reverse_compute_number_of_overlaps
 from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
@@ -39,7 +40,6 @@ def get_all_seen_overlaps_deleted():
 
 def get_all_allowed_overlaps_count():
     return all_allowed_overlaps_count
-
 
 
 def track_swapping_loop(traces, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
@@ -775,6 +775,35 @@ def cross_trace_analyse(traces, silent=False, debug=False):
     print(colored(f"Cross_trace analysis done. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds.", "green"))
     print()
+
+
+# TODO add tests
+def merge_alone_overlapping_traces_new(traces, population_size, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True):
+    """ Merges traces with only a single overlap.
+            # Puts traces together such that all the agents but one is being tracked.
+
+            :arg traces: (list): list of traces
+            :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
+            :arg population_size: (int): expected number of agents
+            :arg allow_force_merge: (bool): iff True force merge is allow
+            :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
+            :arg input_video: (str or bool): if set, path to the input video
+            :arg silent: (bool): if True minimal output is shown
+            :arg debug: (bool): if True extensive output is shown
+            :arg show: (bool): if True plots are shown
+            :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+            :arg do_count: (bool): flag whether to count the numbers of events occurring
+            :returns: traces: (list): list of concatenated Traces
+        """
+    print(colored("MERGE OVERLAPPING TRACES", "blue"))
+    start_time = time()
+    starting_number_of_traces = len(traces)
+
+    interval_to_overlaps_count = compute_number_of_overlaps(traces)
+    print(interval_to_overlaps_count)
+    overlaps_to_count = reverse_compute_number_of_overlaps(interval_to_overlaps_count)
+    print(overlaps_to_count)
+    print(overlaps_to_count.keys())
 
 
 # TODO add tests
