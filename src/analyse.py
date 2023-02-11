@@ -232,9 +232,10 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # trace_offset - number of first frames of the video to skip
         crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
         video_params = [trim_offset, crop_offset] if crop_offset is not None else True
+        # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
+
         if just_align:
             return
-        # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
 
         ## SHOW THE VIDEO
         # simple show
