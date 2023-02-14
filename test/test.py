@@ -3,8 +3,8 @@ import unittest
 import matplotlib.pyplot as plt
 
 import analyse
-from cross_traces import track_swapping_loop, trim_out_additional_agents_over_long_traces2, \
-    trim_out_additional_agents_over_long_traces_new
+from cross_traces import track_swapping_loop, trim_out_additional_agents_over_long_traces_with_dict, \
+    trim_out_additional_agents_over_long_traces_by_partition
 from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
@@ -512,7 +512,7 @@ class MyTestCase(unittest.TestCase):
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
 
-        traces, spam = trim_out_additional_agents_over_long_traces2(traces, None, 1, silent=False, debug=True)
+        traces, spam = trim_out_additional_agents_over_long_traces_with_dict(traces, None, 1, silent=False, debug=True)
 
         print("ae" + str(list(map(lambda x: x.trace_id, traces))))
         self.assertEqual(len(traces), 2)
@@ -522,9 +522,9 @@ class MyTestCase(unittest.TestCase):
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
-        traces = trim_out_additional_agents_over_long_traces_new(traces, population_size=1, allow_force_merge=True, guided=False, input_video=False,
-                                                                 silent=False, debug=False, show=False, video_params=False, do_count=True)
-        # traces = trim_out_additional_agents_over_long_traces_new(traces, population_size=1, allow_force_merge=True,
+        traces = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size=1, allow_force_merge=True, guided=False, input_video=False,
+                                                                          silent=False, debug=False, show=False, video_params=False, do_count=True)
+        # traces = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size=1, allow_force_merge=True,
         #                                                          guided=False, input_video=False,
         #                                                          silent=False, debug=False, show=False,
         #                                                          video_params=False, do_count=True)

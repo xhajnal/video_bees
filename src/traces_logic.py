@@ -13,7 +13,8 @@ from video import show_video
 
 
 def partition_frame_range_by_number_of_traces(traces):
-    """ Returns a map interval -> number of traces in the interval
+    """ Partitions the frame range into intervals based on number of traces in this interval
+    Returns a map interval -> number of traces in the interval
 
     :arg traces: (list): list of Traces
     """

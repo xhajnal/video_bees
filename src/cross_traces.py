@@ -229,10 +229,11 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
 #
 #     return traces
 
-
-def trim_out_additional_agents_over_long_traces_new(traces, population_size, allow_force_merge=True, guided=False, input_video=False,
-                                                    silent=False, debug=False, show=False, video_params=False, do_count=True):
-    """ Trims out additional appearance of an agent when long traces are over here.
+# DEPRECATED
+def trim_out_additional_agents_over_long_traces_by_partition(traces, population_size, allow_force_merge=True, guided=False, input_video=False,
+                                                             silent=False, debug=False, show=False, video_params=False, do_count=True):
+    """ Trims out additional appearance of an agent over a longer trace.
+        This version is using partition_frame_range_by_number_of_traces
 
         :arg traces: (list): list of traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
@@ -252,6 +253,7 @@ def trim_out_additional_agents_over_long_traces_new(traces, population_size, all
 
     starting_number_of_traces = len(traces)
     trace_indices_to_delete = []
+    ids_of_traces_to_be_deleted = []
 
     # Compute frame range partition by number of traces for each segment
     interval_to_traces_count = partition_frame_range_by_number_of_traces(traces)
@@ -270,25 +272,32 @@ def trim_out_additional_agents_over_long_traces_new(traces, population_size, all
         intervals = copy(traces_count_to_intervals[count])
         # For each segment
         for interval_index, interval in enumerate(intervals):
-            if debug:
-                print("segment/interval_index", interval_index)
-                print("segment/interval", interval)
-
             # Obtain trace indices of the traces in the segment
             group_of_traces = get_trace_indices_from_range(traces, interval, are_inside=False, strict=True)
 
+            if debug:
+                # print("segment/interval_index", interval_index)
+                print("segment/interval", interval)
+                print("group_of_traces - indices", group_of_traces)
+
+            to_delete_in_this_cycle = []
             for trace_index in group_of_traces:
                 if is_in(traces[trace_index].frame_range, interval):
-                    trace_indices_to_delete.append(trace_index)
+                    to_delete_in_this_cycle.append(trace_index)
                     if debug:
-                        print(f"Adding trace id {traces[trace_index].trace_id} of frame range {traces[trace_index].frame_range} to be deleted.")
+                        print(colored(f"Adding trace n. {trace_index} id {traces[trace_index].trace_id} of frame range {traces[trace_index].frame_range} to be deleted.", "yellow"))
                     # TODO can delete this after test
                     if tuple(traces[trace_index].frame_range) != tuple(interval):
                         raise Exception(f"A trace is {traces[trace_index].trace_id} of range {traces[trace_index].frame_range} which is supposed to have frame range {interval} has only its subinterval.")
 
             # TODO can delete this after test
-            if len(trace_indices_to_delete) > 1:
-                raise Exception(f"More than 1 trace is in this {interval}: {trace_indices_to_delete}")
+            if len(to_delete_in_this_cycle) > 1:
+                print(f"More than 1 trace is in this {interval}: {to_delete_in_this_cycle}. Not deleting any.")
+                # TODO add a guided fix
+                to_delete_in_this_cycle = []
+
+            trace_indices_to_delete.extend(to_delete_in_this_cycle)
+            ids_of_traces_to_be_deleted.extend(list(map(lambda x: traces[x].trace_id, to_delete_in_this_cycle)))
 
             # Fix the structures
             interval_to_traces_count[interval] = interval_to_traces_count[interval] - 1
@@ -306,16 +315,18 @@ def trim_out_additional_agents_over_long_traces_new(traces, population_size, all
                 print(colored(traces_count_to_intervals, "red"))
                 print()
 
+    print(colored(f"trace_indices_to_delete {trace_indices_to_delete}", "blue"))
     delete_indices(trace_indices_to_delete, traces)
 
     print(colored(f"trim_out_additional_agents_over_long_traces NEW analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"Returning {len(traces)} traces, {len(trace_indices_to_delete)} shorter than in previous iteration. \n", "green"))
-    return traces
+    return traces, ids_of_traces_to_be_deleted
 
 
 # TODO add tests
-def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=False, debug=False):
-    """ Trims out additional appearance of an agent when long traces are over here.
+def trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictionary, population_size, silent=False, debug=False):
+    """ Trims out additional appearance of an agent over a longer trace.
+        This version is using dictionary_of_m_overlaps_of_n_intervals.
 
         :arg traces: (list): list of Traces
         :arg overlap_dictionary: (dict): dictionary_of_m_overlaps_of_n_intervals
@@ -355,6 +366,7 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
         print(dictionary)
 
     indices_of_intervals_to_be_deleted = []
+    ids_of_traces_to_be_deleted = []
     keys_to_be_deleted = []
 
     for overlap in dictionary.keys():
@@ -399,6 +411,7 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
             if debug:
                 print(colored(f" Will delete range index {index_of_shortest_range}, {shortest_range}", "yellow"))
             indices_of_intervals_to_be_deleted.append(index_of_shortest_range)
+            ids_of_traces_to_be_deleted.append(traces[index_of_shortest_range].trace_id)
             keys_to_be_deleted.append(overlap)
 
         ## DEPRECATED
@@ -426,7 +439,7 @@ def trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, pop
     print(colored(f"trim_out_additional_agents_over_long_traces2 analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
     print(colored(f"Returning {len(traces)} traces, {len(indices_of_intervals_to_be_deleted)} shorter than in previous iteration. \n", "green"))
     ## TODO fix to: return traces, dictionary
-    return traces, None
+    return traces, None, ids_of_traces_to_be_deleted
 
 
 # DEPRECATED
@@ -1122,11 +1135,11 @@ def merge_alone_overlapping_traces(traces, population_size, allow_force_merge=Tr
                 global all_allowed_overlaps_count
                 all_allowed_overlaps_count = all_allowed_overlaps_count + 1
 
-                print()
-                print(colored(f"len distances {len(distances)}", "blue"))
-                print(colored(f"distances {distances}", "blue"))
-                print(colored(f"max distance {max(distances)}", "blue"))
-                print(colored(f"min distance {min(distances)}", "blue"))
+                # print()
+                # print(colored(f"len distances {len(distances)}", "blue"))
+                # print(colored(f"distances {distances}", "blue"))
+                # print(colored(f"max distance {max(distances)}", "blue"))
+                # print(colored(f"min distance {min(distances)}", "blue"))
                 # show_video(input_video, traces=[trace1, trace2], frame_range=margin_range(overlap_range, 15),
                 #            video_speed=0.03, wait=True, video_params=video_params)
 

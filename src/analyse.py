@@ -4,7 +4,7 @@ from _socket import gethostname
 from termcolor import colored
 
 from cross_traces import get_all_overlaps_count, get_all_seen_overlaps_deleted, get_all_allowed_overlaps_count, \
-    merge_alone_overlapping_traces_new
+    merge_alone_overlapping_traces_new, trim_out_additional_agents_over_long_traces_by_partition
 from guided_traces import full_guided
 from video import annotate_video, parse_video_info
 from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config
@@ -12,7 +12,7 @@ from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
-    trim_out_additional_agents_over_long_traces2, merge_alone_overlapping_traces, track_swapping_loop
+    trim_out_additional_agents_over_long_traces_with_dict, merge_alone_overlapping_traces, track_swapping_loop
 from traces_logic import compute_whole_frame_range, get_video_whole_frame_range, partition_frame_range_by_number_of_traces, \
     reverse_partition_frame_range_by_number_of_traces
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
@@ -335,16 +335,18 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         after_number_of_traces = 0
         while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
             before_number_of_traces = len(traces)
-            traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=silent, debug=debug)
-            if before_number_of_traces != len(traces):
-                with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
-                    file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
+            traces, overlap_dictionary = trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictionary, population_size, silent=silent, debug=True)
+
+            # if before_number_of_traces != len(traces):
+            # with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
+            #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
             if show_all_plots:
                 scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
             traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge, silent=silent, debug=debug)
             if show_all_plots:
                 scatter_detection(traces, subtitle="After putting gaping traces together.")
             after_number_of_traces = len(traces)
+
 
         # Storing the number of traces after TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
         counts.append(len(traces) + len(removed_full_traces))
@@ -400,13 +402,19 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
             before_number_of_traces = len(traces)
             if len(traces) > population_size:
-                traces, overlap_dictionary = trim_out_additional_agents_over_long_traces2(traces, overlap_dictionary, population_size, silent=silent, debug=debug)
-            if before_number_of_traces != len(traces):
-                with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
-                    file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
+                # traces, overlap_dictionary = trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictionary, population_size, silent=silent, debug=debug)
+                traces = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size, allow_force_merge=True,
+                                                                                  guided=False, input_video=False, silent=False,
+                                                                                  debug=False, show=False,
+                                                                                  video_params=False, do_count=True)
+            # if before_number_of_traces != len(traces):
+            with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
+                file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
 
             ## RECOLLECT NUMBER OF TRACES
             after_after_number_of_traces = len(traces)
+        with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
+            file.write(f"\n")
 
         # QA of `merge_alone_overlapping_traces`
         if len(traces) >= 2:
@@ -444,7 +452,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # after_number_of_traces = 0
         # while (not before_number_of_traces == after_number_of_traces) and (len(traces) > new_population_size):
         #     before_number_of_traces = len(traces)
-        #     traces = trim_out_additional_agents_over_long_traces2(traces, new_population_size, silent=silent, debug=debug)
+        #     traces = trim_out_additional_agents_over_long_traces_with_dict(traces, new_population_size, silent=silent, debug=debug)
         #     if show_all_plots:
         #         scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
         #     traces = put_gaping_traces_together(traces, new_population_size, silent=silent, debug=debug)
