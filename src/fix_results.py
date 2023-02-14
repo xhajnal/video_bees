@@ -210,7 +210,31 @@ def fix_order_setting():
     convert_results_from_json_to_csv()
 
 
+def fix_wrong_loaded():
+    """ Fixes wrongly loaded items"""
+    print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))
+    start_time = time()
+
+    ## LOAD SAVED RESULTS TO UPDATE IT
+    with open("../output/results.txt") as file:
+        results = json.load(file)
+
+    for file in results.keys():
+        all_loaded = []
+        for hash in results[file].keys():
+            for time_stamp in results[file][hash].keys():
+                item = results[file][hash][time_stamp]
+                ## TODO hotfix
+                if all_loaded:
+                    if item["loaded"] not in all_loaded:
+                        del results[file][hash][time_stamp]
+
+    with open("../output/results.txt", 'w') as file:
+        file.write(json.dumps(results))
+
+
 if __name__ == "__main__":
     pass
+    fix_wrong_loaded()
     # check_setting()
     # fix_order_setting()

@@ -37,7 +37,7 @@ def write_dave():
                 file2 = str("_".join(file2.split("_")[:3]))
                 # print(file2)
                 if glob(f"{path}/{folder}/*{file2}*.mp4", recursive=False):
-                    if_video = ", has_tracked_video=True, is_first_run=is_first_run"
+                    if_video = ", has_tracked_video=True, is_first_run=a"
                 else:
                     if_video = ", is_first_run=a"
 
@@ -47,15 +47,22 @@ def write_dave():
                     all_single = []
                     all_final = []
 
-                    for item in file_results.items():
-                        item = item[1]
-                        # print(item)
-                        all_loaded.append(item["loaded"])
-                        try:
-                            all_single.append(item["zero length"])
-                        except KeyError:
-                            pass
-                        all_final.append(item["after merging overlapping traces"])
+                    for hash in file_results.keys():
+                        for time_stamp in file_results[hash].keys():
+                            item = file_results[hash][time_stamp]
+                            # print(item)
+
+                            ## TODO hotfix
+                            if all_loaded:
+                                if item["loaded"] not in all_loaded:
+                                    continue
+
+                            all_loaded.append(item["loaded"])
+                            try:
+                                all_single.append(item["zero length"])
+                            except KeyError:
+                                pass
+                            all_final.append(item["after merging overlapping traces"])
 
                     if len(set(all_loaded)) != 1:
                         raise Exception(f"{file2} some 'loaded' are not the same")

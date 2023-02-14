@@ -147,3 +147,7 @@ auxiliary/spam.csv
 src/help/fix_aligment.py
 
 src/merge_result_dicts.py
+
+auxiliary/backup/*
+
+auxiliary/performance/*
