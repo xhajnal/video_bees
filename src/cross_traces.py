@@ -1,4 +1,5 @@
 import math
+from copy import copy
 from time import time
 from _socket import gethostname
 from matplotlib import pyplot as plt
@@ -13,8 +14,8 @@ from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals,
     get_overlap, range_len, to_vect, calculate_cosine_similarity, has_overlap, flatten, margin_range, has_strict_overlap
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
-    compute_whole_frame_range, get_video_whole_frame_range, compute_number_of_overlaps, \
-    reverse_compute_number_of_overlaps
+    compute_whole_frame_range, get_video_whole_frame_range, partition_frame_range_by_number_of_traces, \
+    reverse_partition_frame_range_by_number_of_traces, get_traces_from_range, get_trace_indices_from_range
 from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
@@ -227,6 +228,89 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
 #     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
 #
 #     return traces
+
+
+def trim_out_additional_agents_over_long_traces_new(traces, population_size, allow_force_merge=True, guided=False, input_video=False,
+                                                    silent=False, debug=False, show=False, video_params=False, do_count=True):
+    """ Trims out additional appearance of an agent when long traces are over here.
+
+        :arg traces: (list): list of traces
+        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
+        :arg population_size: (int): expected number of agents
+        :arg allow_force_merge: (bool): iff True force merge is allow
+        :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
+        :arg input_video: (str or bool): if set, path to the input video
+        :arg silent: (bool): if True minimal output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :arg show: (bool): if True plots are shown
+        :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+        :arg do_count: (bool): flag whether to count the numbers of events occurring
+        :returns: traces: (list): list of concatenated Traces
+    """
+    print(colored("MERGE OVERLAPPING TRACES", "blue"))
+    start_time = time()
+
+    starting_number_of_traces = len(traces)
+    trace_indices_to_delete = []
+
+    # Compute frame range partition by number of traces for each segment
+    interval_to_traces_count = partition_frame_range_by_number_of_traces(traces)
+    traces_count_to_intervals = reverse_partition_frame_range_by_number_of_traces(interval_to_traces_count)
+    # Obtain number of traces for segment bigger than population_size
+    counts_higher_than_pop_size = list(filter(lambda x: x > population_size, list(traces_count_to_intervals.keys())))
+
+    if debug:
+        print("interval_to_traces_count", interval_to_traces_count)
+        print("traces_count_to_intervals", traces_count_to_intervals)
+        print("traces_count_to_intervals keys", traces_count_to_intervals.keys())
+        print("counts_higher_than_pop_size", counts_higher_than_pop_size)
+
+    # For each count > population_size
+    for count in sorted(counts_higher_than_pop_size):
+        intervals = copy(traces_count_to_intervals[count])
+        # For each segment
+        for interval_index, interval in enumerate(intervals):
+            if debug:
+                print("segment/interval_index", interval_index)
+                print("segment/interval", interval)
+
+            # Obtain trace indices of the traces in the segment
+            group_of_traces = get_trace_indices_from_range(traces, interval, are_inside=False, strict=True)
+
+            for trace_index in group_of_traces:
+                if is_in(traces[trace_index].frame_range, interval):
+                    trace_indices_to_delete.append(trace_index)
+                    if debug:
+                        print(f"Adding trace id {traces[trace_index].trace_id} of frame range {traces[trace_index].frame_range} to be deleted.")
+                    # TODO can delete this after test
+                    if tuple(traces[trace_index].frame_range) != tuple(interval):
+                        raise Exception(f"A trace is {traces[trace_index].trace_id} of range {traces[trace_index].frame_range} which is supposed to have frame range {interval} has only its subinterval.")
+
+            # TODO can delete this after test
+            if len(trace_indices_to_delete) > 1:
+                raise Exception(f"More than 1 trace is in this {interval}: {trace_indices_to_delete}")
+
+            # Fix the structures
+            interval_to_traces_count[interval] = interval_to_traces_count[interval] - 1
+            for index, spam in traces_count_to_intervals[count]:
+                if spam == interval:
+                    del traces_count_to_intervals[count][index]
+            try:
+                traces_count_to_intervals[count-1].append(interval)
+            except KeyError:
+                traces_count_to_intervals[count - 1] = [interval]
+
+            if debug:
+                print(colored(interval_to_traces_count, "red"))
+                print()
+                print(colored(traces_count_to_intervals, "red"))
+                print()
+
+    delete_indices(trace_indices_to_delete, traces)
+
+    print(colored(f"trim_out_additional_agents_over_long_traces NEW analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    print(colored(f"Returning {len(traces)} traces, {len(trace_indices_to_delete)} shorter than in previous iteration. \n", "green"))
+    return traces
 
 
 # TODO add tests
@@ -778,7 +862,8 @@ def cross_trace_analyse(traces, silent=False, debug=False):
 
 
 # TODO add tests
-def merge_alone_overlapping_traces_new(traces, population_size, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True):
+def merge_alone_overlapping_traces_new(traces, population_size, allow_force_merge=True, guided=False, input_video=False,
+                                       silent=False, debug=False, show=False, video_params=False, do_count=True):
     """ Merges traces with only a single overlap.
             # Puts traces together such that all the agents but one is being tracked.
 
@@ -799,11 +884,61 @@ def merge_alone_overlapping_traces_new(traces, population_size, allow_force_merg
     start_time = time()
     starting_number_of_traces = len(traces)
 
-    interval_to_overlaps_count = compute_number_of_overlaps(traces)
-    print(interval_to_overlaps_count)
-    overlaps_to_count = reverse_compute_number_of_overlaps(interval_to_overlaps_count)
-    print(overlaps_to_count)
-    print(overlaps_to_count.keys())
+    interval_to_traces_count = partition_frame_range_by_number_of_traces(traces)
+    print(interval_to_traces_count)
+    traces_count_to_intervals = reverse_partition_frame_range_by_number_of_traces(interval_to_traces_count)
+    print(traces_count_to_intervals)
+    print(traces_count_to_intervals.keys())
+
+    pairs_to_merge = []
+    counts_higher_than_pop_size = list(filter(lambda x: x > population_size, list(traces_count_to_intervals.keys())))
+
+    print(counts_higher_than_pop_size)
+
+    for count in sorted(counts_higher_than_pop_size):
+        intervals = traces_count_to_intervals[count]
+        for interval_index, interval in enumerate(intervals):
+            group_of_traces = get_trace_indices_from_range(traces, interval, are_inside=False, strict=True)
+
+            trace_indices_to_delete = []
+            for trace_index in group_of_traces:
+                if is_in(traces[trace_index].frame_range, interval):
+                    trace_indices_to_delete.append(trace_index)
+                    # TODO can delete this after test
+                    if traces[trace_index].frame_range != interval:
+                        raise Exception(f"A trace which is supposed to have frame range {interval} has only its subinterval.")
+
+            # TODO can delete this after test
+            if len(trace_indices_to_delete) > 1:
+                raise Exception(f"More than 1 trace is in this {interval}: {trace_indices_to_delete}")
+
+            # Fix the structures
+            interval_to_traces_count[interval] = interval_to_traces_count[interval] - 1
+            del traces_count_to_intervals[count][interval_index]
+            try:
+                traces_count_to_intervals[count-1].append(interval)
+            except KeyError:
+                traces_count_to_intervals[count - 1] = [interval]
+
+            print(interval_index)
+            print(interval)
+
+            print(colored(interval_to_traces_count, "red"))
+            print()
+            print(colored(traces_count_to_intervals, "red"))
+            print()
+
+    # try:
+    #     # get all ranges with a single overlap (two traces)
+    #     spam = traces_count_to_intervals[2]
+    #     for interval in spam:
+    #         print("interval", interval)
+    #         egg = get_traces_from_range(traces, interval, are_inside=False, strict=True)
+    #         for trace in egg:
+    #             print(trace)
+    #         print()
+    # except KeyError:
+    #     pass
 
 
 # TODO add tests

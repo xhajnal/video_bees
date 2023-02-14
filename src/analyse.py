@@ -3,7 +3,8 @@ from time import time
 from _socket import gethostname
 from termcolor import colored
 
-from cross_traces import get_all_overlaps_count, get_all_seen_overlaps_deleted, get_all_allowed_overlaps_count
+from cross_traces import get_all_overlaps_count, get_all_seen_overlaps_deleted, get_all_allowed_overlaps_count, \
+    merge_alone_overlapping_traces_new
 from guided_traces import full_guided
 from video import annotate_video, parse_video_info
 from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config
@@ -12,7 +13,8 @@ from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
     trim_out_additional_agents_over_long_traces2, merge_alone_overlapping_traces, track_swapping_loop
-from traces_logic import compute_whole_frame_range, get_video_whole_frame_range
+from traces_logic import compute_whole_frame_range, get_video_whole_frame_range, partition_frame_range_by_number_of_traces, \
+    reverse_partition_frame_range_by_number_of_traces
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, \
     get_video_path, pickle_load, load_result_traces, pickled_exist
@@ -190,7 +192,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             traces = pickle_load(traces_file)
         ## First run and the pickled file already exists, we can skip this
         elif is_first_run is True and pickled_exist(csv_file_path, is_first_run=is_first_run):
-            print(colored("This file already has saved pickled file, hence was succesfully run", "green"))
+            print(colored("This file already has saved pickled file, hence was successfully run", "green"))
             return
         else:
             try:

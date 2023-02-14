@@ -12,7 +12,7 @@ from trace import Trace
 from video import show_video
 
 
-def compute_number_of_overlaps(traces):
+def partition_frame_range_by_number_of_traces(traces):
     """ Returns a map interval -> number of traces in the interval
 
     :arg traces: (list): list of Traces
@@ -33,11 +33,11 @@ def compute_number_of_overlaps(traces):
     # Initialise
     current_left = 0
     current_count = 0
-    interval_to_overlaps_count = {}
+    interval_to_traces_count = {}
 
     # Manage beginning:
     if starts[0] != 0:
-        interval_to_overlaps_count[(0, starts[0])] = 0
+        interval_to_traces_count[(0, starts[0])] = 0
         current_left = starts[0]
 
     # while there is a start or end
@@ -71,37 +71,37 @@ def compute_number_of_overlaps(traces):
 
         right = min(start, end)
 
-        interval_to_overlaps_count[(current_left, right)] = current_count + plus - minus
+        interval_to_traces_count[(current_left, right)] = current_count + plus - minus
         current_count = current_count + plus - minus
 
         # print(current_left)
         current_left = right
 
-    return interval_to_overlaps_count
+    return interval_to_traces_count
 
 
-def reverse_compute_number_of_overlaps(traces_or_interval_to_count):
+def reverse_partition_frame_range_by_number_of_traces(traces_or_interval_to_count):
     """ Returns a map number -> intervals with given number of traces inside this interval
 
         :arg traces_or_interval_to_count: (dict or list): interval_to_count OR list of Traces
     """
     if isinstance(traces_or_interval_to_count, list):
-        interval_to_count = compute_number_of_overlaps(traces_or_interval_to_count)
+        interval_to_count = partition_frame_range_by_number_of_traces(traces_or_interval_to_count)
     else:
         interval_to_count = traces_or_interval_to_count
 
     assert isinstance(interval_to_count, dict)
-    overlaps_count_to_intervals = {}
+    traces_count_to_intervals = {}
 
     for key in list(interval_to_count.keys()):
         value = interval_to_count[key]
-        if value in overlaps_count_to_intervals.keys():
-            overlaps_count_to_intervals[value].append(key)
+        if value in traces_count_to_intervals.keys():
+            traces_count_to_intervals[value].append(key)
         else:
-            overlaps_count_to_intervals[value] = [key]
+            traces_count_to_intervals[value] = [key]
 
     # print(count_to_intervals)
-    return overlaps_count_to_intervals
+    return traces_count_to_intervals
 
 
 def get_traces_from_range(traces, interval, are_inside=False, strict=True):
@@ -124,6 +124,28 @@ def get_traces_from_range(traces, interval, are_inside=False, strict=True):
                 traces_in_range.append(trace)
 
     return traces_in_range
+
+
+def get_trace_indices_from_range(traces, interval, are_inside=False, strict=True):
+    """ Returns the trace indices with frame range in given range
+
+    :arg traces: (list): a list of Traces
+    :arg interval: (tuple): range to pick traces
+    :arg are_inside: (bool): whether trace is whole inside the interval
+    :arg strict: (bool): whether single point overlaps are excluded
+    :return: list of trace indices in the given range
+    """
+    trace_indices_in_range = []
+    for index, trace in enumerate(traces):
+        assert isinstance(trace, Trace)
+        if are_inside:
+            if is_in(trace.frame_range, interval):
+                trace_indices_in_range.append(index)
+        else:
+            if has_dot_overlap(trace.frame_range, interval, strict):
+                trace_indices_in_range.append(index)
+
+    return trace_indices_in_range
 
 
 def get_gaps_of_traces(traces, get_all_gaps=False, debug=False):
