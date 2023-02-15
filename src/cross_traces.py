@@ -282,6 +282,7 @@ def trim_out_additional_agents_over_long_traces_by_partition(traces, population_
 
             to_delete_in_this_cycle = []
             for trace_index in group_of_traces:
+                ## TODO have look how this performens when used shorter trace instead of is_in
                 if is_in(traces[trace_index].frame_range, interval):
                     to_delete_in_this_cycle.append(trace_index)
                     if debug:
