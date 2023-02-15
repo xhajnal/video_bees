@@ -1125,6 +1125,7 @@ def merge_alone_overlapping_traces(traces, population_size, allow_force_merge=Tr
 
             # ## TODO delete the following line
             # minimal_dist_check = True
+            # maximal_dist_check = True
 
             ## ACTUAL DECISION WHETHER TO MERGE
             if force_merge or (maximal_dist_check and minimal_dist_check):
