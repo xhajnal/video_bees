@@ -6,8 +6,11 @@ import analyse
 from dave_io import load_result
 
 
-def write_dave():
-    """ Writes the dave script main without result values. """
+def write_dave(is_first_run=False):
+    """ Writes the dave script main without result values.
+
+    arg: is_first_run (bool): whether to pick the results of the first run
+    """
     a = [190822, 190823, 190903, 190904, 190905, 190906, 190916, 190917, 190918, 190919, 190920, 190922, 190924, 190925, 190926, 190927, 190928, 190929, 190930, 191001, 191002, 191003, 191007, 191008, 191011, 191014, 191016, 191017, 191018]
 
     path = '../data/Video_tracking/'
@@ -36,13 +39,14 @@ def write_dave():
                 # print(file2)
                 file2 = str("_".join(file2.split("_")[:3]))
                 # print(file2)
-                if glob(f"{path}/{folder}/*{file2}*.mp4", recursive=False):
+                if glob(f"{path}/{folder}/movie*{file2}*.mp4", recursive=False):
                     if_video = ", has_tracked_video=True, is_first_run=a"
                 else:
                     if_video = ", is_first_run=a"
 
                 try:
-                    file_results = load_result(file_name=f"{original_file}")
+                    ## TODO pick
+                    file_results = load_result(file_name=f"{original_file}", is_first_run=is_first_run)
                     all_loaded = []
                     all_single = []
                     all_final = []
@@ -95,4 +99,4 @@ def write_dave():
 
 
 if __name__ == "__main__":
-    write_dave()
+    write_dave(is_first_run=True)
