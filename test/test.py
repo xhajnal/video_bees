@@ -9,8 +9,7 @@ from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range, \
-    partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, get_traces_from_range, \
-    get_trace_indices_from_range
+    partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, get_traces_from_range
 from misc import *
 from visualise import scatter_detection
 
@@ -480,21 +479,21 @@ class MyTestCase(unittest.TestCase):
         # for item in spam:
         #     print(str(item))
 
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=True), [traces[0]])
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False), [traces[0], traces[1]])
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False, strict=False), [traces[0], traces[1], traces[2], traces[3]])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=True)[0], [traces[0]])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False)[0], [traces[0], traces[1]])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False, strict=False)[0], [traces[0], traces[1], traces[2], traces[3]])
 
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=True), [traces[4]])
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False), [traces[3], traces[4], traces[5]])
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False, strict=False), [traces[3], traces[4], traces[5], traces[6]])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=True)[0], [traces[4]])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False)[0], [traces[3], traces[4], traces[5]])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False, strict=False)[0], [traces[3], traces[4], traces[5], traces[6]])
 
-        self.assertEqual(get_trace_indices_from_range(traces, [0, 2], are_inside=True), [0])
-        self.assertEqual(get_trace_indices_from_range(traces, [0, 2], are_inside=False), [0, 1])
-        self.assertEqual(get_trace_indices_from_range(traces, [0, 2], are_inside=False, strict=False), [0, 1, 2, 3])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=True)[1], [0])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False)[1], [0, 1])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False, strict=False)[1], [0, 1, 2, 3])
 
-        self.assertEqual(get_trace_indices_from_range(traces, [5, 8], are_inside=True), [4])
-        self.assertEqual(get_trace_indices_from_range(traces, [5, 8], are_inside=False), [3, 4, 5])
-        self.assertEqual(get_trace_indices_from_range(traces, [5, 8], are_inside=False, strict=False), [3, 4, 5, 6])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=True)[1], [4])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False)[1], [3, 4, 5])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False, strict=False)[1], [3, 4, 5, 6])
 
         with open('../test/test3_1.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
@@ -512,18 +511,19 @@ class MyTestCase(unittest.TestCase):
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
 
-        traces, spam = trim_out_additional_agents_over_long_traces_with_dict(traces, None, 1, silent=False, debug=True)
+        traces, spam, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_with_dict(traces, None, 1, silent=False, debug=True)
 
         print("ae" + str(list(map(lambda x: x.trace_id, traces))))
         self.assertEqual(len(traces), 2)
+        self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
         with open('../test/test2.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
-        traces = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size=1, allow_force_merge=True, guided=False, input_video=False,
-                                                                          silent=False, debug=False, show=False, video_params=False, do_count=True)
+        traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size=1,
+                                                                                                       silent=False, debug=False, show=False)
         # traces = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size=1, allow_force_merge=True,
         #                                                          guided=False, input_video=False,
         #                                                          silent=False, debug=False, show=False,
@@ -531,7 +531,7 @@ class MyTestCase(unittest.TestCase):
 
         print("ae" + str(list(map(lambda x: x.trace_id, traces))))
         self.assertEqual(len(traces), 2)
-
+        self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
     def testCheckTraces(self):
         with open('../test/test.csv', newline='') as csv_file:

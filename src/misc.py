@@ -459,6 +459,7 @@ def get_overlap(range1, range2):
 
 def get_strict_overlap(range1, range2):
     """ Returns the overlap of range1 and range2 only if it is a range of nonzero length.
+        In other words, point overlaps are not counted for.
 
     :arg range1: (tuple or list): first interval
     :arg range2: (tuple or list): second interval

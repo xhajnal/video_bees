@@ -106,7 +106,7 @@ def reverse_partition_frame_range_by_number_of_traces(traces_or_interval_to_coun
 
 
 def get_traces_from_range(traces, interval, are_inside=False, strict=True):
-    """ Returns the traces with frame range in given range
+    """ Returns the traces, indices with frame range in given range
 
     :arg traces: (list): a list of Traces
     :arg interval: (tuple): range to pick traces
@@ -115,38 +115,19 @@ def get_traces_from_range(traces, interval, are_inside=False, strict=True):
     :return: list of traces in the given range
     """
     traces_in_range = []
-    for trace in traces:
-        assert isinstance(trace, Trace)
-        if are_inside:
-            if is_in(trace.frame_range, interval):
-                traces_in_range.append(trace)
-        else:
-            if has_dot_overlap(trace.frame_range, interval, strict):
-                traces_in_range.append(trace)
-
-    return traces_in_range
-
-
-def get_trace_indices_from_range(traces, interval, are_inside=False, strict=True):
-    """ Returns the trace indices with frame range in given range
-
-    :arg traces: (list): a list of Traces
-    :arg interval: (tuple): range to pick traces
-    :arg are_inside: (bool): whether trace is whole inside the interval
-    :arg strict: (bool): whether single point overlaps are excluded
-    :return: list of trace indices in the given range
-    """
     trace_indices_in_range = []
     for index, trace in enumerate(traces):
         assert isinstance(trace, Trace)
         if are_inside:
             if is_in(trace.frame_range, interval):
+                traces_in_range.append(trace)
                 trace_indices_in_range.append(index)
         else:
             if has_dot_overlap(trace.frame_range, interval, strict):
+                traces_in_range.append(trace)
                 trace_indices_in_range.append(index)
 
-    return trace_indices_in_range
+    return traces_in_range, trace_indices_in_range
 
 
 def get_gaps_of_traces(traces, get_all_gaps=False, debug=False):
