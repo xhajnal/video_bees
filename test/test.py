@@ -3,8 +3,9 @@ import unittest
 import matplotlib.pyplot as plt
 
 import analyse
-from cross_traces import track_swapping_loop, trim_out_additional_agents_over_long_traces_with_dict, \
-    trim_out_additional_agents_over_long_traces_by_partition
+from cross_traces import track_swapping_loop, trim_out_additional_agents_over_long_traces_by_partition_v2
+from backup.backup import trim_out_additional_agents_over_long_traces_by_partition, \
+    trim_out_additional_agents_over_long_traces_with_dict
 from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
@@ -511,11 +512,10 @@ class MyTestCase(unittest.TestCase):
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
 
-        traces, spam, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_with_dict(traces, None, 1, silent=False, debug=True)
-
-        print("ae" + str(list(map(lambda x: x.trace_id, traces))))
+        traces, spam, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_with_dict(traces, None, 1, silent=True, debug=False)
         self.assertEqual(len(traces), 2)
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
+
 
         with open('../test/test2.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
@@ -523,13 +523,18 @@ class MyTestCase(unittest.TestCase):
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
         traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size=1,
-                                                                                                       silent=False, debug=False, show=False)
-        # traces = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size=1, allow_force_merge=True,
-        #                                                          guided=False, input_video=False,
-        #                                                          silent=False, debug=False, show=False,
-        #                                                          video_params=False, do_count=True)
+                                                                                                       silent=True, debug=False)
+        self.assertEqual(len(traces), 2)
+        self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
-        print("ae" + str(list(map(lambda x: x.trace_id, traces))))
+
+        with open('../test/test2.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+        traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_v2(traces, population_size=1,
+                                                                                                          silent=False, debug=True)
         self.assertEqual(len(traces), 2)
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
