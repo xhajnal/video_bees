@@ -176,7 +176,7 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
     return False
 
 
-def trim_out_additional_agents_over_long_traces_by_partition_v2(traces, population_size, silent=False, debug=False):
+def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, silent=False, debug=False):
     """ Trims out additional appearance of an agent over a longer trace.
         This version is using partition_frame_range_by_number_of_traces.
         Fallbacks the False negative cases of trimming to be solved with iterative build of overlaps of the traces
@@ -224,9 +224,9 @@ def trim_out_additional_agents_over_long_traces_by_partition_v2(traces, populati
             to_delete_in_this_segment = []
             for trace_index in traces_subset_indices:
                 if is_in(traces[trace_index].frame_range, interval):
-                    ## TODO Delete this after test
-                    if trace_index in to_delete_in_this_segment:
-                        print(colored("AAARGH", "magenta"))
+                    # ## TODO Delete this after test
+                    # if trace_index in to_delete_in_this_segment:
+                    #     print(colored("AAARGH", "magenta"))
                     to_delete_in_this_segment.append(trace_index)
                     if debug:
                         print(colored(f"Adding trace n. {trace_index} id {traces[trace_index].trace_id} of frame range {traces[trace_index].frame_range} to be deleted.", "yellow"))
@@ -268,34 +268,36 @@ def trim_out_additional_agents_over_long_traces_by_partition_v2(traces, populati
                     ## TODO Delete this after test
                     # for index in to_delete_indices_in_fallback:
                     #     if index in trace_indices_to_delete:
-                    #         pass
+                    #         print(colored("AAARGH", "magenta"))
                     trace_indices_to_delete.extend(to_delete_indices_in_fallback)
                     # del to_delete_indices_in_fallback
                 elif debug:
                     print(colored(f"FALLBACK, NOT REMOVING INDICES {to_delete_indices_in_fallback} - TOO MANY OF THE TRACES TO BE DELETED .", "red"))
-                else:
-                    print(colored("AAARGH", "magenta"))
+                # else:
+                #     print(colored("AAARGH", "magenta"))
 
             trace_indices_to_delete.extend(to_delete_in_this_segment)
             ids_of_traces_to_be_deleted.extend(list(map(lambda x: traces[x].trace_id, to_delete_in_this_segment)))
 
-            # Fix the structures
-            interval_to_traces_count[interval] = interval_to_traces_count[interval] - 1
-            for index, spam in traces_count_to_intervals[count]:
-                if spam == interval:
-                    del traces_count_to_intervals[count][index]
-            try:
-                traces_count_to_intervals[count-1].append(interval)
-            except KeyError:
-                traces_count_to_intervals[count - 1] = [interval]
+            ## TODO have a look over here
+            # # Fix the structures
+            # interval_to_traces_count[interval] = interval_to_traces_count[interval] - 1
+            # for index, spam in traces_count_to_intervals[count]:
+            #     if spam == interval:
+            #         del traces_count_to_intervals[count][index]
+            # try:
+            #     traces_count_to_intervals[count-1].append(interval)
+            # except KeyError:
+            #     traces_count_to_intervals[count - 1] = [interval]
+            #
+            # if debug:
+            #     print(colored(interval_to_traces_count, "red"))
+            #     print()
+            #     print(colored(traces_count_to_intervals, "red"))
+            #     print()
 
-            if debug:
-                print(colored(interval_to_traces_count, "red"))
-                print()
-                print(colored(traces_count_to_intervals, "red"))
-                print()
-
-    print(colored(f"trace_indices_to_delete {trace_indices_to_delete}", "blue"))
+    if debug:
+        print(colored(f"trace_indices_to_delete {trace_indices_to_delete}", "blue"))
     delete_indices(trace_indices_to_delete, traces)
 
     print(colored(f"trim_out_additional_agents_over_long_traces using partition with build up overlaps fallback analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))

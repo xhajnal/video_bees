@@ -3,7 +3,7 @@ import unittest
 import matplotlib.pyplot as plt
 
 import analyse
-from cross_traces import track_swapping_loop, trim_out_additional_agents_over_long_traces_by_partition_v2
+from cross_traces import track_swapping_loop, trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
 from backup.backup import trim_out_additional_agents_over_long_traces_by_partition, \
     trim_out_additional_agents_over_long_traces_with_dict
 from dave_io import parse_traces
@@ -535,8 +535,8 @@ class MyTestCase(unittest.TestCase):
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
-        traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_v2(traces, population_size=1,
-                                                                                                          silent=False, debug=True)
+        traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size=1,
+                                                                                                                           silent=False, debug=True)
         self.assertEqual(len(traces), 2)
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 

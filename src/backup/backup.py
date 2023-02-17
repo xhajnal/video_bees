@@ -88,7 +88,8 @@ def trim_out_additional_agents_over_long_traces_by_partition(traces, population_
                 print(colored(traces_count_to_intervals, "red"))
                 print()
 
-    print(colored(f"trace_indices_to_delete {trace_indices_to_delete}", "blue"))
+    if debug:
+        print(colored(f"trace_indices_to_delete {trace_indices_to_delete}", "blue"))
     delete_indices(trace_indices_to_delete, traces)
 
     print(colored(f"trim_out_additional_agents_over_long_traces using partition analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))

@@ -3,8 +3,9 @@ from time import time
 from _socket import gethostname
 from termcolor import colored
 
+from backup.backup import trim_out_additional_agents_over_long_traces_with_dict
 from cross_traces import get_all_overlaps_count, get_all_seen_overlaps_deleted, get_all_allowed_overlaps_count, \
-    trim_out_additional_agents_over_long_traces_by_partition_v2
+    trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
 from guided_traces import full_guided
 from video import annotate_video, parse_video_info
 from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config
@@ -333,7 +334,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         after_number_of_traces = 0
         while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
             before_number_of_traces = len(traces)
-            traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_v2(traces, population_size, silent=silent, debug=debug)
+            traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, silent=silent, debug=debug)
 
             # if before_number_of_traces != len(traces):
             # with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
@@ -401,7 +402,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
             before_number_of_traces = len(traces)
             if len(traces) > population_size:
-                traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_v2(traces, population_size, silent=silent, debug=debug)
+                traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, silent=silent, debug=debug)
 
             # if before_number_of_traces != len(traces):
             # with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
