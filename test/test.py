@@ -49,6 +49,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(delete_indices([0, 1], [8, 9]), [])
         self.assertEqual(delete_indices([0, 1], [8, 9, 10]), [10])
         self.assertEqual(delete_indices([1], [8, 9, 10]), [8, 10])
+        self.assertEqual(delete_indices([1, 1], [8, 9, 10]), [8, 10])
+
 
         self.assertEqual(take(0, [8, 9, 10]), [])
         self.assertEqual(take(1, [8, 9, 10]), [8])

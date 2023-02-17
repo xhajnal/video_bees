@@ -221,34 +221,63 @@ def trim_out_additional_agents_over_long_traces_by_partition_v2(traces, populati
                 print("segment/interval", interval)
                 print("group_of_traces - indices", traces_subset_indices)
 
-            to_delete_in_this_cycle = []
+            to_delete_in_this_segment = []
             for trace_index in traces_subset_indices:
                 if is_in(traces[trace_index].frame_range, interval):
-                    to_delete_in_this_cycle.append(trace_index)
+                    ## TODO Delete this after test
+                    if trace_index in to_delete_in_this_segment:
+                        print(colored("AAARGH", "magenta"))
+                    to_delete_in_this_segment.append(trace_index)
                     if debug:
                         print(colored(f"Adding trace n. {trace_index} id {traces[trace_index].trace_id} of frame range {traces[trace_index].frame_range} to be deleted.", "yellow"))
                     # # TODO can delete this after test
                     # if tuple(traces[trace_index].frame_range) != tuple(interval):
                     #     raise Exception(f"A trace is {traces[trace_index].trace_id} of range {traces[trace_index].frame_range} which is supposed to have frame range {interval} has only its subinterval.")
 
-            if len(to_delete_in_this_cycle) > count-population_size:
-                print(f"There are {count} traces present in this segment {interval}, while {len(to_delete_in_this_cycle)} whole inside: {to_delete_in_this_cycle}. Not deleting any.")
+            to_fix = True
+            if len(to_delete_in_this_segment) > count-population_size:
+                print(f"There are {count} traces present in this segment {interval}, while {len(to_delete_in_this_segment)} whole inside: {to_delete_in_this_segment}. Not deleting any.")
                 # TODO add a guided fix
-                to_delete_in_this_cycle = []
+                to_delete_in_this_segment = []
+                to_fix = False
 
-            # FIX False negative cases
-            if to_delete_in_this_cycle == []:
+            # FIX False negative cases - FALLBACK
+            if to_fix and to_delete_in_this_segment == []:
                 subset_intervals = list(map(lambda x: x.frame_range, traces_subset))
                 dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, subset_intervals,
-                                                                     strict=False, skip_whole_in=False, debug=debug)
+                                                                     strict=True, skip_whole_in=False, debug=False)
+                to_delete_indices_in_fallback = []
                 for overlap in dictionary.values():
+                    # if debug:
+                    #     print(f"FALLBACK overlap {overlap}")
                     for index, trace in enumerate(traces_subset):
+                        # if debug:
+                        #     print(f"FALLBACK trace {traces_subset_indices[index]} of frame range {traces[traces_subset_indices[index]].frame_range}")
+                        ## Skip trace already added to be deleted
+                        if traces_subset_indices[index] in to_delete_indices_in_fallback:
+                            continue
                         if is_in(trace.frame_range, overlap):
                             # add this trace to be deleted
-                            to_delete_in_this_cycle.append(traces_subset_indices[index])
+                            to_delete_indices_in_fallback.append(traces_subset_indices[index])
+                            # to_delete_in_this_cycle.append(traces_subset_indices[index])
+                            if debug:
+                                print(colored(f"FALLBACK, Adding trace n. {traces_subset_indices[index]} id {traces[traces_subset_indices[index]].trace_id} of frame range {traces[trace_index].frame_range} to be deleted.", "yellow"))
 
-            trace_indices_to_delete.extend(to_delete_in_this_cycle)
-            ids_of_traces_to_be_deleted.extend(list(map(lambda x: traces[x].trace_id, to_delete_in_this_cycle)))
+                # to_delete_indices_in_fallback = set(to_delete_indices_in_fallback)
+                if len(to_delete_indices_in_fallback) <= count - population_size:
+                    ## TODO Delete this after test
+                    # for index in to_delete_indices_in_fallback:
+                    #     if index in trace_indices_to_delete:
+                    #         pass
+                    trace_indices_to_delete.extend(to_delete_indices_in_fallback)
+                    # del to_delete_indices_in_fallback
+                elif debug:
+                    print(colored(f"FALLBACK, NOT REMOVING INDICES {to_delete_indices_in_fallback} - TOO MANY OF THE TRACES TO BE DELETED .", "red"))
+                else:
+                    print(colored("AAARGH", "magenta"))
+
+            trace_indices_to_delete.extend(to_delete_in_this_segment)
+            ids_of_traces_to_be_deleted.extend(list(map(lambda x: traces[x].trace_id, to_delete_in_this_segment)))
 
             # Fix the structures
             interval_to_traces_count[interval] = interval_to_traces_count[interval] - 1
@@ -620,7 +649,7 @@ def merge_alone_overlapping_traces_new(traces, population_size, allow_force_merg
     for count in sorted(counts_higher_than_pop_size):
         intervals = traces_count_to_intervals[count]
         for interval_index, interval in enumerate(intervals):
-            group_of_traces = get_trace_indices_from_range(traces, interval, are_inside=False, strict=True)
+            group_of_traces = get_traces_from_range(traces, interval, are_inside=False, strict=True)[1]
 
             trace_indices_to_delete = []
             for trace_index in group_of_traces:

@@ -110,7 +110,7 @@ def get_traces_from_range(traces, interval, are_inside=False, strict=True):
 
     :arg traces: (list): a list of Traces
     :arg interval: (tuple): range to pick traces
-    :arg are_inside: (bool): whether trace is whole inside the interval
+    :arg are_inside: (bool): get only traces in the interval (with whole range)
     :arg strict: (bool): whether single point overlaps are excluded
     :return: list of traces in the given range
     """
