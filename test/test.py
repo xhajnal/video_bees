@@ -3,7 +3,9 @@ import unittest
 import matplotlib.pyplot as plt
 
 import analyse
-from cross_traces import track_swapping_loop, trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
+from cross_traces import track_swapping_loop, \
+    trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
+    merge_alone_overlapping_traces_by_partition
 from backup.backup import trim_out_additional_agents_over_long_traces_by_partition, \
     trim_out_additional_agents_over_long_traces_with_dict
 from dave_io import parse_traces
@@ -482,21 +484,21 @@ class MyTestCase(unittest.TestCase):
         # for item in spam:
         #     print(str(item))
 
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=True)[0], [traces[0]])
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False)[0], [traces[0], traces[1]])
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False, strict=False)[0], [traces[0], traces[1], traces[2], traces[3]])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], fully_inside=True)[0], [traces[0]])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], fully_inside=False)[0], [traces[0], traces[1]])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], fully_inside=False, strict=False)[0], [traces[0], traces[1], traces[2], traces[3]])
 
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=True)[0], [traces[4]])
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False)[0], [traces[3], traces[4], traces[5]])
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False, strict=False)[0], [traces[3], traces[4], traces[5], traces[6]])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], fully_inside=True)[0], [traces[4]])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], fully_inside=False)[0], [traces[3], traces[4], traces[5]])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], fully_inside=False, strict=False)[0], [traces[3], traces[4], traces[5], traces[6]])
 
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=True)[1], [0])
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False)[1], [0, 1])
-        self.assertEqual(get_traces_from_range(traces, [0, 2], are_inside=False, strict=False)[1], [0, 1, 2, 3])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], fully_inside=True)[1], [0])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], fully_inside=False)[1], [0, 1])
+        self.assertEqual(get_traces_from_range(traces, [0, 2], fully_inside=False, strict=False)[1], [0, 1, 2, 3])
 
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=True)[1], [4])
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False)[1], [3, 4, 5])
-        self.assertEqual(get_traces_from_range(traces, [5, 8], are_inside=False, strict=False)[1], [3, 4, 5, 6])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], fully_inside=True)[1], [4])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], fully_inside=False)[1], [3, 4, 5])
+        self.assertEqual(get_traces_from_range(traces, [5, 8], fully_inside=False, strict=False)[1], [3, 4, 5, 6])
 
         with open('../test/test3_1.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
@@ -539,6 +541,53 @@ class MyTestCase(unittest.TestCase):
                                                                                                                            silent=False, debug=True)
         self.assertEqual(len(traces), 2)
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
+
+    def testAloneOverlap(self):
+        ## NO PAIR
+        with open('../test/test.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 8)
+        merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 8)
+
+        ## NO MERGE
+        with open('../test/test2.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 4)
+        merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 4)
+
+        ## 6/6 MERGES
+        with open('../test/test3.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 10)
+        merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 4)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 2, 3, 7])
+
+        ## 3/6 MERGES
+        with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 10)
+        merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 7)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3, 5, 6, 7])
 
     def testCheckTraces(self):
         with open('../test/test.csv', newline='') as csv_file:

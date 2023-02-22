@@ -214,7 +214,7 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
         # For each segment
         for interval_index, interval in enumerate(intervals):
             # Obtain trace indices of the traces in the segment
-            traces_subset, traces_subset_indices = get_traces_from_range(traces, interval, are_inside=False, strict=True)
+            traces_subset, traces_subset_indices = get_traces_from_range(traces, interval, fully_inside=False, strict=True)
 
             if debug:
                 # print("segment/interval_index", interval_index)
@@ -615,83 +615,118 @@ def cross_trace_analyse(traces, silent=False, debug=False):
 
 
 # TODO add tests
-def merge_alone_overlapping_traces_new(traces, population_size, allow_force_merge=True, guided=False, input_video=False,
-                                       silent=False, debug=False, show=False, video_params=False, do_count=True):
-    """ Merges traces with only a single overlap.
-            # Puts traces together such that all the agents but one is being tracked.
+def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=False):
+    """ Merges traces which have the only overlap at given time
+        # Puts traces together such that all the agents but two are being tracked.
 
-            :arg traces: (list): list of traces
-            :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
-            :arg population_size: (int): expected number of agents
-            :arg allow_force_merge: (bool): iff True force merge is allow
-            :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
-            :arg input_video: (str or bool): if set, path to the input video
-            :arg silent: (bool): if True minimal output is shown
-            :arg debug: (bool): if True extensive output is shown
-            :arg show: (bool): if True plots are shown
-            :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
-            :arg do_count: (bool): flag whether to count the numbers of events occurring
-            :returns: traces: (list): list of concatenated Traces
-        """
-    print(colored("MERGE OVERLAPPING TRACES", "blue"))
+        :arg traces: (list): list of traces
+        :arg silent: (bool): if True minimal output is shown
+        :arg debug: (bool): if True extensive output is shown
+        :returns: traces: (list): list of concatenated Traces
+    """
+    print(colored("MERGE ALONE OVERLAPPING TRACES", "blue"))
     start_time = time()
+
     starting_number_of_traces = len(traces)
+    trace_indices_to_merge = []
+    ids_of_traces_to_be_merged = []
 
+    # Compute frame range partition by number of traces for each segment
     interval_to_traces_count = partition_frame_range_by_number_of_traces(traces)
-    print(interval_to_traces_count)
     traces_count_to_intervals = reverse_partition_frame_range_by_number_of_traces(interval_to_traces_count)
-    print(traces_count_to_intervals)
-    print(traces_count_to_intervals.keys())
+    # # Obtain number of traces for segment bigger than population_size
+    counts_equal_two = list(filter(lambda x: x == 2, list(traces_count_to_intervals.keys())))
 
-    pairs_to_merge = []
-    counts_higher_than_pop_size = list(filter(lambda x: x > population_size, list(traces_count_to_intervals.keys())))
+    try:
+        intervals = copy(traces_count_to_intervals[2])
+    except KeyError:
+        if debug:
+            print("interval_to_traces_count", interval_to_traces_count)
+            print("traces_count_to_intervals", traces_count_to_intervals)
+            print("traces_count_to_intervals keys", traces_count_to_intervals.keys())
+        print(colored(f"There is no segment with two traces, skipping the analysis."
+                      f" It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
+        return
 
-    print(counts_higher_than_pop_size)
+    if debug:
+        print("interval_to_traces_count", interval_to_traces_count)
+        print("traces_count_to_intervals", traces_count_to_intervals)
+        print("traces_count_to_intervals keys", traces_count_to_intervals.keys())
 
-    for count in sorted(counts_higher_than_pop_size):
-        intervals = traces_count_to_intervals[count]
-        for interval_index, interval in enumerate(intervals):
-            group_of_traces = get_traces_from_range(traces, interval, are_inside=False, strict=True)[1]
+        print("intervals with exactly two overlapping traces", traces_count_to_intervals[2])
+        # print("counts_equal_two", counts_equal_two)
 
-            trace_indices_to_delete = []
-            for trace_index in group_of_traces:
-                if is_in(traces[trace_index].frame_range, interval):
-                    trace_indices_to_delete.append(trace_index)
-                    # TODO can delete this after test
-                    if traces[trace_index].frame_range != interval:
-                        raise Exception(f"A trace which is supposed to have frame range {interval} has only its subinterval.")
+    for interval_index, interval in enumerate(intervals):
+        # Obtain trace and trace indices of the traces in the segment
+        traces_subset, traces_subset_indices = get_traces_from_range(traces, interval, fully_inside=False, strict=True)
 
-            # TODO can delete this after test
-            if len(trace_indices_to_delete) > 1:
-                raise Exception(f"More than 1 trace is in this {interval}: {trace_indices_to_delete}")
+        if debug:
+            # print("segment/interval_index", interval_index)
+            print("segment/interval", interval)
+            print("group_of_traces - indices", traces_subset_indices)
 
-            # Fix the structures
-            interval_to_traces_count[interval] = interval_to_traces_count[interval] - 1
-            del traces_count_to_intervals[count][interval_index]
-            try:
-                traces_count_to_intervals[count-1].append(interval)
-            except KeyError:
-                traces_count_to_intervals[count - 1] = [interval]
+        for trace in traces_subset:
+            print(trace)
+        assert len(traces_subset) == 2
+        assert len(traces_subset_indices) == 2
 
-            print(interval_index)
-            print(interval)
+        # Get names
+        trace1 = traces_subset[0]
+        trace2 = traces_subset[1]
+        trace1_index = traces_subset_indices[0]
+        trace2_index = traces_subset_indices[1]
 
-            print(colored(interval_to_traces_count, "red"))
-            print()
-            print(colored(traces_count_to_intervals, "red"))
-            print()
+        ## TODO delete this after test
+        if is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range):
+            if debug:
+                print(colored(f"Traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}) are inside one another. NOT MERGING.", "yellow"))
+            continue
+            # raise Exception("one of these traces are inside of one another")
 
-    # try:
-    #     # get all ranges with a single overlap (two traces)
-    #     spam = traces_count_to_intervals[2]
-    #     for interval in spam:
-    #         print("interval", interval)
-    #         egg = get_traces_from_range(traces, interval, are_inside=False, strict=True)
-    #         for trace in egg:
-    #             print(trace)
-    #         print()
-    # except KeyError:
-    #     pass
+        # Check the distances of overlap for a big difference
+        distances = compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug, show_all_plots=None)
+
+        maximal_dist_check = all(list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), distances)))
+        minimal_dist_check = any(list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces(), distances)))
+
+        if maximal_dist_check and minimal_dist_check:
+            trace_indices_to_merge.append((trace1_index, trace2_index))
+            ids_of_traces_to_be_merged.append((trace1.trace_id, trace2.trace_id))
+            if debug:
+                print(colored(f"Will merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "blue"))
+        elif debug:
+            print(colored(f"Will NOT merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "yellow"))
+
+    # ACTUALLY MERGE THE TRACES
+    # TODO fix the indices of the traces -
+    #   A - when merging a trace, and then merge the deleted trace
+    indices_to_delete = []
+    for index, pair in enumerate(trace_indices_to_merge):
+        trace1_index = pair[0]
+        trace2_index = pair[1]
+        trace1 = traces[pair[0]]
+        trace2 = traces[pair[1]]
+
+        # assert trace1.trace_id == ids_of_traces_to_be_merged[index][0]
+        # assert trace2.trace_id == ids_of_traces_to_be_merged[index][1]
+
+        merge_two_overlapping_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug)
+        indices_to_delete.append(trace2_index)
+
+        # Change the indices of the deleted trace
+        for index2, pair2 in enumerate(trace_indices_to_merge):
+            if pair2[0] == trace2_index:
+                trace_indices_to_merge[index2] = (trace1_index, pair2[1])
+            if pair2[1] == trace2_index:
+                trace_indices_to_merge[index2] = (pair2[0], trace1_index)
+        print()
+    ## DELETE THE MERGED TRACES:
+    for index in list(reversed(sorted(indices_to_delete))):
+        traces = delete_indices([index], traces)
+
+    print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
+                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
+    return trace_indices_to_merge, ids_of_traces_to_be_merged
 
 
 # TODO add tests
@@ -938,7 +973,7 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=False,
     :arg trace2_index: (int): auxiliary information of index in list of traces of the second trace
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
-    :arg show_all_plots: (bool): if True show all the plots
+    :arg show_all_plots: (bool or None): if True show all the plots
     """
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)

@@ -105,12 +105,12 @@ def reverse_partition_frame_range_by_number_of_traces(traces_or_interval_to_coun
     return traces_count_to_intervals
 
 
-def get_traces_from_range(traces, interval, are_inside=False, strict=True):
+def get_traces_from_range(traces, interval, fully_inside=False, strict=True):
     """ Returns the traces, indices with frame range in given range
 
     :arg traces: (list): a list of Traces
     :arg interval: (tuple): range to pick traces
-    :arg are_inside: (bool): get only traces in the interval (with whole range)
+    :arg fully_inside: (bool): get only traces in the interval (with whole range)
     :arg strict: (bool): whether single point overlaps are excluded
     :return: list of traces in the given range
     """
@@ -118,7 +118,7 @@ def get_traces_from_range(traces, interval, are_inside=False, strict=True):
     trace_indices_in_range = []
     for index, trace in enumerate(traces):
         assert isinstance(trace, Trace)
-        if are_inside:
+        if fully_inside:
             if is_in(trace.frame_range, interval):
                 traces_in_range.append(trace)
                 trace_indices_in_range.append(index)
@@ -305,6 +305,11 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
         raise Exception("The two traces have no overlap. Try using function 'merge_two_traces_with_gap' instead.")
     else:
         overlap = get_overlap(trace1.frame_range, trace2.frame_range)
+        print("trace1.frame_range", trace1.frame_range)
+        print("trace1.frames_list", trace1.frames_list)
+        print("trace2.frame_range", trace2.frame_range)
+        print("trace2.frames_list", trace2.frames_list)
+        print("overlap", overlap)
 
     # Decide whether to keep overlap of trace1 or trace2
     index1_overlap_start = trace1.frames_list.index(overlap[0])
