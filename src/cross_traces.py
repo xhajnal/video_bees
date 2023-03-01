@@ -7,9 +7,11 @@ from termcolor import colored
 from operator import countOf
 from scipy.interpolate import InterpolatedUnivariateSpline
 
+import analyse
 from config import *
 from fake import get_whole_frame_range
-from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, range_len, to_vect, calculate_cosine_similarity, flatten, has_strict_overlap
+from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, range_len, to_vect, \
+    calculate_cosine_similarity, flatten, has_strict_overlap, margin_range
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
     compute_whole_frame_range, get_video_whole_frame_range, partition_frame_range_by_number_of_traces, \
@@ -615,13 +617,15 @@ def cross_trace_analyse(traces, silent=False, debug=False):
 
 
 # TODO add tests
-def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=False):
+def merge_alone_overlapping_traces_by_partition(traces, input_video=False, silent=False, debug=False, video_params=False):
     """ Merges traces which have the only overlap at given time
         # Puts traces together such that all the agents but two are being tracked.
 
         :arg traces: (list): list of traces
+        :arg input_video: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
+        :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE ALONE OVERLAPPING TRACES", "blue"))
@@ -646,7 +650,7 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
             print("traces_count_to_intervals keys", traces_count_to_intervals.keys())
         print(colored(f"There is no segment with two traces, skipping the analysis."
                       f" It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
-        return
+        return [], []
 
     if debug:
         print("interval_to_traces_count", interval_to_traces_count)
@@ -664,9 +668,9 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
             # print("segment/interval_index", interval_index)
             print("segment/interval", interval)
             print("group_of_traces - indices", traces_subset_indices)
+            for trace in traces_subset:
+                print(trace)
 
-        for trace in traces_subset:
-            print(trace)
         assert len(traces_subset) == 2
         assert len(traces_subset_indices) == 2
 
@@ -676,6 +680,9 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
         trace1_index = traces_subset_indices[0]
         trace2_index = traces_subset_indices[1]
 
+        # Get the overlap
+        overlap_range = get_overlap(trace1.frame_range, trace2.frame_range)
+
         ## TODO delete this after test
         if is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range):
             if debug:
@@ -684,7 +691,31 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
             # raise Exception("one of these traces are inside of one another")
 
         # Check the distances of overlap for a big difference
-        distances = compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug, show_all_plots=None)
+        # distances = compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug, show_all_plots=None)
+        distances, shifted_distances, shift = compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=200,
+                                                                            silent=silent, debug=debug, show_all_plots=None)
+
+        # if sum(distances) > sum(shifted_distances)*25:
+        #     with open("../auxiliary/by_partition/shifted_traces_with_lower_distance_only_proportions_shift200.txt", "a") as file:
+        #         file.write(f"{sum(distances) / sum(shifted_distances)},\n")
+        #
+        # if sum(distances) > sum(shifted_distances) * 10:
+        #     # save record
+        #     with open("../auxiliary/by_partition/shifted_traces_with_lower_distance_ten_times.txt", "a") as file:
+        #         file.write(f"{analyse.get_curr_csv_file_path()}; {overlap_range}; {distances}; {shifted_distances}; {shift}; {sum(distances) / sum(shifted_distances)} \n")
+        #
+        #     # # show video
+        #     # # pick traces to show
+        #     # traces_to_show = get_traces_from_range(traces, margin_range(overlap_range, 15))[0]
+        #     # for index, trace in enumerate(traces_to_show):
+        #     #     if trace.trace_id == trace1.trace_id:
+        #     #         del traces_to_show[index]
+        #     #     if trace.trace_id == trace2.trace_id:
+        #     #         del traces_to_show[index]
+        #     # traces_to_show = [trace1, trace2, *traces_to_show]
+        #
+        #     # show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 15),
+        #     #            video_speed=0.03, wait=True, video_params=video_params)
 
         maximal_dist_check = all(list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), distances)))
         minimal_dist_check = any(list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces(), distances)))
@@ -701,6 +732,10 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
     # TODO fix the indices of the traces -
     #   A - when merging a trace, and then merge the deleted trace
     indices_to_delete = []
+
+    ## TODO have to have a look on the file  20190920_152130894_5BEES_generated_20210910_085916_nn without the following line
+    trace_indices_to_merge = list(set(trace_indices_to_merge))
+
     for index, pair in enumerate(trace_indices_to_merge):
         trace1_index = pair[0]
         trace2_index = pair[1]
@@ -862,7 +897,28 @@ def merge_alone_overlapping_traces(traces, population_size, allow_force_merge=Tr
                 showw = None
 
             # Check the distances of overlap for a big difference
-            distances = compare_two_traces(trace1, trace2, picked_key[0], picked_key[1], silent=silent, debug=debug, show_all_plots=None if force_merge else showw)
+            # distances = compare_two_traces(trace1, trace2, picked_key[0], picked_key[1], silent=silent, debug=debug, show_all_plots=None if force_merge else showw)
+            distances, shifted_distances, shift = compare_two_traces_with_shift(trace1, trace2, picked_key[0], picked_key[1], shift_up_to=200, silent=silent, debug=debug, show_all_plots=None if force_merge else showw)
+
+            # if sum(distances) > sum(shifted_distances)*25:
+            #     with open("../auxiliary/shifted_traces_with_lower_distance_only_proportions_shift200.txt", "a") as file:
+            #         file.write(f"{sum(distances) / sum(shifted_distances)},\n")
+            #
+            # if sum(distances) > sum(shifted_distances)*10:
+            #     with open("../auxiliary/shifted_traces_with_lower_distance_ten_times.txt", "a") as file:
+            #         file.write(f"{analyse.get_curr_csv_file_path()}; {overlap_range}; {distances}; {shifted_distances}; {shift}; {sum(distances) / sum(shifted_distances)} \n")
+            #
+            #     # show video
+            #     traces_to_show = get_traces_from_range(traces, margin_range(overlap_range, 15))[0]
+            #     for index, trace in enumerate(traces_to_show):
+            #         if trace.trace_id == trace1.trace_id:
+            #             del traces_to_show[index]
+            #         if trace.trace_id == trace2.trace_id:
+            #             del traces_to_show[index]
+            #     traces_to_show = [trace1, trace2, *traces_to_show]
+            #
+            #     show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 15),
+            #                video_speed=0.03, wait=True, video_params=video_params)
 
             # Get frame_range
             picked_frame_range = dictionary[picked_key]
@@ -1162,9 +1218,9 @@ def compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, sh
         x = []
         distances.append([])
         for index in range(start_index1, end_index1+1):
-            # if debug:
-            print(f"trace 1 frame n. {trace1.frames_list[index-shift]}")
-            print(f"trace 2 frame n. {trace1.frames_list[index]}")
+            if debug:
+                print(f"trace 1 frame n. {trace1.frames_list[index-shift]}")
+                print(f"trace 2 frame n. {trace1.frames_list[index]}")
             first_trace_overlapping_frames.append(index)
             if debug:
                 print("index1", index)
@@ -1185,11 +1241,11 @@ def compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, sh
                 assert index - shift >= 0
                 position1 = trace1.locations[index - shift]
                 position2 = trace2.locations[index2]
-                # if debug:
-                print("shift", shift)
-                print("position1", position1)
-                print("position2", position2)
-                print()
+                if debug:
+                    print("shift", shift)
+                    print("position1", position1)
+                    print("position2", position2)
+                    print()
                 distance = math.dist(position1, position2)
             except AssertionError:
                 distance = None

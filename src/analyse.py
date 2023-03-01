@@ -104,6 +104,18 @@ def set_force_new_video(do_force_new_video):
 global real_whole_frame_range
 global whole_frame_range
 
+global curr_csv_file_path
+
+
+def set_curr_csv_file_path(file_path):
+    global curr_csv_file_path
+    curr_csv_file_path = file_path
+
+
+def get_curr_csv_file_path():
+    global curr_csv_file_path
+    return curr_csv_file_path
+
 
 def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False, is_first_run=None):
     """ Runs the whole file analysis.
@@ -117,6 +129,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     """
     global just_annotate
     global just_align
+
+    set_curr_csv_file_path(csv_file_path)
 
     if just_annotate:
         print(colored(f"Gonna annotate: {csv_file_path}", "magenta"))
@@ -247,7 +261,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
         # show alignment to the original video
         ## TODO uncomment to show the original video with original tracking
-        # show_video(input_video=video_file, traces=traces, frame_range=[4000, 8500], wait=True, points=(), video_params=video_params)
+        # show_video(input_video=video_file, traces=traces, frame_range=(), wait=True, points=(), video_params=video_params)
 
         ############
         ### ANALYSIS
@@ -379,11 +393,14 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             after_number_of_traces = -9
             while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
                 before_number_of_traces = len(traces)
-                merge_alone_overlapping_traces(traces, population_size, allow_force_merge=allow_force_merge, guided=guided,
-                                               input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                                               video_params=video_params, do_count=do_count)
+                trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, silent=silent, debug=debug)
+
+                # merge_alone_overlapping_traces(traces, population_size, allow_force_merge=allow_force_merge, guided=guided,
+                #                                input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
+                #                                video_params=video_params, do_count=do_count)
+
                 if do_count:
-                    with open("../auxiliary/cumulative_all_overlaps_count_only_minimal.txt", "a") as file:
+                    with open("../auxiliary/by_partition/cumulative_all_overlaps_count_only_minimal.txt", "a") as file:
                     # with open("../auxiliary/cumulative_all_overlaps_count_only_maximal.txt", "a") as file:
                     # with open("../auxiliary/cumulative_all_overlaps_count_both_and.txt", "a") as file:
                         file.write(f"{get_all_overlaps_count()}, {get_all_allowed_overlaps_count()}, {get_all_seen_overlaps_deleted()}\n")

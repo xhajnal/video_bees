@@ -94,6 +94,10 @@ class Trace:
                     # print("Error:", str(err))
                     raise err
 
+    def get_frame_list(self):
+        """ Return the whole frame list - frame range as list from beginning to the end"""
+        return list(range(self.frame_range[0], self.frame_range[1]+1))
+
     def get_gap_frame_range(self):
         ## TODO make more tests
         """ Returns the range of gaps."""
