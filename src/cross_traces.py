@@ -786,6 +786,9 @@ def merge_alone_overlapping_traces(traces, population_size, allow_force_merge=Tr
     start_time = time()
     starting_number_of_traces = len(traces)
 
+    # with open("../auxiliary/shifted_traces_with_lower_distance.txt", "a") as file:
+    #     file.write(f"csv_file_path; overlap_range; distances; shifted_distances; shift; distance proportion; \n")
+
     whole_frame_range = get_whole_frame_range()
     count_one = [-9]  # indices of traces which have only one occurrence
     number_of_traces = -9
