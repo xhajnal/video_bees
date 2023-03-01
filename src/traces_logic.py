@@ -305,11 +305,13 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
         raise Exception("The two traces have no overlap. Try using function 'merge_two_traces_with_gap' instead.")
     else:
         overlap = get_overlap(trace1.frame_range, trace2.frame_range)
-        print("trace1.frame_range", trace1.frame_range)
-        print("trace1.frames_list", trace1.frames_list)
-        print("trace2.frame_range", trace2.frame_range)
-        print("trace2.frames_list", trace2.frames_list)
-        print("overlap", overlap)
+        if debug:
+            print("trace1.frame_range", trace1.frame_range)
+            print("trace1.frames_list", trace1.frames_list)
+            print()
+            print("trace2.frame_range", trace2.frame_range)
+            print("trace2.frames_list", trace2.frames_list)
+            print("overlap", overlap)
 
     # Decide whether to keep overlap of trace1 or trace2
     index1_overlap_start = trace1.frames_list.index(overlap[0])

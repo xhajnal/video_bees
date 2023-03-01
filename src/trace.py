@@ -138,7 +138,10 @@ class Trace:
 
     def get_locations_from_frame_range(self, interval):
         ## TODO make more tests
-        """ For a given frame range it results locations of the given range."""
+        """ For a given frame range it results locations of the given range.
+
+        :arg interval: (pair): given frame range
+        """
         start_index = self.frames_list.index(interval[0])
         end_index = self.frames_list.index(interval[1])
         return self.locations[start_index:end_index + 1]

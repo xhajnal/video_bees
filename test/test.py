@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import analyse
 from cross_traces import track_swapping_loop, \
     trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
-    merge_alone_overlapping_traces_by_partition
+    merge_alone_overlapping_traces_by_partition, compare_two_traces, compare_two_traces_with_shift
 from backup.backup import trim_out_additional_agents_over_long_traces_by_partition, \
     trim_out_additional_agents_over_long_traces_with_dict
 from dave_io import parse_traces
@@ -468,6 +468,44 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(removed_traces[1].trace_id, 1)
 
     ## TRACES LOGIC TESTS
+    def testCompareTraces(self):
+        ## NO PAIR
+        with open('../test/test_b.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        distances = compare_two_traces(traces[0], traces[2], 0, 2, allow_inside=True, silent=False, debug=False, show_all_plots=None)
+        self.assertAlmostEqual(distances, [0])
+
+        distances = compare_two_traces(traces[0], traces[7], 0, 7, allow_inside=True, silent=False, debug=False, show_all_plots=None)
+        self.assertAlmostEqual(distances, [0.0, 4.123105625617661, 4.0])
+
+        distances, spam, shift = compare_two_traces_with_shift(traces[0], traces[2], 0, 2, allow_inside=True, silent=False, debug=False, show_all_plots=None)
+        self.assertAlmostEqual(distances, [0])
+        self.assertAlmostEqual(spam, [0])
+        self.assertAlmostEqual(shift, 0)
+
+        distances, spam, shift = compare_two_traces_with_shift(traces[0], traces[8], 0, 8, allow_inside=True, silent=False, debug=False, show_all_plots=None)
+        self.assertAlmostEqual(distances, [4.123105625617661, 4.0])
+        self.assertAlmostEqual(spam, [4.123105625617661, 4.0])
+        self.assertAlmostEqual(shift, 0)
+
+        with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        distances = compare_two_traces(traces[4], traces[5], 4, 5, allow_inside=True, silent=False, debug=False,show_all_plots=None)
+        self.assertAlmostEqual(distances, [800, 801])
+
+        distances, spam, shift = compare_two_traces_with_shift(traces[4], traces[5], 4, 5, allow_inside=True, silent=False, debug=False, show_all_plots=None)
+        self.assertAlmostEqual(distances, [800, 801])
+        self.assertAlmostEqual(spam, [792, 801])
+        self.assertAlmostEqual(shift, 1)
+
     def testIntervalToCounts(self):
         with open('../test/test3.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
