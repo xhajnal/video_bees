@@ -137,17 +137,15 @@ output
 test/test-sorted.csv
 /src/spam/
 test/help_video.mp4
-auxiliary/point.txt
+
 src/video2.py
 
 src/fix_folders2.py
 
-auxiliary/spam.csv
 
 src/help/fix_aligment.py
 
 src/merge_result_dicts.py
 
-auxiliary/backup/*
-
-auxiliary/performance/*
+auxiliary/*
+!auxiliary/transpositions.txt
