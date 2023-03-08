@@ -2,7 +2,8 @@ from termcolor import colored
 
 from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionaries, margin_range, delete_indices, \
     range_len
-from traces_logic import get_gaps_of_traces, ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap
+from primal_traces_logic import get_gaps_of_traces
+from traces_logic import ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap
 from video import show_video
 from visualise import scatter_detection, show_plot_locations
 

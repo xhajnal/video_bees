@@ -89,7 +89,6 @@ def delete_indices(indices, iterable, debug=False):
 
     return iterable
 
-
 def take(n, iterable):
     """ Returns first n items of the iterable as a list.
 
@@ -215,7 +214,9 @@ def get_leftmost_point(points):
 
 ## DEPRECATED
 def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
-    """ Returns a dictionary index -> m overlapping interval of n intervals.
+    """ Returns a dictionary
+        m-tuple of trace indices -> interval in which these traces have the m-overlap
+
         No key if there is no interval.
 
         :arg m: (int): degree of overlaps - how many overlaps
@@ -275,15 +276,11 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=True, skip_whol
         for index2, range2 in enumerate(intervals):
             if index1 >= index2:
                 continue
-            ## TODO possible optimisation by asking this before the run and calling a separate function if any point trace
+            # to skip the intervals which are overlapping with whole range
+            if skip_whole_in and (is_in(range1, range2) or is_in(range2, range1)):
+                continue
             ## One of the ranges is single point (this should not happen in the analysis as we trim out short traces)
-            if range_len(range1) == 0 or range_len(range2) == 0:
-                if has_overlap(range1, range2):
-                    dictionary[(index1, index2)] = get_overlap(range1, range2)
-            elif has_dot_overlap(range1, range2, strict):
-                # to skip the intervals which are overlapping with whole range
-                if skip_whole_in and (is_in(range1, range2) or is_in(range2, range1)):
-                    continue
+            if has_dot_overlap(range1, range2, strict):
                 dictionary[(index1, index2)] = get_dot_overlap(range1, range2, strict)
     del range1
     del range2
@@ -301,13 +298,9 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=True, skip_whol
             for index, range1 in enumerate(intervals):
                 if index in overlap_indices:
                     continue
-                ## TODO possible optimisation by asking this before the run and calling a separate function if any point trace
-                elif range_len(range1) == 0 or range_len(range2) == 0:
-                    ## One of the ranges is single point (this should not happen in the analysis as we trim out short traces)
-                    if has_overlap(range1, range2):
-                        new_index = overlap_indices + (index,)
-                        new_index = tuple(list(sorted(list(new_index))))
-                        dictionary[new_index] = get_overlap(range1, range2)
+                # to skip the intervals which are overlapping with whole range
+                if skip_whole_in and is_in(range1, range2):
+                    continue
                 elif has_dot_overlap(range1, range2, strict):
                     new_index = overlap_indices + (index,)
                     new_index = tuple(list(sorted(list(new_index))))
@@ -680,3 +673,7 @@ def rgb_to_bgr(rgb):
 if __name__ == "__main__":
     print(has_strict_overlap([5, 6], [6, 10]))
     print(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True, skip_whole_in=True))
+
+    a = [1,2,34]
+    delete_indices([1], a)
+    print(a)

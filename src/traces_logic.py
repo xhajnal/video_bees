@@ -1,15 +1,280 @@
 import copy
 import math
 import sys
+from _socket import gethostname
+from time import time
 
 import numpy as np
 from termcolor import colored
 from ast import literal_eval as make_tuple
 
-from config import get_max_trace_gap_to_interpolate_distance
-from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap, has_dot_overlap
+from config import get_max_trace_gap_to_interpolate_distance, get_max_step_distance_to_merge_overlapping_traces, \
+    get_min_step_distance_to_merge_overlapping_traces
+from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap, has_dot_overlap, margin_range, \
+    delete_indices, range_len
+from primal_traces_logic import get_traces_from_range
 from trace import Trace
 from video import show_video
+from visualise import show_overlap_distances, show_plot_locations, scatter_detection
+
+
+# TODO add tests
+def compare_two_traces(trace1, trace2, trace1_index, trace2_index, allow_inside=False, silent=False, debug=False, show_all_plots=False):
+    """ Compares two traces.
+
+    :arg trace1: (Trace): first trace to be compared
+    :arg trace2: (Trace): second trace to be compared
+    :arg trace1_index: (int): auxiliary information of index in list of traces of the first trace
+    :arg trace2_index: (int): auxiliary information of index in list of traces of the second trace
+    :arg silent: (bool): if True minimal output is shown
+    :arg debug: (bool): if True extensive output is shown
+    :arg show_all_plots: (bool or None): if True show all the plots
+    """
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+
+    if show_all_plots is None:
+        show_all_plots = False
+        show = False
+    else:
+        show = True
+
+    if not silent:
+        print(colored(f"COMPARE TWO TRACES - {trace1_index}({trace1.trace_id}),{trace2_index}({trace2.trace_id})", "blue"))
+    start_time = time()
+
+    if show_all_plots:
+        show_plot_locations([trace1, trace2])
+        scatter_detection([trace1, trace2], subtitle=False)
+
+    if not silent:
+        print("trace1.frame_range", list(trace1.frame_range))
+        print("trace2.frame_range", list(trace2.frame_range))
+
+    overlapping_range = get_overlap(trace1.frame_range, trace2.frame_range)
+    # x = range(overlapping_range[0], overlapping_range[1] + 1)
+    x = []
+    if not silent:
+        print("overlapping_range", overlapping_range)
+
+    if overlapping_range is False:
+        if not silent:
+            # print(colored(f"There is no overlap of trace {trace1.trace_id} and trace {trace2.trace_id}"))
+            print(colored(f"There is no overlap of trace {trace1_index} and trace {trace2_index}"))
+        return None
+
+    if not allow_inside:
+        if range_len(overlapping_range) >= range_len(trace1.frame_range):
+            raise NotImplemented("Cannot merge nested ranges!")
+        if range_len(overlapping_range) >= range_len(trace2.frame_range):
+            raise NotImplemented("Cannot merge nested ranges!")
+
+    start_index1 = trace1.frames_list.index(overlapping_range[0])
+    end_index1 = trace1.frames_list.index(overlapping_range[1])
+    start_index2 = trace2.frames_list.index(overlapping_range[0])
+    end_index2 = trace2.frames_list.index(overlapping_range[1])
+    if debug:
+        print("start_index1", start_index1)
+        print("end_index1", end_index1)
+        print("start_index2", start_index2)
+        print("end_index2", end_index2)
+        print()
+    if debug:
+        print("Showing the overlap frame by frame:")
+    inter_index = 0
+    distances = []
+    first_trace_overlapping_frames = []
+    for index in range(start_index1, end_index1+1):
+        if debug:
+            print(f"frame n. {trace1.frames_list[index]}")
+        first_trace_overlapping_frames.append(index)
+        if debug:
+            print("index1", index)
+        try:
+            index2 = range(start_index2, end_index2+1)[inter_index]
+        except IndexError as err:
+            # item = trace1.frames_list[start_index1]
+            # for item2 in trace1.frames_list[start_index1+1: end_index1]:
+            #     if item2 - item != 1:
+            #         print(item)
+            #         print(item2)
+            #         raise Exception("Dave!")
+            #     item = item2
+            # item = trace2.frames_list[start_index1]
+            # for item2 in trace2.frames_list[start_index2 + 1: end_index2]:
+            #     if item2 - item != 1:
+            #         raise Exception("Dave!")
+            #     item = item2
+            print("start_index1", start_index1)
+            print("end_index1", end_index1)
+            print("start_index2", start_index2)
+            print("end_index2", end_index2)
+            print("inter_index", inter_index)
+            print(str(trace2))
+            raise err
+        if debug:
+            print("index2", index2)
+        inter_index = inter_index + 1
+        position1 = trace1.locations[index]
+        position2 = trace2.locations[index2]
+        if debug:
+            print("position1", position1)
+            print("position2", position2)
+        distance = math.dist(position1, position2)
+        if debug:
+            print("distance of the positions", distance)
+            print()
+        distances.append(distance)
+        x.append(trace1.frames_list[index])
+
+    if show:
+        show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index2, silent=silent, debug=debug)
+
+    if debug:
+        print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    if not silent:
+        print(colored(f"The overlap of the traces is {end_index2 - start_index2 + 1} frames long and its TOTAL distance is {round(sum(distances), 3)} point wise.", "yellow"))
+
+    return distances
+
+
+## TODO maybe merge with compare_two_traces
+def compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=10, allow_inside=False, silent=False, debug=False, show_all_plots=False):
+    """ Compares two traces with a shift.
+
+    :arg trace1: (Trace): first trace to be compared
+    :arg trace2: (Trace): second trace to be compared
+    :arg trace1_index: (int): auxiliary information of index in list of traces of the first trace
+    :arg trace2_index: (int): auxiliary information of index in list of traces of the second trace
+    :arg shift_up_to: (int): maximal shift value
+    :arg allow_inside: (bool): whether to compare nested traces
+    :arg silent: (bool): if True minimal output is shown
+    :arg debug: (bool): if True extensive output is shown
+    :arg show_all_plots: (bool or None): if True show all the plots
+    """
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+
+    if show_all_plots is None:
+        show_all_plots = False
+        show = False
+    else:
+        show = True
+
+    if not silent:
+        print(colored(f"COMPARE TWO TRACES WITH SHIFT - {trace1_index}({trace1.trace_id}),{trace2_index}({trace2.trace_id})", "blue"))
+    start_time = time()
+
+    if show_all_plots:
+        show_plot_locations([trace1, trace2])
+        scatter_detection([trace1, trace2], subtitle=False)
+
+    if not silent:
+        print("trace1.frame_range", list(trace1.frame_range))
+        print("trace2.frame_range", list(trace2.frame_range))
+
+    overlapping_range = get_overlap(trace1.frame_range, trace2.frame_range)
+
+    if not silent:
+        print("overlapping_range", overlapping_range)
+
+    if overlapping_range is False:
+        if not silent:
+            # print(colored(f"There is no overlap of trace {trace1.trace_id} and trace {trace2.trace_id}"))
+            print(colored(f"There is no overlap of trace {trace1_index} and trace {trace2_index}"))
+        return None
+
+    if not allow_inside:
+        if range_len(overlapping_range) >= range_len(trace1.frame_range):
+            raise NotImplemented("Cannot merge nested ranges!")
+        if range_len(overlapping_range) >= range_len(trace2.frame_range):
+            raise NotImplemented("Cannot merge nested ranges!")
+
+    start_index1 = trace1.frames_list.index(overlapping_range[0])
+    end_index1 = trace1.frames_list.index(overlapping_range[1])
+    start_index2 = trace2.frames_list.index(overlapping_range[0])
+    end_index2 = trace2.frames_list.index(overlapping_range[1])
+    if debug:
+        print("start_index1", start_index1)
+        print("end_index1", end_index1)
+        print("start_index2", start_index2)
+        print("end_index2", end_index2)
+        print()
+    if debug:
+        print("Showing the overlap frame by frame:")
+
+    distances = []
+    first_trace_overlapping_frames = []
+    for shift in range(0, shift_up_to):
+        # Check whether the shift is within the ranges of the trace1
+        if shift > 0 and None in distances[-1]:
+            break
+
+        inter_index = 0
+        # x = range(overlapping_range[0], overlapping_range[1] + 1)
+        x = []
+        distances.append([])
+        for index in range(start_index1, end_index1+1):
+            if debug:
+                print(f"trace 1 frame n. {trace1.frames_list[index-shift]}")
+                print(f"trace 2 frame n. {trace1.frames_list[index]}")
+            first_trace_overlapping_frames.append(index)
+            if debug:
+                print("index1", index)
+            try:
+                index2 = range(start_index2, end_index2+1)[inter_index]
+            except IndexError as err:
+                print("start_index1", start_index1)
+                print("end_index1", end_index1)
+                print("start_index2", start_index2)
+                print("end_index2", end_index2)
+                print("inter_index", inter_index)
+                print(str(trace2))
+                raise err
+            if debug:
+                print("index2", index2)
+            inter_index = inter_index + 1
+            try:
+                assert index - shift >= 0
+                position1 = trace1.locations[index - shift]
+                position2 = trace2.locations[index2]
+                if debug:
+                    print("shift", shift)
+                    print("position1", position1)
+                    print("position2", position2)
+                    print()
+                distance = math.dist(position1, position2)
+            except AssertionError:
+                distance = None
+
+            if debug:
+                print("distance of the positions", distance)
+                print()
+            distances[shift].append(distance)
+            x.append(trace1.frames_list[index])
+            if distance is None:
+                break
+
+        if show:
+            show_overlap_distances(x, trace1, trace2, distances, start_index1, end_index2, silent=silent, debug=debug)
+
+    min_dist_shift = 0
+    min_dist = sum(distances[0])/len(distances[0])
+    for shift_index, distancess in enumerate(distances):
+        if None in distancess:
+            pass
+        else:
+            curr_dist = sum(distances[shift_index])/len(distances[shift_index])
+            if curr_dist < min_dist:
+                min_dist_shift = shift_index
+                min_dist = curr_dist
+
+    if debug:
+        print(colored(f"Comparing two traces done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
+    if not silent:
+        print(colored(f"The overlap of the traces is {end_index2 - start_index2 + 1} frames long and its TOTAL distance is {round(sum(distances[0]), 3)} point wise.", "yellow"))
+
+    return distances[0], distances[min_dist_shift], min_dist_shift
 
 
 def partition_frame_range_by_number_of_traces(traces):
@@ -103,77 +368,6 @@ def reverse_partition_frame_range_by_number_of_traces(traces_or_interval_to_coun
 
     # print(count_to_intervals)
     return traces_count_to_intervals
-
-
-def get_traces_from_range(traces, interval, fully_inside=False, strict=True):
-    """ Returns the traces, indices with frame range in given range
-
-    :arg traces: (list): a list of Traces
-    :arg interval: (tuple): range to pick traces
-    :arg fully_inside: (bool): get only traces in the interval (with whole range)
-    :arg strict: (bool): whether single point overlaps are excluded
-    :return: list of traces in the given range
-    """
-    traces_in_range = []
-    trace_indices_in_range = []
-    for index, trace in enumerate(traces):
-        assert isinstance(trace, Trace)
-        if fully_inside:
-            if is_in(trace.frame_range, interval):
-                traces_in_range.append(trace)
-                trace_indices_in_range.append(index)
-        else:
-            if has_dot_overlap(trace.frame_range, interval, strict):
-                traces_in_range.append(trace)
-                trace_indices_in_range.append(index)
-
-    return traces_in_range, trace_indices_in_range
-
-
-def get_gaps_of_traces(traces, get_all_gaps=False, debug=False):
-    # TODO make tests
-    """ Returns a dictionary of pairs of traces indices -> range of their gap.
-    Including only gaps which do not contain a whole traces - hence only shortest gaps.
-
-    :arg traces: (list): a list of Traces
-    :arg get_all_gaps: (bool) if True returns all gaps
-    :arg debug: (bool): if True extensive output is shown
-    :return: dictionary of pairs of traces indices -> range of their gap.
-    """
-    pairs_of_gaps = {}
-    for index1, trace1 in enumerate(traces):
-        for index2, trace2 in enumerate(traces):
-            if index1 < index2:
-                assert isinstance(trace1, Trace)
-                assert isinstance(trace2, Trace)
-                # print("    index1", index1, trace1.frame_range)
-                # print("    index2", index2, trace2.frame_range)
-                a = get_gap(trace1.frame_range, trace2.frame_range)
-                # print("    gap", a)
-                if a is not False:
-                    pairs_of_gaps[(index1, index2)] = a
-
-    if debug:
-        print("pairs_of_gaps", pairs_of_gaps)
-    pairs_to_delete = []
-
-    for pair in pairs_of_gaps.keys():
-        for index, trace in enumerate(traces):
-            if index in pair:
-                continue
-            if get_all_gaps:
-                if is_in(trace.frame_range, pairs_of_gaps[pair]):
-                    pairs_to_delete.append(pair)
-                    break
-            else:
-                if has_overlap(trace.frame_range, pairs_of_gaps[pair]):
-                    pairs_to_delete.append(pair)
-                    break
-
-    for pair in pairs_to_delete:
-        del pairs_of_gaps[pair]
-
-    return pairs_of_gaps
 
 
 def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=False):
@@ -285,8 +479,123 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
     return trace1
 
 
-def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, trace2_index,  silent=False, debug=False):
-    # TODO make tests
+def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, trace1_index, trace2_index, overlap_range,
+                                          shift=False, show=False, silent=False, debug=False, input_video=False, video_params=False):
+    """ Check whether to merge given two overlapping traces or not.
+
+    :arg traces: (list): list of traces
+    :arg trace1: (Trace): a Trace to be merged with the following trace
+    :arg trace2: (Trace): a Trace to be merged with the following trace
+    :arg trace1_index: (int): auxiliary information of index in list of traces of the first trace
+    :arg trace2_index: (int): auxiliary information of index in list of traces of the second
+    :arg overlap_range: (pair of ints): range of the overlap
+    :arg shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
+    :arg show: (bool): flag whether to show the plots and video of the overlap
+    :arg silent: (bool): if True minimal output is shown
+    :arg debug: (bool): if True extensive output is shown
+    :arg input_video: (str or bool): if set, path to the input video
+    :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+    :returns: to _merge: (bool): flag whether to merge the traces or not
+    """
+
+    if is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range):
+        if debug:
+            print(colored(f"Traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}) are inside one another. NOT MERGING.", "yellow"))
+        return None, None
+
+    # Check the distances of overlap for a big difference
+    if shift is False:
+        distances = compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug, show_all_plots=show)
+        shift = None
+    else:
+        distances, shifted_distances, shift = compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=shift, silent=silent, debug=debug, show_all_plots=show)
+
+    # if sum(distances) > sum(shifted_distances):
+    #     with open("../auxiliary/by_partition/shifted_traces_with_lower_distance_only_proportions.txt", "a") as file:
+    #         file.write(f"{sum(distances) / sum(shifted_distances)},\n")
+    #
+    # if sum(distances) > sum(shifted_distances)*25:
+    #     with open("../auxiliary/by_partition/shifted_traces_with_lower_distance_only_proportions_bigger_than25.txt", "a") as file:
+    #         file.write(f"{sum(distances) / sum(shifted_distances)},\n")
+    #
+    # if sum(distances) > sum(shifted_distances) * 10:
+    #     # save record
+    #     with open("../auxiliary/by_partition/shifted_traces_with_lower_distance_ten_times.txt", "a") as file:
+    #         file.write(f"{analyse.get_curr_csv_file_path()}; {overlap_range}; {distances}; {shifted_distances}; {shift}; {sum(distances) / sum(shifted_distances)} \n")
+
+    if show:
+        # show video
+        # pick traces to show
+        traces_to_show = get_traces_from_range(traces, margin_range(overlap_range, 15))[0]
+        for index, trace in enumerate(traces_to_show):
+            if trace.trace_id == trace1.trace_id:
+                del traces_to_show[index]
+            if trace.trace_id == trace2.trace_id:
+                del traces_to_show[index]
+        traces_to_show = [trace1, trace2, *traces_to_show]
+
+        show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 15),
+                   video_speed=0.03, wait=True, video_params=video_params)
+
+    maximal_dist_check = all(list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), distances)))
+    minimal_dist_check = any(list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces(), distances)))
+
+    if maximal_dist_check and minimal_dist_check:
+        if debug:
+            print(colored(f"Will merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "blue"))
+
+            # TODO get this when checking the distances
+            print()
+            print(colored(f"len distances {len(distances)}", "blue"))
+            print(colored(f"distances {distances}", "blue"))
+            print(colored(f"max distance {max(distances)}", "blue"))
+            print(colored(f"min distance {min(distances)}", "blue"))
+
+        return True, shift
+    else:
+        if debug:
+            # print(colored(f"Will NOT merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "yellow"))
+
+            if minimal_dist_check and not maximal_dist_check:
+                reason = f"single huge point distance ({round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()})"
+            elif maximal_dist_check and not minimal_dist_check:
+                reason = f"all big point distance ({round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
+            else:
+                reason = f"both, single huge point distance and all big point distance ({round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()} & {round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
+
+            print(colored(f"NOT MERGING THE OVERLAPPING TRACES as {reason}", "yellow"))
+            print()
+
+        return False, None
+
+
+def merge_multiple_pairs_of_overlapping_traces(traces, pairs_of_traces_indices, silent=False, debug=False):
+    indices_to_delete = []
+    pairs_of_traces_indices = list(set(pairs_of_traces_indices))
+
+    for index, pair in enumerate(pairs_of_traces_indices):
+        trace1_index = pair[0]
+        trace2_index = pair[1]
+        trace1 = traces[pair[0]]
+        trace2 = traces[pair[1]]
+
+        merge_two_overlapping_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug)
+        indices_to_delete.append(trace2_index)
+
+        # Change the indices of the deleted trace
+        for index2, pair2 in enumerate(pairs_of_traces_indices):
+            if pair2[0] == trace2_index:
+                pairs_of_traces_indices[index2] = (trace1_index, pair2[1])
+            if pair2[1] == trace2_index:
+                pairs_of_traces_indices[index2] = (pair2[0], trace1_index)
+
+    ## DELETE THE MERGED TRACES:
+    for index in list(reversed(sorted(indices_to_delete))):
+        delete_indices([index], traces)
+
+
+# TODO make tests
+def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, trace2_index, silent=False, debug=False):
     """ Puts two overlapping traces together.
 
     :arg trace1: (Trace): a Trace to be merged with the following trace
@@ -314,15 +623,19 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
             print("overlap", overlap)
 
     # Decide whether to keep overlap of trace1 or trace2
-    index1_overlap_start = trace1.frames_list.index(overlap[0])
-    index2_overlap_end = trace2.frames_list.index(overlap[1])
+    index1_overlap_start = trace1.get_frame_list().index(overlap[0])
+    index2_overlap_end = trace2.get_frame_list().index(overlap[1])
 
     if debug:
         print("index1_overlap_start", index1_overlap_start)
         print("index2_overlap_end", index2_overlap_end)
 
     dist1 = math.dist(trace1.locations[index1_overlap_start - 1], trace2.locations[0])
-    dist2 = math.dist(trace1.locations[-1], trace2.locations[index2_overlap_end + 1])
+
+    try:
+        dist2 = math.dist(trace1.locations[-1], trace2.locations[index2_overlap_end + 1])
+    except IndexError:
+        pass
 
     if debug:
         print("dist1", dist1)

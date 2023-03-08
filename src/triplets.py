@@ -5,11 +5,10 @@ from operator import countOf
 
 from fake import get_whole_frame_range
 from config import *
-from cross_traces import compare_two_traces
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, flatten, margin_range
 from trace import Trace
 
-from traces_logic import merge_two_overlapping_traces, ask_to_delete_a_trace
+from traces_logic import merge_two_overlapping_traces, ask_to_delete_a_trace, compare_two_traces
 from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlaps
 

@@ -7,7 +7,7 @@ from matplotlib.ticker import MaxNLocator
 
 from fake import get_whole_frame_range
 from trace import Trace
-from traces_logic import get_gaps_of_traces, get_traces_from_range
+from primal_traces_logic import get_gaps_of_traces, get_traces_from_range
 from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
 
 

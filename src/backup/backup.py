@@ -5,8 +5,8 @@ from termcolor import colored
 
 from misc import dictionary_of_m_overlaps_of_n_intervals, get_index_of_shortest_range, is_in, delete_indices
 from trace import Trace
-from traces_logic import partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, \
-    get_traces_from_range
+from primal_traces_logic import get_traces_from_range
+from traces_logic import partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces
 
 
 def trim_out_additional_agents_over_long_traces_by_partition(traces, population_size, silent=False, debug=False):
@@ -203,7 +203,7 @@ def trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictio
 
     if debug:
         print(colored(f" Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
-    traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
+    delete_indices(indices_of_intervals_to_be_deleted, traces)
     if debug:
         print(colored(f" keys_to_be_deleted: {keys_to_be_deleted}", "red"))
     for key in keys_to_be_deleted:
@@ -262,7 +262,7 @@ def trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictio
 #
 #     if debug:
 #         print(colored(f"Indices_of_intervals_to_be_deleted: {indices_of_intervals_to_be_deleted}", "red"))
-#     traces = delete_indices(indices_of_intervals_to_be_deleted, traces)
+#     delete_indices(indices_of_intervals_to_be_deleted, traces)
 #
 #     return traces
 

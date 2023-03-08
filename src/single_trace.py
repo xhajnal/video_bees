@@ -1,4 +1,3 @@
-import copy
 import csv
 import math
 from time import time
@@ -8,7 +7,7 @@ from termcolor import colored
 
 from fake import get_real_whole_frame_range, get_whole_frame_range
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
-from misc import delete_indices, has_overlap, has_strict_overlap
+from misc import delete_indices, has_strict_overlap
 from trace import Trace
 from traces_logic import compute_arena, compute_whole_frame_range
 
@@ -108,7 +107,7 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
         #     del removed_short_traces[index]
 
     # Actually delete the races
-    traces = delete_indices(traces_with_zero_len_in_xy + removed_short_traces_indices, traces)
+    delete_indices(traces_with_zero_len_in_xy + removed_short_traces_indices, traces)
 
     print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))

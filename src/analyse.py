@@ -3,9 +3,8 @@ from time import time
 from _socket import gethostname
 from termcolor import colored
 
-from backup.backup import trim_out_additional_agents_over_long_traces_with_dict
-from cross_traces import get_all_overlaps_count, get_all_seen_overlaps_deleted, get_all_allowed_overlaps_count, \
-    trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
+from counts import *
+from cross_traces import trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
     merge_alone_overlapping_traces_by_partition
 from guided_traces import full_guided
 from video import annotate_video, parse_video_info, show_video
@@ -385,7 +384,26 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # run until no traces are merged
         before_before_number_of_traces = len(traces)
         after_after_number_of_traces = -9
+
+        # Counting part
         do_count = True
+        # filename = "../auxiliary/by_partition/all_overlaps_count_only_minimal.txt"
+        # cumulative_filename = "../auxiliary/by_partition/cumulative_all_overlaps_count_only_minimal.txt"
+
+        filename = "../auxiliary/by_build/both_and/no_shift/all_overlaps_count.txt"
+        cumulative_filename = "../auxiliary/by_build/both_and/no_shift/cumulative_all_overlaps_count.txt"
+
+        # filename = "../auxiliary/by_build/cumulative_all_overlaps_count_only_maximal.txt"
+        # cumulative_filename = "../auxiliary/by_build/cumulative_all_overlaps_count_only_maximal.txt"
+
+        # filename = "../auxiliary/all_overlaps_count_both_and.txt"
+        # cumulative_filename = "../auxiliary/cumulative_all_overlaps_count_both_and.txt"
+
+        # filename = "../auxiliary/all_overlaps_count_both_or.txt"
+        # cumulative_filename = "../auxiliary/cumulative_all_overlaps_count_both_or.txt"
+
+        # with open(filename, "a") as file:
+        #     file.write(f"{csv_file_path} all_overlaps_count; get_all_seen_overlaps; all_allowed_overlaps_count; all_seen_overlaps_deleted\n")
 
         while before_before_number_of_traces != after_after_number_of_traces:
             before_before_number_of_traces = len(traces)
@@ -394,17 +412,21 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             after_number_of_traces = -9
             while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
                 before_number_of_traces = len(traces)
-                trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, silent=silent, debug=debug)
+                # trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, input_video=video_file, silent=silent, debug=debug, video_params=video_params, do_count=do_count)
 
-                # merge_alone_overlapping_traces(traces, population_size, allow_force_merge=allow_force_merge, guided=guided,
-                #                                input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                #                                video_params=video_params, do_count=do_count)
+                merge_alone_overlapping_traces(traces, alone=False, allow_force_merge=allow_force_merge, guided=guided,
+                                               input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
+                                               video_params=video_params, do_count=do_count)
 
                 if do_count:
-                    with open("../auxiliary/by_partition/cumulative_all_overlaps_count_only_minimal.txt", "a") as file:
-                    # with open("../auxiliary/cumulative_all_overlaps_count_only_maximal.txt", "a") as file:
-                    # with open("../auxiliary/cumulative_all_overlaps_count_both_and.txt", "a") as file:
-                        file.write(f"{get_all_overlaps_count()}, {get_all_allowed_overlaps_count()}, {get_all_seen_overlaps_deleted()}\n")
+                    with open(filename, "a") as file:
+                        file.write(f"{get_all_overlaps_count()}; {get_all_seen_overlaps()}; {get_all_allowed_overlaps_count()}; {get_all_seen_overlaps_deleted()}; {before_number_of_traces} -> {len(traces)}\n")
+                    set_cumulative_all_overlaps_count(get_cumulative_all_overlaps_count() + get_all_overlaps_count())
+                    set_cumulative_all_seen_overlaps(get_cumulative_all_seen_overlaps() + get_all_seen_overlaps())
+                    set_cumulative_all_allowed_overlaps_count(get_cumulative_all_allowed_overlaps_count() + get_all_allowed_overlaps_count())
+                    set_cumulative_all_seen_overlaps_deleted(get_cumulative_all_seen_overlaps_deleted() + get_all_seen_overlaps_deleted())
+                    with open(cumulative_filename, "a") as file:
+                        file.write(f"{get_cumulative_all_overlaps_count()}; {get_cumulative_all_seen_overlaps()}; {get_cumulative_all_allowed_overlaps_count()}; {get_cumulative_all_seen_overlaps_deleted()}\n")
                 do_count = False
                 after_number_of_traces = len(traces)
 

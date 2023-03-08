@@ -5,14 +5,16 @@ import matplotlib.pyplot as plt
 import analyse
 from cross_traces import track_swapping_loop, \
     trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
-    merge_alone_overlapping_traces_by_partition, compare_two_traces, compare_two_traces_with_shift
+    merge_alone_overlapping_traces_by_partition, merge_alone_overlapping_traces
 from backup.backup import trim_out_additional_agents_over_long_traces_by_partition, \
     trim_out_additional_agents_over_long_traces_with_dict
 from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
+from primal_traces_logic import get_traces_from_range
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range, \
-    partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, get_traces_from_range
+    partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, compare_two_traces, \
+    compare_two_traces_with_shift, merge_multiple_pairs_of_overlapping_traces, check_to_merge_two_overlapping_traces
 from misc import *
 from visualise import scatter_detection
 
@@ -468,6 +470,77 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(removed_traces[1].trace_id, 1)
 
     ## TRACES LOGIC TESTS
+    def test_dictionary_of_m_overlaps_of_n_intervals(self):
+        with open('../test/test.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        spam = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), strict=True, skip_whole_in=True)
+        print(spam)
+
+    def test_merge_multiple_traces(self):
+        ## RAISE EXCEPTION
+        with open('../test/test3.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 10)
+        with self.assertRaises(Exception) as context:
+            merge_multiple_pairs_of_overlapping_traces(traces, [(1, 7)], silent=False, debug=True)
+        self.assertEqual(len(traces), 10)
+
+        ## NO MERGE
+        with open('../test/test3.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 10)
+        merge_multiple_pairs_of_overlapping_traces(traces, [], silent=False, debug=True)
+        self.assertEqual(len(traces), 10)
+
+        ## 2 MERGES
+        with open('../test/test3.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 10)
+        merge_multiple_pairs_of_overlapping_traces(traces, [(1, 2), (2, 3)], silent=False, debug=True)
+        self.assertEqual(len(traces), 8)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 4, 5, 6, 7, 8, 9])
+
+
+        with open('../test/test3.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 10)
+        merge_multiple_pairs_of_overlapping_traces(traces, [(2, 3), (1, 2)], silent=False, debug=True)
+        self.assertEqual(len(traces), 8)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 4, 5, 6, 7, 8, 9])
+
+
+        ## 6 MERGES
+        with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 10)
+        merge_multiple_pairs_of_overlapping_traces(traces, [(2, 3), (1, 2), (5, 6), (8, 9)], silent=False, debug=True)
+        self.assertEqual(len(traces), 6)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 4, 5, 7, 8])
+
     def testCompareTraces(self):
         ## NO PAIR
         with open('../test/test_b.csv', newline='') as csv_file:
@@ -547,6 +620,44 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(partition_frame_range_by_number_of_traces(traces), {(0, 1): 0, (1, 2): 2, (2, 3): 3, (3, 4): 2, (4, 5): 1, (5, 6): 2, (6, 7): 1, (7, 8): 2, (8, 9): 2, (9, 10): 3, (10, 11): 3, (11, 12): 2, (12, 13): 3, (13, 14): 2, (14, 15): 1})
 
     ## MULTIPLE TRACES TESTS
+    def test_check_to_merge_two_overlapping_traces(self):
+        with open('../test/test3.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        with open('../test/test3.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        ## MERGES
+        self.assertEqual(check_to_merge_two_overlapping_traces(traces, traces[0], traces[1], 0, 1, [1,2],
+                                                               shift=False, show=False, silent=False, debug=False,
+                                                               input_video=False, video_params=False), (True, None))
+        ## No MERGES, inside one another
+        self.assertEqual(check_to_merge_two_overlapping_traces(traces, traces[2], traces[3], 2, 3, [2, 4],
+                                                               shift=False, show=False, silent=False, debug=False,
+                                                               input_video=False, video_params=False), (None, None))
+
+        ## Exception, premise not holding - not overlapping traces
+        with self.assertRaises(Exception) as context:
+            check_to_merge_two_overlapping_traces(traces, traces[2], traces[9], 2, 9, [2, 4], shift=False, show=False,
+                                                  silent=False, debug=False, input_video=False, video_params=False)
+
+        ## No MERGES, too far
+        with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(check_to_merge_two_overlapping_traces(traces, traces[0], traces[1], 0, 1, [1, 2],
+                                                               shift=False, show=False, silent=False, debug=False,
+                                                               input_video=False, video_params=False), (False, None))
+
     def testTrimOut(self):
         with open('../test/test2.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
@@ -580,7 +691,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(traces), 2)
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
-    def testAloneOverlap(self):
+    def testAloneOverlap_by_partition(self):
         ## NO PAIR
         with open('../test/test.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
@@ -626,6 +737,54 @@ class MyTestCase(unittest.TestCase):
         merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
         self.assertEqual(len(traces), 7)
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3, 5, 6, 7])
+
+
+    def testAloneOverlap_by_build(self):
+        # ## NO PAIR
+        # with open('../test/test.csv', newline='') as csv_file:
+        #     scraped_traces = parse_traces(csv_file)
+        # traces = []
+        # for index, trace in enumerate(scraped_traces.keys()):
+        #     traces.append(Trace(scraped_traces[trace], index))
+        #
+        # self.assertEqual(len(traces), 8)
+        # merge_alone_overlapping_traces(traces, silent=False, debug=True)
+        # self.assertEqual(len(traces), 8)
+        #
+        # ## NO MERGE
+        # with open('../test/test2.csv', newline='') as csv_file:
+        #     scraped_traces = parse_traces(csv_file)
+        # traces = []
+        # for index, trace in enumerate(scraped_traces.keys()):
+        #     traces.append(Trace(scraped_traces[trace], index))
+        #
+        # self.assertEqual(len(traces), 4)
+        # merge_alone_overlapping_traces(traces, silent=False, debug=True)
+        # self.assertEqual(len(traces), 4)
+        #
+        # ## 6/6 MERGES
+        # with open('../test/test3.csv', newline='') as csv_file:
+        #     scraped_traces = parse_traces(csv_file)
+        # traces = []
+        # for index, trace in enumerate(scraped_traces.keys()):
+        #     traces.append(Trace(scraped_traces[trace], index))
+        #
+        # self.assertEqual(len(traces), 10)
+        # merge_alone_overlapping_traces(traces, silent=False, debug=True)
+        # self.assertEqual(len(traces), 5)
+        # self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 6, 7, 8, 9])
+
+        ## 3/6 MERGES
+        with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 10)
+        merge_alone_overlapping_traces(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 9)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3, 5, 6, 7, 8, 9])
 
     def testCheckTraces(self):
         with open('../test/test.csv', newline='') as csv_file:
