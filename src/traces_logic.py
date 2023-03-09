@@ -19,7 +19,7 @@ from visualise import show_overlap_distances, show_plot_locations, scatter_detec
 
 
 # TODO add tests
-def compare_two_traces(trace1, trace2, trace1_index, trace2_index, allow_inside=False, silent=False, debug=False, show_all_plots=False):
+def compare_two_traces(trace1, trace2, trace1_index, trace2_index, allow_inside=False, silent=False, debug=False, show_all_plots=None):
     """ Compares two traces.
 
     :arg trace1: (Trace): first trace to be compared
@@ -139,7 +139,7 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, allow_inside=
 
 
 ## TODO maybe merge with compare_two_traces
-def compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=10, allow_inside=False, silent=False, debug=False, show_all_plots=False):
+def compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=10, allow_inside=False, silent=False, debug=False, show_all_plots=None):
     """ Compares two traces with a shift.
 
     :arg trace1: (Trace): first trace to be compared
@@ -505,10 +505,10 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
 
     # Check the distances of overlap for a big difference
     if shift is False:
-        distances = compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug, show_all_plots=show)
+        distances = compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug, show_all_plots=None)
         shift = None
     else:
-        distances, shifted_distances, shift = compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=shift, silent=silent, debug=debug, show_all_plots=show)
+        distances, shifted_distances, shift = compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=shift, silent=silent, debug=debug, show_all_plots=None)
 
     # if sum(distances) > sum(shifted_distances):
     #     with open("../auxiliary/by_partition/shifted_traces_with_lower_distance_only_proportions.txt", "a") as file:
