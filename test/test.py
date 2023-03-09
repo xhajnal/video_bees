@@ -697,6 +697,30 @@ class MyTestCase(unittest.TestCase):
         merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
         self.assertEqual(len(traces), 8)
 
+        ## NO OVERLAP
+        with open('../test/test_4overlap.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 4)
+        merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 4)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
+
+        ## NO OVERLAP
+        with open('../test/test_4overlap_in_single_frame.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 4)
+        merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 4)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
+
         ## NO MERGE
         with open('../test/test2.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
@@ -745,6 +769,30 @@ class MyTestCase(unittest.TestCase):
         merge_alone_overlapping_traces(traces, silent=False, debug=True)
         self.assertEqual(len(traces), 8)
 
+        ## NO OVERLAP
+        with open('../test/test_4overlap.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 4)
+        merge_alone_overlapping_traces(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 4)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
+
+        ## NO OVERLAP
+        with open('../test/test_4overlap_in_single_frame.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 4)
+        merge_alone_overlapping_traces(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 4)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
+
         ## NO MERGE
         with open('../test/test2.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
@@ -791,6 +839,30 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(traces), 8)
         merge_overlapping_traces_brutto(traces, silent=False, debug=True)
         self.assertEqual(len(traces), 8)
+
+        ## NO OVERLAP
+        with open('../test/test_4overlap.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 4)
+        merge_overlapping_traces_brutto(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 4)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
+
+        ## NO OVERLAP
+        with open('../test/test_4overlap_in_single_frame.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+        traces = []
+        for index, trace in enumerate(scraped_traces.keys()):
+            traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(len(traces), 4)
+        merge_overlapping_traces_brutto(traces, silent=False, debug=True)
+        self.assertEqual(len(traces), 4)
+        self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
 
         ## NO MERGE
         with open('../test/test2.csv', newline='') as csv_file:

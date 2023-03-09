@@ -916,12 +916,14 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
             return
     # Find all overlapping pairs
     dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), strict=True, skip_whole_in=True)
+    if debug:
+        print("dictionary", dictionary)
 
     ## Count the overlapping pairs
     if do_count:
         set_all_overlaps_count(len(list(dictionary.keys())))
 
-    # print("dictionary", dictionary)
+
     if dictionary == {}:
         print(colored("Cannot merge any trace as there is no partial overlap of two traces.", "yellow"))
         print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
@@ -992,6 +994,8 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
                     {traces[pair[0]], traces[pair[1]], traces[complementary_pair[0]], traces[complementary_pair[1]]}))), strict=True, skip_whole_in=True):
                 pairs_to_skip.add(pair)
                 pairs_to_skip.add(complementary_pair)
+                if debug:
+                    print(f"getting rid of these pairs: {pair}, {complementary_pair}")
             # if complementary_pair[0] in pair:
             #     if pair[0] == complementary_pair[0]:
             #         # ca cb
@@ -1021,6 +1025,8 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
     
     # Get rid of the overlapping triplets
     merge_cut_pairs = list(filter(lambda x: x not in pairs_to_skip, merge_pairs))
+    if debug:
+        print(f"getting rid of these pairs: {pairs_to_skip}")
     # Actually merge the pure pairs
     merge_multiple_pairs_of_overlapping_traces(traces, merge_cut_pairs, silent=silent, debug=debug)
 
