@@ -23,7 +23,7 @@ def write_dave(is_first_run=False):
             print(f"# ############################################# {population_size} BEES #######################################################")
         for folder in a:
             print(f"# ## {folder}")
-            for file in glob(f"{path}/{folder}/*_{population_size}BEE*_nn.csv", recursive=False):
+            for file in glob(f"{path}/{folder}/*_{population_size}[B|b][E|e][E|e]*_nn.csv", recursive=False):
 
                 if "part" in file:
                     continue
