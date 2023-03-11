@@ -611,18 +611,18 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
     ids_of_traces_to_be_merged = []
 
     if do_count:
-        set_all_seen_overlaps(0)
-        set_all_allowed_overlaps_count(0)
-        set_all_seen_overlaps_deleted(0)
+        set_single_run_seen_overlaps(0)
+        set_single_run_allowed_overlaps_count(0)
+        set_single_run_seen_overlaps_deleted(0)
 
     # Compute frame range partition by number of traces for each segment
     interval_to_traces_count = partition_frame_range_by_number_of_traces(traces)
     traces_count_to_intervals = reverse_partition_frame_range_by_number_of_traces(interval_to_traces_count)
 
     try:
-        set_all_seen_overlaps(len(traces_count_to_intervals[2]))
+        set_single_run_seen_overlaps(len(traces_count_to_intervals[2]))
     except KeyError:
-        set_all_seen_overlaps(0)
+        set_single_run_seen_overlaps(0)
 
     try:
         intervals = copy(traces_count_to_intervals[2])
@@ -671,7 +671,7 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
                                                                     debug=debug, input_video=input_video, video_params=video_params)
 
         if to_merge is None:
-            set_all_seen_overlaps_deleted(get_all_seen_overlaps_deleted() + 1)
+            set_single_run_seen_overlaps_deleted(get_single_run_seen_overlaps_deleted() + 1)
             continue
         elif to_merge is True:
             pairs_of_traces_indices_to_merge.append((trace1_index, trace2_index))
@@ -680,7 +680,7 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
             pass
 
     # ACTUALLY MERGE THE TRACES
-    set_all_allowed_overlaps_count(len(pairs_of_traces_indices_to_merge))
+    set_single_run_allowed_overlaps_count(len(pairs_of_traces_indices_to_merge))
     merge_multiple_pairs_of_overlapping_traces(traces, pairs_of_traces_indices_to_merge, silent=silent, debug=debug)
 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
@@ -720,10 +720,10 @@ def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False,
     # Do the counting
     seen_pairs = set()
     if do_count:
-        set_all_overlaps_count(0)
-        set_all_seen_overlaps(0)
-        set_all_allowed_overlaps_count(0)
-        set_all_seen_overlaps_deleted(0)
+        set_single_run_overlaps_count(0)
+        set_single_run_seen_overlaps(0)
+        set_single_run_allowed_overlaps_count(0)
+        set_single_run_seen_overlaps_deleted(0)
 
     # Go while there is what to merge
     while len(count_one) >= 1 or number_of_traces != len(traces):
@@ -741,7 +741,7 @@ def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False,
 
         ## Count the overlapping pairs
         if do_count:
-            set_all_overlaps_count(len(list(dictionary.keys())))
+            set_single_run_overlaps_count(len(list(dictionary.keys())))
 
         # print("dictionary", dictionary)
         if dictionary == {}:
@@ -843,7 +843,7 @@ def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False,
                 merge_two_overlapping_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug)
 
                 # Count this
-                set_all_allowed_overlaps_count(get_all_allowed_overlaps_count() + 1)
+                set_single_run_allowed_overlaps_count(get_single_run_allowed_overlaps_count() + 1)
 
                 # Remove the merged trace
                 if debug:
@@ -868,7 +868,7 @@ def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False,
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
 
-    set_all_seen_overlaps(len(seen_pairs))
+    set_single_run_seen_overlaps(len(seen_pairs))
     return
 
 
@@ -901,10 +901,10 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
     # Do the counting
     seen_pairs = set()
     if do_count:
-        set_all_overlaps_count(0)
-        set_all_seen_overlaps(0)
-        set_all_allowed_overlaps_count(0)
-        set_all_seen_overlaps_deleted(0)
+        set_single_run_overlaps_count(0)
+        set_single_run_seen_overlaps(0)
+        set_single_run_allowed_overlaps_count(0)
+        set_single_run_seen_overlaps_deleted(0)
 
     # Check whether there are at least 2 traces
     if len(traces) <= 1:
@@ -921,7 +921,7 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
 
     ## Count the overlapping pairs
     if do_count:
-        set_all_overlaps_count(len(list(dictionary.keys())))
+        set_single_run_overlaps_count(len(list(dictionary.keys())))
 
 
     if dictionary == {}:
@@ -1031,9 +1031,9 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
     merge_multiple_pairs_of_overlapping_traces(traces, merge_cut_pairs, silent=silent, debug=debug)
 
     # Do the counting
-    set_all_allowed_overlaps_count(len(merge_cut_pairs))
-    set_all_seen_overlaps_deleted(len(merge_pairs) - len(merge_cut_pairs))
-    set_all_seen_overlaps(len(seen_pairs))
+    set_single_run_allowed_overlaps_count(len(merge_cut_pairs))
+    set_single_run_seen_overlaps_deleted(len(merge_pairs) - len(merge_cut_pairs))
+    set_single_run_seen_overlaps(len(seen_pairs))
 
     print(colored(f"brut Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))

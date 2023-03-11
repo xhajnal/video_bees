@@ -387,17 +387,35 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
         # Counting part
         do_count = True
+        reset_this_file_counts()
+
+        single_run_filename = "../auxiliary/by_build/both_and/no_shift/single_run_overlaps_count_1to5.txt"
         filename = "../auxiliary/by_build/both_and/no_shift/all_overlaps_count_1to5.txt"
         cumulative_filename = "../auxiliary/by_build/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
 
-        # filename = "../auxiliary/by_build_brutto/both_and/no_shift/all_overlaps_count_1to5.txt"
-        # cumulative_filename = "../auxiliary/by_build_brutto/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
-        #
+        single_run_filename = "../auxiliary/by_build_brutto/both_and/no_shift/single_run_overlaps_count_1to5.txt"
+        filename = "../auxiliary/by_build_brutto/both_and/no_shift/all_overlaps_count_1to5.txt"
+        cumulative_filename = "../auxiliary/by_build_brutto/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
+
+        # single_run_filename = "../auxiliary/by_partition/both_and/no_shift/single_run_overlaps_count_1to5.txt"
         # filename = "../auxiliary/by_partition/both_and/no_shift/all_overlaps_count_1to5.txt"
         # cumulative_filename = "../auxiliary/by_partition/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
 
+        # single_run_filename = "../auxiliary/mixed/both_and/no_shift/single_run_overlaps_count_1to5.txt"
+        # filename = "../auxiliary/mixed/both_and/no_shift/all_overlaps_count_1to5.txt"
+        # cumulative_filename = "../auxiliary/mixed/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
+
         # with open(filename, "a") as file:
         #     file.write(f"{csv_file_path} all_overlaps_count; get_all_seen_overlaps; all_allowed_overlaps_count; all_seen_overlaps_deleted\n")
+
+        # todo UNCOMMENT THIS AFTER counts done
+        # a, b = merge_alone_overlapping_traces_by_partition(traces, input_video=video_file, silent=silent, debug=debug,
+        #                                                    video_params=video_params, do_count=do_count)
+        # trace_indices_to_merge, ids_of_traces_to_be_merged = a, b
+        # if do_count:
+        #     update_this_file_counts()
+
+        is_first_call = True
 
         while before_before_number_of_traces != after_after_number_of_traces:
             before_before_number_of_traces = len(traces)
@@ -408,33 +426,31 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                 before_number_of_traces = len(traces)
                 # trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, input_video=video_file, silent=silent, debug=debug, video_params=video_params, do_count=do_count)
 
-                merge_alone_overlapping_traces(traces, allow_force_merge=allow_force_merge, guided=guided,
-                                               input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                                               video_params=video_params, do_count=do_count)
-                # merge_overlapping_traces_brutto(traces, allow_force_merge=allow_force_merge, guided=guided,
-                #                                 input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                #                                 video_params=video_params, do_count=do_count)
+                # merge_alone_overlapping_traces(traces, allow_force_merge=allow_force_merge, guided=guided,
+                #                                input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
+                #                                video_params=video_params, do_count=do_count)
+                merge_overlapping_traces_brutto(traces, allow_force_merge=allow_force_merge, guided=guided,
+                                                input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
+                                                video_params=video_params, do_count=do_count)
+                if is_first_call:
+                    is_first_call = False
+                    with open(single_run_filename, "a") as file:
+                        file.write(print_single_call() + f" {before_number_of_traces} -> {len(traces)}\n")
 
                 if do_count:
-                    with open(filename, "a") as file:
-                        file.write(f"{get_all_overlaps_count()}; {get_all_seen_overlaps()}; {get_all_allowed_overlaps_count()}; {get_all_seen_overlaps_deleted()}; {before_number_of_traces} -> {len(traces)}\n")
-                    set_cumulative_all_overlaps_count(get_cumulative_all_overlaps_count() + get_all_overlaps_count())
-                    set_cumulative_all_seen_overlaps(get_cumulative_all_seen_overlaps() + get_all_seen_overlaps())
-                    set_cumulative_all_allowed_overlaps_count(get_cumulative_all_allowed_overlaps_count() + get_all_allowed_overlaps_count())
-                    set_cumulative_all_seen_overlaps_deleted(get_cumulative_all_seen_overlaps_deleted() + get_all_seen_overlaps_deleted())
-                    with open(cumulative_filename, "a") as file:
-                        file.write(f"{get_cumulative_all_overlaps_count()}; {get_cumulative_all_seen_overlaps()}; {get_cumulative_all_allowed_overlaps_count()}; {get_cumulative_all_seen_overlaps_deleted()}\n")
-                do_count = False
-                after_number_of_traces = len(traces)
+                    update_this_file_counts()
 
+                after_number_of_traces = len(traces)
+                # return
+            # return
             ## MERGE OVERLAPPING TRIPLETS, video-guided trace deleting
             before_number_of_traces = len(traces)
             after_number_of_traces = -9
             while before_number_of_traces != after_number_of_traces and len(traces) >= 3:
                 before_number_of_traces = len(traces)
-                merge_overlapping_triplets_of_traces(traces, population_size, guided=guided,
-                                                     input_video=video_file, silent=silent, debug=debug, show=show_plots,
-                                                     show_all_plots=show_all_plots, video_params=video_params)
+                # merge_overlapping_triplets_of_traces(traces, population_size, guided=guided,
+                #                                      input_video=video_file, silent=silent, debug=debug, show=show_plots,
+                #                                      show_all_plots=show_all_plots, video_params=video_params)
                 after_number_of_traces = len(traces)
 
             before_number_of_traces = len(traces)
@@ -447,6 +463,19 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
             ## RECOLLECT NUMBER OF TRACES
             after_after_number_of_traces = len(traces)
+
+        if counts:
+            if is_first_call:
+                with open(single_run_filename, "a") as file:
+                    file.write(print_single_call() + f" {before_number_of_traces} -> {len(traces)}\n")
+
+            update_cumulative_counts()
+            with open(filename, "a") as file:
+                file.write(print_this_file()+"\n")
+            with open(cumulative_filename, "a") as file:
+                file.write(print_cumulative()+"\n")
+
+        return
 
         # with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
         #     file.write(f"\n")
