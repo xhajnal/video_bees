@@ -27,7 +27,6 @@ def get_bee_max_step_len_per_frame():
 
 
 ## TWO TRACES SETTING (GAPS AND OVERLAPS SETTING)
-
 def get_min_trace_length_to_merge():
     """ Returns a minimal length of a trace to be merged with the other."""
     # Usage: gaping traces
@@ -56,6 +55,14 @@ def get_min_step_distance_to_merge_overlapping_traces():
     # TODO check this value
     # Usage: overlapping traces
     return 49
+
+
+def get_max_shift():
+    """shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
+
+    maximal number of frames a trace is allowed to shift backwards to comply with the distance metric for merging
+    """
+    return 0
 
 
 def get_force_merge_vicinity_distance():

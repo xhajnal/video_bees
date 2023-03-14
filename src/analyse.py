@@ -8,7 +8,7 @@ from cross_traces import trim_out_additional_agents_over_long_traces_by_partitio
     merge_alone_overlapping_traces_by_partition, merge_overlapping_traces_brutto
 from guided_traces import full_guided
 from video import annotate_video, parse_video_info, show_video
-from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config
+from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config, get_max_shift
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
@@ -382,6 +382,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ## MERGE OVERLAPPING TRACES
         ###########################
         # run until no traces are merged
+        number_of_traces_before_merging_overlapping_traces = len(traces)
         before_before_number_of_traces = len(traces)
         after_after_number_of_traces = -9
 
@@ -389,31 +390,33 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         do_count = True
         reset_this_file_counts()
 
-        single_run_filename = "../auxiliary/by_build/both_and/no_shift/single_run_overlaps_count_1to5.txt"
-        filename = "../auxiliary/by_build/both_and/no_shift/all_overlaps_count_1to5.txt"
-        cumulative_filename = "../auxiliary/by_build/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
+        shift_folder = 'no_shift' if get_max_shift() == 0 or get_max_shift() is False else f'shift_{get_max_shift()}'
 
-        single_run_filename = "../auxiliary/by_build_brutto/both_and/no_shift/single_run_overlaps_count_1to5.txt"
-        filename = "../auxiliary/by_build_brutto/both_and/no_shift/all_overlaps_count_1to5.txt"
-        cumulative_filename = "../auxiliary/by_build_brutto/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
+        bees = "1"
+        bees = "1to5"
 
-        # single_run_filename = "../auxiliary/by_partition/both_and/no_shift/single_run_overlaps_count_1to5.txt"
-        # filename = "../auxiliary/by_partition/both_and/no_shift/all_overlaps_count_1to5.txt"
-        # cumulative_filename = "../auxiliary/by_partition/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
+        metric_logic = "both_and"
 
-        # single_run_filename = "../auxiliary/mixed/both_and/no_shift/single_run_overlaps_count_1to5.txt"
-        # filename = "../auxiliary/mixed/both_and/no_shift/all_overlaps_count_1to5.txt"
-        # cumulative_filename = "../auxiliary/mixed/both_and/no_shift/cumulative_all_overlaps_count_1to5.txt"
+        algorithm = "by_build"
+        algorithm = "by_build_brutto"
+        # algorithm = "by_partition"
+        algorithm = "mixed"
+
+
+        single_run_filename = f"../auxiliary/{algorithm}/{metric_logic}/{shift_folder}/single_run_overlaps_count_{bees}.txt"
+        filename = f"../auxiliary/{algorithm}/{metric_logic}/{shift_folder}/all_overlaps_count_{bees}.txt"
+        cumulative_filename = f"../auxiliary/{algorithm}/{metric_logic}/{shift_folder}/cumulative_all_overlaps_count_{bees}.txt"
 
         # with open(filename, "a") as file:
         #     file.write(f"{csv_file_path} all_overlaps_count; get_all_seen_overlaps; all_allowed_overlaps_count; all_seen_overlaps_deleted\n")
 
         # todo UNCOMMENT THIS AFTER counts done
-        # a, b = merge_alone_overlapping_traces_by_partition(traces, input_video=video_file, silent=silent, debug=debug,
-        #                                                    video_params=video_params, do_count=do_count)
-        # trace_indices_to_merge, ids_of_traces_to_be_merged = a, b
-        # if do_count:
-        #     update_this_file_counts()
+        if algorithm == "mixed":
+            a, b = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), input_video=video_file, silent=silent, debug=debug,
+                                                               video_params=video_params, do_count=do_count)
+            trace_indices_to_merge, ids_of_traces_to_be_merged = a, b
+            if do_count:
+                update_this_file_counts()
 
         is_first_call = True
 
@@ -424,16 +427,21 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             after_number_of_traces = -9
             while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
                 before_number_of_traces = len(traces)
-                # trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, input_video=video_file, silent=silent, debug=debug, video_params=video_params, do_count=do_count)
+                if algorithm == "by_partition":
+                    trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), input_video=video_file, silent=silent, debug=debug, video_params=video_params, do_count=do_count)
 
-                # merge_alone_overlapping_traces(traces, allow_force_merge=allow_force_merge, guided=guided,
-                #                                input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                #                                video_params=video_params, do_count=do_count)
-                merge_overlapping_traces_brutto(traces, allow_force_merge=allow_force_merge, guided=guided,
-                                                input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                                                video_params=video_params, do_count=do_count)
+                if algorithm == "by_build":
+                    merge_alone_overlapping_traces(traces, shift=get_max_shift(), allow_force_merge=allow_force_merge, guided=guided,
+                                                   input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
+                                                   video_params=video_params, do_count=do_count, is_first_call=is_first_call)
+                if algorithm == "by_build_brutto" or algorithm == "mixed":
+                    merge_overlapping_traces_brutto(traces, shift=get_max_shift(), allow_force_merge=allow_force_merge, guided=guided,
+                                                    input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
+                                                    video_params=video_params, do_count="is_first" if is_first_run else do_count, is_first_call=is_first_call, alg=algorithm)
                 if is_first_call:
                     is_first_call = False
+                    if algorithm == "by_partition":
+                        set_this_file_overlaps_count(get_single_run_seen_overlaps())
                     with open(single_run_filename, "a") as file:
                         file.write(print_single_call() + f" {before_number_of_traces} -> {len(traces)}\n")
 
@@ -464,7 +472,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             ## RECOLLECT NUMBER OF TRACES
             after_after_number_of_traces = len(traces)
 
-        if counts:
+        if do_count:
             if is_first_call:
                 with open(single_run_filename, "a") as file:
                     file.write(print_single_call() + f" {before_number_of_traces} -> {len(traces)}\n")
@@ -473,7 +481,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             with open(filename, "a") as file:
                 file.write(print_this_file()+"\n")
             with open(cumulative_filename, "a") as file:
-                file.write(print_cumulative()+"\n")
+                file.write(print_cumulative() + f"; {number_of_traces_before_merging_overlapping_traces} -> {len(traces)}" + "\n")
 
         return
 

@@ -159,7 +159,8 @@ def set_cumulative_all_allowed_overlaps_count(value):
 
 
 def update_this_file_counts():
-    set_this_file_overlaps_count(get_this_file_overlaps_count() + get_single_run_overlaps_count())
+    if get_this_file_overlaps_count() == 0:
+        set_this_file_overlaps_count(get_single_run_overlaps_count())
     set_this_file_seen_overlaps(get_this_file_seen_overlaps() + get_single_run_seen_overlaps())
     set_this_file_allowed_overlaps_count(get_this_file_allowed_overlaps_count() + get_single_run_allowed_overlaps_count())
     set_this_file_seen_overlaps_deleted(get_this_file_seen_overlaps_deleted() + get_single_run_seen_overlaps_deleted())

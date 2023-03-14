@@ -123,6 +123,7 @@ def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available,
                'max_trace_gap': get_max_trace_gap(),
                'max_step_distance_to_merge_overlapping_traces': get_max_step_distance_to_merge_overlapping_traces(),
                'min_step_distance_to_merge_overlapping_traces': get_min_step_distance_to_merge_overlapping_traces(),
+               'max_shift': get_max_shift(),
                'force_merge_vicinity_distance': get_force_merge_vicinity_distance(),
                'vicinity_of_short_traces': get_vicinity_of_short_traces(),
                'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),
@@ -217,7 +218,7 @@ def save_current_result(counts, file_name, population_size, is_guided, is_force_
     except OSError:
         pass
     # check all counts are counted
-    assert len(counts) == 7
+    assert len(counts) == 8
 
     ## LOAD SAVED RESULTS TO UPDATE IT
     if not (is_first_run is True):
@@ -250,6 +251,7 @@ def save_current_result(counts, file_name, population_size, is_guided, is_force_
                  'max_trace_gap': get_max_trace_gap(),
                  'max_step_distance_to_merge_overlapping_traces': get_max_step_distance_to_merge_overlapping_traces(),
                  'min_step_distance_to_merge_overlapping_traces': get_min_step_distance_to_merge_overlapping_traces(),
+                 'max_shift': get_max_shift(),
                  'force_merge_vicinity_distance': get_force_merge_vicinity_distance(),
                  'vicinity_of_short_traces': get_vicinity_of_short_traces(),
                  'maximal_distance_to_check_for_trace_swapping': get_maximal_distance_to_check_for_trace_swapping(),
@@ -334,25 +336,11 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                 f"track_file; hashed_config; timestamp of the run; had_video; was_guided; was_force_merge_allowed; "
                 f"distance_from_calculated_arena; min_trace_length; bee_max_step_length; bee_max_step_len_per_frame; "
                 f"min_trace_length_to_merge; max_trace_gap; max_step_distance_to_merge_overlapping_traces; "
-                f"min_step_distance_to_merge_overlapping_traces; "
+                f"min_step_distance_to_merge_overlapping_traces; max_shift;"
                 f"force_merge_vicinity_distance; vicinity_of_short_traces; maximal_distance_to_check_for_trace_swapping; "
                 f"max_trace_gap_to_interpolate_distance; screen_size; "
                 f"loaded traces; inside arena; zero length; jumps forth and back fixed; traces swapped; "
                 f"after first gaps and redundant; after merging overlapping traces; population size; ;file_id \n")
-
-            # RECORD BELLOW
-            # file.write(f"{track_file}; {timestamp}; {had_video}; {guided}; {force_merge_allowed}; "
-            # f"{record['distance_from_calculated_arena']}; {min_trace_len}; "
-            # f"{record['bee_max_step_len']}; {record['bee_max_step_len_per_frame']}; "
-            # f"{record['min_trace_length_to_merge']};"
-            # f"{record['max_trace_gap']}; {record['max_step_distance_to_merge_overlapping_traces']}; "
-            # f"{force_merge_vicinity_distance}; {record['vicinity_of_short_traces']}; "
-            # f"{record['maximal_distance_to_check_for_trace_swapping']}; "
-            # f" {record['max_trace_gap_to_interpolate_distance']}; "
-            # f"{record['screen_size']}; {record['loaded']}; {record['inside arena']}; {zero_len}; "
-            # f"{record['jumps forth and back fixed']}; {record['traces swapped']}; "
-            # f"{record['after first gaps and redundant']};"
-            # f" {record['after merging overlapping traces']}; {population_size}\n")
 
             assert isinstance(results, dict)
             for index, track_file in enumerate(results.keys()):
@@ -442,6 +430,11 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                             zero_len = ""
 
                         try:
+                            max_shift = record['max_shift']
+                        except KeyError as err:
+                            max_shift = 0
+
+                        try:
                             force_merge_vicinity_distance = record['force_merge_vicinity_distance']
                         except KeyError as err:
                             force_merge_vicinity_distance = ""
@@ -477,7 +470,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                                    f"{record['bee_max_step_len']}; {record['bee_max_step_len_per_frame']}; "
                                    f"{min_trace_length_to_merge}; "
                                    f"{record['max_trace_gap']}; {record['max_step_distance_to_merge_overlapping_traces']}; "
-                                   f"{min_step_distance_to_merge_overlapping_traces}; "
+                                   f"{min_step_distance_to_merge_overlapping_traces}; {max_shift};"
                                    f"{force_merge_vicinity_distance}; {vicinity_of_short_traces}; "
                                    f"{maximal_distance_to_check_for_trace_swapping}; "
                                    f" {record['max_trace_gap_to_interpolate_distance']}; "

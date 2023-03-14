@@ -591,11 +591,12 @@ def cross_trace_analyse(traces, silent=False, debug=False):
     print()
 
 
-def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=False, do_count=False, input_video=False, video_params=False):
+def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=False, debug=False, do_count=False, input_video=False, video_params=False):
     """ Merges traces which have the only overlap at given time
         # Puts traces together such that all the agents but two are being tracked.
 
         :arg traces: (list): list of traces
+        :arg shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg do_count: (bool): flag whether to count the numbers of events occurring
@@ -667,10 +668,11 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
         overlap_range = get_overlap(trace1.frame_range, trace2.frame_range)
 
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
-                                                                    overlap_range, shift=False, show=False, silent=silent,
+                                                                    overlap_range, shift=shift, show=False, silent=silent,
                                                                     debug=debug, input_video=input_video, video_params=video_params)
 
         if to_merge is None:
+            # One trace is inside of another,
             set_single_run_seen_overlaps_deleted(get_single_run_seen_overlaps_deleted() + 1)
             continue
         elif to_merge is True:
@@ -688,11 +690,12 @@ def merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=Fals
     return pairs_of_traces_indices_to_merge, ids_of_traces_to_be_merged
 
 
-def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True):
+def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True, is_first_call=None):
     """ Merges traces with only a single overlap.
         # Puts traces together such that all the agents but one is being tracked.
 
         :arg traces: (list): list of traces
+        :arg shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg allow_force_merge: (bool): iff True force merge is allow
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
@@ -719,8 +722,9 @@ def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False,
 
     # Do the counting
     seen_pairs = set()
-    if do_count:
+    if is_first_call:
         set_single_run_overlaps_count(0)
+    if do_count:
         set_single_run_seen_overlaps(0)
         set_single_run_allowed_overlaps_count(0)
         set_single_run_seen_overlaps_deleted(0)
@@ -740,7 +744,8 @@ def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False,
         dictionary = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), strict=True, skip_whole_in=True)
 
         ## Count the overlapping pairs
-        if do_count:
+        if is_first_call:
+            is_first_call = False
             set_single_run_overlaps_count(len(list(dictionary.keys())))
 
         # print("dictionary", dictionary)
@@ -813,7 +818,7 @@ def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False,
 
             seen_pairs.add(picked_key)
             to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
-                                                                        overlap_range, shift=False, show=False,
+                                                                        overlap_range, shift=shift, show=False,
                                                                         silent=silent, debug=debug, input_video=input_video,
                                                                         video_params=video_params)
             if allow_force_merge:
@@ -872,11 +877,12 @@ def merge_alone_overlapping_traces(traces, allow_force_merge=True, guided=False,
     return
 
 
-def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True):
+def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True, is_first_call=None, alg=""):
     """ Merges traces with only a single overlap.
         # Puts traces together such that all the agents but one is being tracked.
 
         :arg traces: (list): list of traces
+        :arg shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg alone: (bool): if alone, only traces with a single overlap will be taken into account
         :arg allow_force_merge: (bool): iff True force merge is allow
@@ -900,9 +906,14 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
 
     # Do the counting
     seen_pairs = set()
-    if do_count:
-        set_single_run_overlaps_count(0)
-        set_single_run_seen_overlaps(0)
+    if is_first_call:
+        if alg == "mixed":
+            set_this_file_overlaps_count(get_single_run_seen_overlaps())
+        else:
+            set_single_run_overlaps_count(0)
+    if do_count is True:
+        if alg != "mixed":
+            set_single_run_seen_overlaps(0)
         set_single_run_allowed_overlaps_count(0)
         set_single_run_seen_overlaps_deleted(0)
 
@@ -920,9 +931,9 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
         print("dictionary", dictionary)
 
     ## Count the overlapping pairs
-    if do_count:
-        set_single_run_overlaps_count(len(list(dictionary.keys())))
-
+    if is_first_call:
+        if alg != "mixed":
+            set_single_run_overlaps_count(len(list(dictionary.keys())))
 
     if dictionary == {}:
         print(colored("Cannot merge any trace as there is no partial overlap of two traces.", "yellow"))
@@ -941,9 +952,10 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
 
         seen_pairs.add(picked_key)
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
-                                                                    overlap_range, shift=False, show=False,
+                                                                    overlap_range, shift=shift, show=False,
                                                                     silent=silent, debug=debug, input_video=input_video,
                                                                     video_params=video_params)
+
         if allow_force_merge:
             force_merge = False
             # Check whether there is overlap of overlaps
@@ -1033,7 +1045,10 @@ def merge_overlapping_traces_brutto(traces, allow_force_merge=True, guided=False
     # Do the counting
     set_single_run_allowed_overlaps_count(len(merge_cut_pairs))
     set_single_run_seen_overlaps_deleted(len(merge_pairs) - len(merge_cut_pairs))
-    set_single_run_seen_overlaps(len(seen_pairs))
+    if is_first_call and alg == "mixed":
+        set_single_run_seen_overlaps(get_single_run_seen_overlaps() + len(seen_pairs))
+    else:
+        set_single_run_seen_overlaps(len(seen_pairs))
 
     print(colored(f"brut Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
