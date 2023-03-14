@@ -218,7 +218,7 @@ def save_current_result(counts, file_name, population_size, is_guided, is_force_
     except OSError:
         pass
     # check all counts are counted
-    assert len(counts) == 8
+    assert len(counts) == 7
 
     ## LOAD SAVED RESULTS TO UPDATE IT
     if not (is_first_run is True):
