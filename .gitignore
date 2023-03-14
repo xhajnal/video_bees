@@ -133,18 +133,14 @@ dmypy.json
 
 #### MINE
 data
-output
+output/*/*
 test/test-sorted.csv
 /src/spam/
 test/help_video.mp4
 
 src/video2.py
-
 src/fix_folders2.py
-
-
 src/help/fix_aligment.py
-
 src/merge_result_dicts.py
 
 auxiliary/*
