@@ -36,10 +36,11 @@ just_align = False
 global force_new_video
 force_new_video = False
 
+
 # USER - please set up the following 8 flags
 batch_run = False           # sets silent, not debug, not show_plots, not guided, rerun
-guided = True               # human guided version
-silent = False              # minimal print
+guided = False               # human guided version
+silent = True               # minimal print
 debug = False               # maximal print
 show_plots = True           # showing plots
 show_all_plots = False      # showing all plots - also those in the loops
@@ -181,6 +182,10 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         set_show_all_plots(False)
 
     # set_show_plots(False)
+
+    set_rerun(True)
+    # set_silent(True)
+    # set_debug(True)
 
     #################
     # Internal params
@@ -388,7 +393,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         after_after_number_of_traces = -9
 
         # Counting part
-        do_count = True
+        do_count = False
         reset_this_file_counts()
 
         shift_folder = 'no_shift' if get_max_shift() == 0 or get_max_shift() is False else f'shift_{get_max_shift()}'
@@ -457,16 +462,27 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             after_number_of_traces = -9
             while before_number_of_traces != after_number_of_traces and len(traces) >= 3:
                 before_number_of_traces = len(traces)
+
                 # merge_triplets_by_partition(traces, shift=get_max_shift(), silent=silent, debug=debug, do_count=False,
                 #                             input_video=video_file, video_params=video_params)
-                # merge_overlapping_triplets_brutto(traces, shift=get_max_shift(), guided=guided, input_video=video_file,
-                #                                   silent=silent, debug=debug, show=show_all_plots, video_params=video_params)
-                ## TODO rerun this
-                merge_overlapping_triplets_of_traces(traces, shift=get_max_shift(), guided=guided,
-                                                     input_video=video_file, silent=silent, debug=debug, show=show_plots,
-                                                     show_all_plots=show_all_plots, video_params=video_params)
-                after_number_of_traces = len(traces)
+                # with open(f"../auxiliary/triplets/partition/numbers_of_merged_in_a_call.txt", "a") as file:
+                #     if before_number_of_traces - len(traces) > 0:
+                #         file.write(f"{csv_file_path} {before_number_of_traces - len(traces)}\n")
 
+                merge_overlapping_triplets_brutto(traces, shift=get_max_shift(), guided=guided, input_video=video_file,
+                                                  silent=silent, debug=debug, show=show_all_plots, video_params=video_params)
+                # with open(f"../auxiliary/triplets/brutto/numbers_of_merged_in_a_call.txt", "a") as file:
+                #     if before_number_of_traces - len(traces) > 0:
+                #         file.write(f"{csv_file_path} {before_number_of_traces - len(traces)}\n")
+
+                # merge_overlapping_triplets_of_traces(traces, shift=get_max_shift(), guided=guided,
+                #                                      input_video=video_file, silent=silent, debug=debug, show=show_plots,
+                #                                      show_all_plots=show_all_plots, video_params=video_params)
+                # with open(f"../auxiliary/triplets/build/numbers_of_merged_in_a_call.txt", "a") as file:
+                #     if before_number_of_traces - len(traces) > 0:
+                #         file.write(f"{csv_file_path} {before_number_of_traces - len(traces)}\n")
+
+                after_number_of_traces = len(traces)
             before_number_of_traces = len(traces)
             if len(traces) > population_size:
                 traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, silent=silent, debug=debug)

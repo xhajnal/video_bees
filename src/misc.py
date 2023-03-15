@@ -312,6 +312,7 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=True, skip_whol
 
     return dictionary
 
+
 # DEPRECATED
 def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
     """ Returns a matrix of flags of m-overlaps (m overlapping intervals) of n intervals

@@ -470,7 +470,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                                    f"{record['bee_max_step_len']}; {record['bee_max_step_len_per_frame']}; "
                                    f"{min_trace_length_to_merge}; "
                                    f"{record['max_trace_gap']}; {record['max_step_distance_to_merge_overlapping_traces']}; "
-                                   f"{min_step_distance_to_merge_overlapping_traces}; {max_shift};"
+                                   f"{min_step_distance_to_merge_overlapping_traces}; {max_shift}; "
                                    f"{force_merge_vicinity_distance}; {vicinity_of_short_traces}; "
                                    f"{maximal_distance_to_check_for_trace_swapping}; "
                                    f" {record['max_trace_gap_to_interpolate_distance']}; "

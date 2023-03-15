@@ -15,7 +15,8 @@ from trace import Trace
 from traces_logic import merge_two_overlapping_traces, ask_to_delete_a_trace, \
     partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, \
     check_to_merge_two_overlapping_traces, merge_multiple_pairs_of_overlapping_traces, \
-    get_index_shortest_trace_out_of_three, remove_shortest_trace_out_of_three, remove_a_trace_out_of_three
+    get_index_shortest_trace_out_of_three, remove_shortest_trace_out_of_three, remove_a_trace_out_of_three, \
+    is_there_full_overlap
 from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlaps
 
@@ -83,9 +84,6 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
                 print(colored("Cannot merge any trace as there is no partial overlap of three traces.", "yellow"))
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                               f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
-                with open(f"../auxiliary/triplets/build/numbers_of_merged_in_a_call.txt", "a") as file:
-                    if starting_number_of_traces - len(traces) > 0:
-                        file.write(f"{starting_number_of_traces - len(traces)}\n")
                 return
             if not silent:
                 print(f"triplets ({len(dictionary)}): {dictionary}")
@@ -132,9 +130,6 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
                         print(f"trace {trace_index} of range {trace.frame_range}")
                 print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                               f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
-                with open(f"../auxiliary/triplets/build/numbers_of_merged_in_a_call.txt", "a") as file:
-                    if starting_number_of_traces - len(traces) > 0:
-                        file.write(f"{starting_number_of_traces - len(traces)}\n")
                 return
 
             # Pick the smallest index
@@ -325,10 +320,6 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
     print(colored(f"Returning {len(traces)} traces, {len(removed_traces)} removed, "
                   f"{starting_number_of_traces - len(traces) + len(removed_traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
-
-    with open(f"../auxiliary/triplets/build/numbers_of_merged_in_a_call.txt", "a") as file:
-        if starting_number_of_traces - len(traces) > 0:
-            file.write(f"{starting_number_of_traces - len(traces)}\n")
     return traces, removed_traces
 
 
@@ -440,9 +431,6 @@ def merge_triplets_by_partition(traces, shift=False, silent=False, debug=False, 
     print(colored(f"Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
 
-    with open(f"../auxiliary/triplets/partition/numbers_of_merged_in_a_call.txt", "a") as file:
-        if starting_number_of_traces - len(traces) > 0:
-            file.write(f"{starting_number_of_traces - len(traces)}\n")
     return pairs_of_traces_indices_to_merge, ids_of_traces_to_be_merged
 
 
@@ -481,7 +469,7 @@ def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_v
             return
 
     # Find all overlapping triplets
-    dictionary = dictionary_of_m_overlaps_of_n_intervals(3, list(map(lambda x: x.frame_range, traces)), strict=True, skip_whole_in=True)
+    dictionary = dictionary_of_m_overlaps_of_n_intervals(3, list(map(lambda x: x.frame_range, traces)), strict=True)
     if debug:
         print("dictionary", dictionary)
 
@@ -500,6 +488,9 @@ def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_v
         trace1_index = picked_key[0]
         trace2_index = picked_key[1]
         trace3_index = picked_key[2]
+
+        if is_there_full_overlap([trace1.frame_range, trace2.frame_range, trace3.frame_range]):
+            continue
 
         overlap_range = dictionary[picked_key]
 
@@ -522,7 +513,7 @@ def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_v
 
         if show:
             try:
-                scatter_detection(traces, subtitle=f"after merging overlapping traces {picked_key[0]} of id {trace1.trace_id} and {picked_key[1]} of id {trace2.trace_id}.")
+                scatter_detection(traces, subtitle=f"after merging overlapping traces {trace1_index} of id {trace1.trace_id} and {trace2_index} of id {trace2.trace_id}.")
             except UnboundLocalError:
                 pass
 
@@ -562,8 +553,5 @@ def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_v
 
     print(colored(f"brut Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
-    with open(f"../auxiliary/triplets/brutto/numbers_of_merged_in_a_call.txt", "a") as file:
-        if starting_number_of_traces - len(traces) > 0:
-            file.write(f"{starting_number_of_traces - len(traces)}\n")
     return
 
