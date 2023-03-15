@@ -295,13 +295,15 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=True, skip_whol
         dictionary = {}
         for overlap_indices in dictionary2.keys():
             range2 = dictionary2[overlap_indices]
+            overlapping_intervals = list(map(lambda x: intervals[x], overlap_indices))
             for index, range1 in enumerate(intervals):
                 if index in overlap_indices:
                     continue
-                # to skip the intervals which are overlapping with whole range
-                if skip_whole_in and is_in(range1, range2):
-                    continue
-                elif has_dot_overlap(range1, range2, strict):
+                if has_dot_overlap(range1, range2, strict):
+                    # to skip the intervals which are overlapping with whole range
+                    if skip_whole_in:
+                        if any(is_in(range1, interval) for interval in overlapping_intervals):
+                            continue
                     new_index = overlap_indices + (index,)
                     new_index = tuple(list(sorted(list(new_index))))
                     dictionary[new_index] = get_dot_overlap(range1, range2, strict)
@@ -309,7 +311,6 @@ def dictionary_of_m_overlaps_of_n_intervals(m, intervals, strict=True, skip_whol
                     print(f"dictionary m={j}", dictionary)
 
     return dictionary
-
 
 # DEPRECATED
 def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
@@ -672,8 +673,10 @@ def rgb_to_bgr(rgb):
 
 if __name__ == "__main__":
     print(has_strict_overlap([5, 6], [6, 10]))
-    print(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True, skip_whole_in=True))
+    # print(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True, skip_whole_in=True))
 
     a = [1,2,34]
     delete_indices([1], a)
     print(a)
+
+    print(dictionary_of_m_overlaps_of_n_intervals(3, [(5, 10), (9, 11), (9, 11)], strict=True, skip_whole_in=True))

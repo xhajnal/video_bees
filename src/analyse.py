@@ -17,7 +17,8 @@ from cross_traces import put_gaping_traces_together, track_reappearance, cross_t
 from traces_logic import compute_whole_frame_range, get_video_whole_frame_range
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist
-from triplets import merge_overlapping_triplets_of_traces
+from triplets import merge_overlapping_triplets_of_traces, merge_overlapping_triplets_brutto, \
+    merge_triplets_by_partition
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
 global batch_run
@@ -438,7 +439,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                     merge_overlapping_traces_brutto(traces, shift=get_max_shift(), allow_force_merge=allow_force_merge, guided=guided,
                                                     input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
                                                     video_params=video_params, do_count="is_first" if is_first_run else do_count, is_first_call=is_first_call, alg=algorithm)
-                if is_first_call:
+                if is_first_call and do_count:
                     is_first_call = False
                     if algorithm == "by_partition":
                         set_this_file_overlaps_count(get_single_run_seen_overlaps())
@@ -456,9 +457,14 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             after_number_of_traces = -9
             while before_number_of_traces != after_number_of_traces and len(traces) >= 3:
                 before_number_of_traces = len(traces)
-                # merge_overlapping_triplets_of_traces(traces, population_size, guided=guided,
-                #                                      input_video=video_file, silent=silent, debug=debug, show=show_plots,
-                #                                      show_all_plots=show_all_plots, video_params=video_params)
+                # merge_triplets_by_partition(traces, shift=get_max_shift(), silent=silent, debug=debug, do_count=False,
+                #                             input_video=video_file, video_params=video_params)
+                # merge_overlapping_triplets_brutto(traces, shift=get_max_shift(), guided=guided, input_video=video_file,
+                #                                   silent=silent, debug=debug, show=show_all_plots, video_params=video_params)
+                ## TODO rerun this
+                merge_overlapping_triplets_of_traces(traces, shift=get_max_shift(), guided=guided,
+                                                     input_video=video_file, silent=silent, debug=debug, show=show_plots,
+                                                     show_all_plots=show_all_plots, video_params=video_params)
                 after_number_of_traces = len(traces)
 
             before_number_of_traces = len(traces)
@@ -482,8 +488,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                 file.write(print_this_file()+"\n")
             with open(cumulative_filename, "a") as file:
                 file.write(print_cumulative() + f"; {number_of_traces_before_merging_overlapping_traces} -> {len(traces)}" + "\n")
-
-        return
 
         # with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
         #     file.write(f"\n")

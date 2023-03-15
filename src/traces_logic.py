@@ -907,3 +907,63 @@ def get_video_whole_frame_range(traces):
     """
     a = compute_whole_frame_range(traces)
     return [a[0] - 2000, a[1] + 2000]
+
+def remove_shortest_trace_out_of_three(trace1, trace2, trace3, trace1_index, trace2_index, trace3_index):
+    trace_index_to_omit = get_index_shortest_trace_out_of_three(trace1, trace2, trace3)
+    return remove_a_trace_out_of_three(trace1, trace2, trace3, trace1_index, trace2_index, trace3_index, trace_index_to_omit)
+
+def remove_a_trace_out_of_three(trace1, trace2, trace3, trace1_index, trace2_index, trace3_index, trace_index_to_omit):
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+    assert isinstance(trace3, Trace)
+
+    duplet = [trace1, trace2, trace3]
+    duplet_indices = [trace1_index, trace2_index, trace3_index]
+    del duplet[trace_index_to_omit]
+    del duplet_indices[trace_index_to_omit]
+    trace1 = duplet[0]
+    trace2 = duplet[1]
+    del duplet
+    trace1_index = duplet_indices[0]
+    trace2_index = duplet_indices[1]
+
+    return trace1, trace2, trace1_index, trace2_index
+
+
+def get_index_shortest_trace_out_of_three(trace1, trace2, trace3):
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+    assert isinstance(trace3, Trace)
+
+    ## Find the trace with min len
+    trace_lengths = [trace1.frame_range_len, trace2.frame_range_len, trace3.frame_range_len]
+    min_len = min(trace_lengths)
+    min_len_index = trace_lengths.index(min_len)
+
+    return min_len_index
+
+
+def check_three_traces_insides(trace1, trace2, trace3):
+    assert isinstance(trace1, Trace)
+    assert isinstance(trace2, Trace)
+    assert isinstance(trace3, Trace)
+
+    return (is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range) or
+            is_in(trace2.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace2.frame_range) or
+            is_in(trace1.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace1.frame_range))
+
+
+## TODO ad tests
+def is_there_full_overlap(list_of_intervals):
+    # Sort intervals in increasing order
+    list_of_intervals.sort()
+
+    # In the sorted array, if end time of an interval is not more than that of
+    # end of previous interval, then there is an overlap
+    for i in range(1, len(list_of_intervals)):
+        if list_of_intervals[i][1] <= list_of_intervals[i - 1][1]:
+            return True
+
+    # If we reach here, then is no overlap
+    return False
+

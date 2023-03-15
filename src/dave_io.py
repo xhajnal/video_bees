@@ -336,7 +336,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                 f"track_file; hashed_config; timestamp of the run; had_video; was_guided; was_force_merge_allowed; "
                 f"distance_from_calculated_arena; min_trace_length; bee_max_step_length; bee_max_step_len_per_frame; "
                 f"min_trace_length_to_merge; max_trace_gap; max_step_distance_to_merge_overlapping_traces; "
-                f"min_step_distance_to_merge_overlapping_traces; max_shift;"
+                f"min_step_distance_to_merge_overlapping_traces; max_shift; "
                 f"force_merge_vicinity_distance; vicinity_of_short_traces; maximal_distance_to_check_for_trace_swapping; "
                 f"max_trace_gap_to_interpolate_distance; screen_size; "
                 f"loaded traces; inside arena; zero length; jumps forth and back fixed; traces swapped; "

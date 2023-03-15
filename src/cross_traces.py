@@ -708,6 +708,7 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
         :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE OVERLAPPING TRACES - using build", "blue"))
+    # Initiation
     start_time = time()
     starting_number_of_traces = len(traces)
 
@@ -839,9 +840,6 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
             else:
                 force_merge = False
 
-            #  Save the id of the merged trace before it is removed
-            trace2_id = trace2.trace_id
-
             ## ACTUAL DECISION WHETHER TO MERGE
             if force_merge or to_merge:
                 # Merge these two traces
@@ -853,7 +851,7 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
                 # Remove the merged trace
                 if debug:
                     # print(colored(f"Will delete trace {trace2_id}.", "blue"))
-                    print(colored(f"Will delete trace {picked_key[1]}({trace2_id}).", "blue"))
+                    print(colored(f"Will delete trace {picked_key[1]}({trace2.trace_id}).", "blue"))
                     print()
                 delete_indices([picked_key[1]], traces)
                 go_next = False
@@ -864,7 +862,7 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
 
             if show:
                 try:
-                    scatter_detection(traces, subtitle=f"after merging overlapping traces {picked_key[0]} of id {trace1.trace_id} and {picked_key[1]} of id {trace2_id}.")
+                    scatter_detection(traces, subtitle=f"after merging overlapping traces {picked_key[0]} of id {trace1.trace_id} and {picked_key[1]} of id {trace2.trace_id}.")
                 except UnboundLocalError:
                     pass
 
@@ -951,11 +949,11 @@ def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True,
         overlap_range = dictionary[picked_key]
 
         seen_pairs.add(picked_key)
+        ## ACTUAL DECISION WHETHER TO MERGE
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
                                                                     overlap_range, shift=shift, show=False,
                                                                     silent=silent, debug=debug, input_video=input_video,
                                                                     video_params=video_params)
-
         if allow_force_merge:
             force_merge = False
             # Check whether there is overlap of overlaps
@@ -974,17 +972,14 @@ def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True,
         else:
             force_merge = False
 
-        #  Save the id of the merged trace before it is removed
-        trace2_id = trace2.trace_id
-
-        ## ACTUAL DECISION WHETHER TO MERGE
+        # Manage the merge event
         if force_merge or to_merge:
-            # Merge these two traces
+            # Merge these two traces later
             merge_pairs.append((trace1_index, trace2_index))
 
         if show:
             try:
-                scatter_detection(traces, subtitle=f"after merging overlapping traces {picked_key[0]} of id {trace1.trace_id} and {picked_key[1]} of id {trace2_id}.")
+                scatter_detection(traces, subtitle=f"after merging overlapping traces {picked_key[0]} of id {trace1.trace_id} and {picked_key[1]} of id {trace2.trace_id}.")
             except UnboundLocalError:
                 pass
 
@@ -1039,6 +1034,7 @@ def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True,
     merge_cut_pairs = list(filter(lambda x: x not in pairs_to_skip, merge_pairs))
     if debug:
         print(f"getting rid of these pairs: {pairs_to_skip}")
+
     # Actually merge the pure pairs
     merge_multiple_pairs_of_overlapping_traces(traces, merge_cut_pairs, silent=silent, debug=debug)
 
