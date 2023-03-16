@@ -49,8 +49,8 @@ def write_dave(is_first_run=False):
                 else:
                     if_video = ", is_first_run=a"
 
-                print("#")
-                print("#")
+                # print("#")
+                # print("#")
                 if is_first_run:
                     try:
                         ## TODO pick
@@ -136,6 +136,11 @@ def write_dave(is_first_run=False):
                     else:
                         is_found = ""
                 except KeyError:
+                    all_loaded = [""]
+                    all_single = [""]
+                    all_final = [""]
+                    is_found = ""
+                except FileNotFoundError:
                     all_loaded = [""]
                     all_single = [""]
                     all_final = [""]
