@@ -489,6 +489,7 @@ def run(is_first_run=None):
     # 79 -> 70 -> 28
     # 79 -> 70 -> 43
     # 1 jump back and forth
+    # 65 -> 56 -> 25
     analyse('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', 2, has_tracked_video=True, is_first_run=a)
 
 
@@ -599,6 +600,8 @@ def run(is_first_run=None):
 
     # 747 -> 609 -> 4 *
     # got more traces with higher min_trace_len
+    # 1stRun 747 -> 609 -> 56
+    # 747 -> 609 -> 39
     analyse('../data/Video_tracking/190919/20190919_151934478_2BEES_generated_20210909_085536_nn.csv', 2, is_first_run=a)
 
 
@@ -639,6 +642,7 @@ def run(is_first_run=None):
     # 316 -> 218 -> 139
 
     # 159 -> 111 -> 50
+    # 1stRun 159 -> 104 -> 62
     # 159 -> 111 -> 31
     analyse('../data/Video_tracking/190922/20190922_161322983_2BEES_generated_20210913_102101_nn.csv', 2, is_first_run=a)
 
@@ -730,6 +734,7 @@ def run(is_first_run=None):
     # 306 -> 229 -> 47 *
 
     # 169 -> 96 -> 73
+    # 1stRun 169 -> 95 -> 74
     # 169 -> 96 -> 8 *
     analyse('../data/Video_tracking/190928/20190928_123940860_2BEES_generated_20211008_095306_nn.csv', 2, is_first_run=a)
 
@@ -796,6 +801,7 @@ def run(is_first_run=None):
     # 619 -> 433 -> 30
 
     # 157 -> 140 -> 84
+    # 1stRun 157 -> 134 -> 99
     # 157 -> 140 -> 71
     analyse('../data/Video_tracking/191002/20191002_140936347_2BEES_generated_20211221_093930_nn.csv', 2, is_first_run=a)
 
@@ -899,6 +905,7 @@ def run(is_first_run=None):
     # 138 -> 122 -> 71
 
     # 78 -> 57 -> 31
+    # 1stRun 78 -> 49 -> 31
     # 78 -> 57 -> 17 *
     analyse('../data/Video_tracking/191016/20191016_133611699_2BEES_generated_20220118_100833_nn.csv', 2, is_first_run=a)
 
@@ -907,6 +914,7 @@ def run(is_first_run=None):
     # 141 -> 116 -> 29
 
     # 396 -> 301 -> 30
+    # 1stRun 396 -> 232 -> 65
     # 396 -> 301 -> 17
     analyse('../data/Video_tracking/191016/20191016_171520886_2BEES_generated_20220120_075538_nn.csv', 2, is_first_run=a)
 
@@ -1128,6 +1136,7 @@ def run(is_first_run=None):
 
 
     # 285 -> 246 -> 216
+    # 1stRun 285 -> 234 -> 225
     # 285 -> 246 -> 162
     analyse('../data/Video_tracking/190924/20190924_155725679_5BEES_generated_20210917_100221_nn.csv', 5, is_first_run=a)
 
@@ -1147,6 +1156,7 @@ def run(is_first_run=None):
 
 
     # 492 -> 382 -> 257
+    # 1stRun 492 -> 369 -> 264
     # 492 -> 382 -> 169
     analyse('../data/Video_tracking/190925/20190925_112612419_5BEES_generated_20210924_083010_nn.csv', 5, is_first_run=a)
 
@@ -1220,6 +1230,7 @@ def run(is_first_run=None):
     # 852 -> 635 -> 232
 
     # 834 -> 696 -> 208
+    # 1stRun 1386 -> 437 -> 356
     # 1386 -> 455 -> 227
     analyse('../data/Video_tracking/190930/20190930_151542123_5BEES_generated_20211021_091655_nn.csv', 5, is_first_run=a)
 
@@ -1254,6 +1265,7 @@ def run(is_first_run=None):
     # 444 -> 350 -> 211
 
     # 524 -> 452 -> 247
+    # 1stRun 524 -> 423 -> 294
     # 524 -> 452 -> 219
     analyse('../data/Video_tracking/191002/20191002_142032986_5BEES_generated_20211221_094249_nn.csv', 5, is_first_run=a)
 
