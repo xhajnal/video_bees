@@ -908,11 +908,36 @@ def get_video_whole_frame_range(traces):
     a = compute_whole_frame_range(traces)
     return [a[0] - 2000, a[1] + 2000]
 
+
 def remove_shortest_trace_out_of_three(trace1, trace2, trace3, trace1_index, trace2_index, trace3_index):
+    """ Removes the shortest trace from the given 3 traces.
+
+        :arg trace1: (Trace): first trace
+        :arg trace2: (Trace): second trace
+        :arg trace3: (Trace): third trace
+        :arg trace1_index: (int): first trace index
+        :arg trace2_index: (int): second trace index
+        :arg trace3_index: (int): third trace index
+
+        :returns: traceI, traceII, traceI_index, traceII_index
+    """
     trace_index_to_omit = get_index_shortest_trace_out_of_three(trace1, trace2, trace3)
     return remove_a_trace_out_of_three(trace1, trace2, trace3, trace1_index, trace2_index, trace3_index, trace_index_to_omit)
 
+
 def remove_a_trace_out_of_three(trace1, trace2, trace3, trace1_index, trace2_index, trace3_index, trace_index_to_omit):
+    """ Removes a trace of the given trace_index to omit from the given 3 traces.
+
+            :arg trace1: (Trace): first trace
+            :arg trace2: (Trace): second trace
+            :arg trace3: (Trace): third trace
+            :arg trace1_index: (int): first trace index
+            :arg trace2_index: (int): second trace index
+            :arg trace3_index: (int): third trace index
+            :arg trace_index_to_omit: (int): trace index of the trace to be omitted
+
+            :returns: traceI, traceII, traceI_index, traceII_index
+    """
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
     assert isinstance(trace3, Trace)
@@ -931,6 +956,14 @@ def remove_a_trace_out_of_three(trace1, trace2, trace3, trace1_index, trace2_ind
 
 
 def get_index_shortest_trace_out_of_three(trace1, trace2, trace3):
+    """ Returns the number of the shortest trace the given 3 traces.
+
+        :arg trace1: (Trace): first trace
+        :arg trace2: (Trace): second trace
+        :arg trace3: (Trace): third trace
+
+        :returns: number: (int) 1,2,3 based on whether trace1, trace2, or trace3 is the shortest
+        """
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
     assert isinstance(trace3, Trace)
@@ -944,6 +977,14 @@ def get_index_shortest_trace_out_of_three(trace1, trace2, trace3):
 
 
 def check_three_traces_insides(trace1, trace2, trace3):
+    """ Checks whether there is a trace which is inside of another in whole range.
+
+        :arg trace1: (Trace): first trace
+        :arg trace2: (Trace): second trace
+        :arg trace3: (Trace): third trace
+
+        :returns: is_in: (bool): whether there is a trace which is inside of another in whole range
+    """
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
     assert isinstance(trace3, Trace)
@@ -955,6 +996,12 @@ def check_three_traces_insides(trace1, trace2, trace3):
 
 ## TODO ad tests
 def is_there_full_overlap(list_of_intervals):
+    """ Checks whether there is an interval which is inside of another in whole range.
+
+        :arg list_of_intervals: (list of intervals): list of intervals to check
+
+        :returns: is_in: (bool): whether there is an interval which is inside of another in whole range
+    """
     # Sort intervals in increasing order
     list_of_intervals.sort()
 
