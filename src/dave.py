@@ -38,7 +38,7 @@ def run(is_first_run=None):
     analyse('../data/Video_tracking/190822/20190822_111607344_1BEE_generated_20210430_080914_nn.csv', 1, is_first_run=a)
 
     # 1stRun 156 -> 61 -> 15 *
-    #  ->  ->  
+    #  ->  ->
     analyse('../data/Video_tracking/190822/20190822_141925574_1bee_generated_20210504_081658_nn.csv', 1, is_first_run=a)
 
     ## 190823
