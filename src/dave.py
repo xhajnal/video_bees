@@ -30,8 +30,7 @@ def run(is_first_run=None):
     :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
     """
     a = is_first_run
-
-    # ############################################# SINGLE BEE #######################################################
+    ############################################# SINGLE BEE #######################################################
     ## 190822
     # 1stRun 1 -> 1 -> 1 *
     #  ->  ->
@@ -1409,176 +1408,175 @@ def run(is_first_run=None):
     analyse('../data/Video_tracking/190906/20190906_151436479_15BEES_generated_20210607_081516_nn.csv', 15, is_first_run=a)
 
     ## 190916
-    # 1stRun  ->  ->
+    # 1stRun 3346 -> 2938 -> 751 *
     #  ->  ->
     analyse('../data/Video_tracking/190916/20190916_155142744_15BEES_generated_20210611_105921_nn.csv', 15, is_first_run=a)
 
     ## 190917
-    # 1stRun  ->  ->
+    # 1stRun 2294 -> 1997 -> 1374 *
     #  ->  ->
     analyse('../data/Video_tracking/190917/20190917_151102123_15BEES_generated_20210903_100118_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 3739 -> 3337 -> 992 *
     #  ->  ->
     analyse('../data/Video_tracking/190917/20190917_104532152_15BEES_generated_20210803_082437_nn.csv', 15, is_first_run=a)
 
     ## 190918
-    # 1stRun  ->  ->
+    # 1stRun 1903 -> 1758 -> 1114 *
     #  ->  ->
     analyse('../data/Video_tracking/190918/20190918_105639722_15BEES_generated_20210907_081259_nn.csv', 15, is_first_run=a)
 
     ## 190919
-    # 1stRun  ->  ->
+    # 1stRun 3200 -> 2743 -> 1779 *
     #  ->  ->
     analyse('../data/Video_tracking/190919/20190919_105145877_15BEES_generated_20210908_083852_nn.csv', 15, is_first_run=a)
 
     ## 190920
-    # 1stRun  ->  ->
+    # 1stRun 1961 -> 1628 -> 897 *
     #  ->  ->
     analyse('../data/Video_tracking/190920/20190920_144702326_15BEES_generated_20210910_082748_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2925 -> 2639 -> 1020 *
     #  ->  ->
     analyse('../data/Video_tracking/190920/20190920_110628291_15BEES_generated_20210909_095322_nn.csv', 15, has_tracked_video=True, is_first_run=a)
 
     ## 190922
-    # 1stRun  ->  ->
+    # 1stRun 3337 -> 2955 -> 1284 *
     #  ->  ->
     analyse('../data/Video_tracking/190922/20190922_154352238_15BEES_generated_20210913_095813_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2154 -> 1828 -> 1059 *
     #  ->  ->
     analyse('../data/Video_tracking/190922/20190922_115427042_15BEES_generated_20210913_074557_nn.csv', 15, is_first_run=a)
 
     ## 190924
-    # 1stRun  ->  ->
+    # 1stRun 2413 -> 2124 -> 1427 *
     #  ->  ->
     analyse('../data/Video_tracking/190924/20190924_105949133_15BEES_generated_20210916_083521_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2236 -> 1931 -> 1142 *
     #  ->  ->
     analyse('../data/Video_tracking/190924/20190924_152226497_15BEES_generated_20210914_095925_nn.csv', 15, is_first_run=a)
 
     ## 190925
-    # 1stRun  ->  ->
+    # 1stRun 1904 -> 1655 -> 1093 *
     #  ->  ->
     analyse('../data/Video_tracking/190925/20190925_142354429_15BEES_generated_20210924_084837_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 1993 -> 1727 -> 1077 *
     #  ->  ->
     analyse('../data/Video_tracking/190925/20190925_111416348_15BEES_generated_20210924_082629_nn.csv', 15, is_first_run=a)
 
     ## 190926
-    # 1stRun  ->  ->
+    # 1stRun 2712 -> 2188 -> 1261 *
     #  ->  ->
     analyse('../data/Video_tracking/190926/20190926_162712758_15BEES_generated_20210928_090840_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 1974 -> 1727 -> 677 *
     #  ->  ->
     analyse('../data/Video_tracking/190926/20190926_131641554_15BEES_generated_20210927_085812_nn.csv', 15, is_first_run=a)
 
     ## 190927
-    # 1stRun  ->  ->
+    # 1stRun 2255 -> 1792 -> 721 *
     #  ->  ->
     analyse('../data/Video_tracking/190927/20190927_105015136_15BEES_generated_20211001_084351_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 1906 -> 1663 -> 500 *
     #  ->  ->
     analyse('../data/Video_tracking/190927/20190927_140903972_15BEES_generated_20211006_092141_nn.csv', 15, is_first_run=a)
 
     ## 190928
     ## 190929
-    # 1stRun  ->  ->
+    # 1stRun 3051 -> 2575 -> 908 *
     #  ->  ->
     analyse('../data/Video_tracking/190929/20190929_160530530_15BEES_generated_20211015_094803_nn.csv', 15, is_first_run=a)
 
     ## 190930
-    # 1stRun  ->  ->
+    # 1stRun 2350 -> 1902 -> 1277 *
     #  ->  ->
     analyse('../data/Video_tracking/190930/20190930_144234627_15BEES_generated_20211018_100830_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2089 -> 1790 -> 1021 *
     #  ->  ->
     analyse('../data/Video_tracking/190930/20190930_111749856_15BEES_generated_20211019_101232_nn.csv', 15, is_first_run=a)
 
     ## 191001
-    # 1stRun  ->  ->
+    # 1stRun 3989 -> 3543 -> 1817 *
     #  ->  ->
     analyse('../data/Video_tracking/191001/20191001_141957735_15BEES_generated_20211028_095546_nn.csv', 15, has_tracked_video=True, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2823 -> 2406 -> 1442 *
     #  ->  ->
     analyse('../data/Video_tracking/191001/20191001_113225056_15BEES_generated_20211026_092637_nn.csv', 15, is_first_run=a)
 
     ## 191002
     ## 191003
-    # 1stRun  ->  ->
+    # 1stRun 2674 -> 2335 -> 1468 *
     #  ->  ->
     analyse('../data/Video_tracking/191003/20191003_130715174_15BEES_generated_20220103_113351_nn.csv', 15, is_first_run=a)
 
     ## 191007
-    # 1stRun  ->  ->
+    # 1stRun 2606 -> 2342 -> 1251 *
     #  ->  ->
     analyse('../data/Video_tracking/191007/20191007_142243717_15BEES_generated_20220105_085425_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 3524 -> 3055 -> 1803 *
     #  ->  ->
     analyse('../data/Video_tracking/191007/20191007_112941330_15BEES_generated_20220104_095854_nn.csv', 15, is_first_run=a)
 
     ## 191008
-    # 1stRun  ->  ->
+    # 1stRun 2960 -> 2454 -> 1718 *
     #  ->  ->
     analyse('../data/Video_tracking/191008/20191008_110243113_15BEES_generated_20220105_103922_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2664 -> 2194 -> 1432 *
     #  ->  ->
     analyse('../data/Video_tracking/191008/20191008_150528777_15BEES_generated_20220107_072438_nn.csv', 15, is_first_run=a)
 
     ## 191011
-    # 1stRun  ->  ->
+    # 1stRun 2884 -> 2500 -> 1270 *
     #  ->  ->
     analyse('../data/Video_tracking/191011/20191011_134945372_15BEES_generated_20220107_091631_nn.csv', 15, is_first_run=a)
 
     ## 191014
-    # 1stRun  ->  ->
+    # 1stRun 3340 -> 2980 -> 1555 *
     #  ->  ->
     analyse('../data/Video_tracking/191014/20191014_155509712_15BEES_generated_20220110_074244_nn.csv', 15, is_first_run=a)
 
     ## 191016
-    # 1stRun  ->  ->
+    # 1stRun 2671 -> 2316 -> 1539 *
     #  ->  ->
     analyse('../data/Video_tracking/191016/20191016_162046345_15BEES_generated_20220119_095913_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2249 -> 1965 -> 1376 *
     #  ->  ->
     analyse('../data/Video_tracking/191016/20191016_124613239_15BEES_generated_20220117_104800_nn.csv', 15, is_first_run=a)
 
     ## 191017
-    # 1stRun  ->  ->
+    # 1stRun 2760 -> 2355 -> 1436 *
     #  ->  ->
     analyse('../data/Video_tracking/191017/20191017_130555083_15BEES_generated_20220121_114232_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2566 -> 2068 -> 1297 *
     #  ->  ->
     analyse('../data/Video_tracking/191017/20191017_133858498_15BEES_generated_20220124_101400_nn.csv', 15, is_first_run=a)
 
     ## 191018
-    # 1stRun  ->  ->
+    # 1stRun 2791 -> 2304 -> 1606 *
     #  ->  ->
     analyse('../data/Video_tracking/191018/20191018_133057695_15BEES_generated_20220126_102759_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2606 -> 2235 -> 1912 *
     #  ->  ->
     analyse('../data/Video_tracking/191018/20191018_142523619_15BEES_generated_20220125_103406_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 2171 -> 1935 -> 1527 *
     #  ->  ->
     analyse('../data/Video_tracking/191018/20191018_143615609_15BEES_generated_20220126_104502_nn.csv', 15, is_first_run=a)
 
-    # 1stRun  ->  ->
+    # 1stRun 1843 -> 1565 -> 1107 *
     #  ->  ->
     analyse('../data/Video_tracking/191018/20191018_130828543_15BEES_generated_20220125_102542_nn.csv', 15, is_first_run=a)
-
 
 
 if __name__ == "__main__":
