@@ -2,7 +2,7 @@
 def get_distance_from_calculated_arena():
     """ Returns distance from the estimated arena circle to be assigned as outside of the arena."""
     # Usage: outside of arena
-    return 50
+    return 49
 
 
 ## SINGLE TRACE SETTING
@@ -62,7 +62,7 @@ def get_max_shift():
 
     maximal number of frames a trace is allowed to shift backwards to comply with the distance metric for merging
     """
-    return 0
+    return 100
 
 
 def get_force_merge_vicinity_distance():
