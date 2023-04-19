@@ -16,7 +16,7 @@ from cross_traces import put_gaping_traces_together, track_reappearance, cross_t
     merge_alone_overlapping_traces, track_swapping_loop
 from traces_logic import compute_whole_frame_range, get_video_whole_frame_range
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
-    parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist
+    parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist, save_traces, load_traces
 from triplets import merge_overlapping_triplets_of_traces, merge_overlapping_triplets_brutto, \
     merge_triplets_by_partition
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
@@ -38,15 +38,15 @@ force_new_video = False
 
 
 # USER - please set up the following 8 flags
-batch_run = False           # sets silent, not debug, not show_plots, not guided, rerun
-guided = False               # human guided version
-silent = True               # minimal print
-debug = False               # maximal print
-show_plots = True           # showing plots
-show_all_plots = False      # showing all plots - also those in the loops
-allow_force_merge = False   # allows force merge gaps and overlaps
-rerun = True                # will execute also files with a setting which is already in the results
-
+batch_run = False               # sets silent, not debug, not show_plots, not guided, rerun
+guided = False                  # human guided version
+silent = True                   # minimal print
+debug = False                   # maximal print
+show_plots = True               # showing plots
+show_all_plots = False          # showing all plots - also those in the loops
+allow_force_merge = False       # allows force merge gaps and overlaps
+rerun = True                    # will execute also files with a setting which is already in the results
+save_parsed_as_pickle = True    # will automatically store the parsed files as pickle - should speed up the load, but unnececerilly uses the disk space
 
 def set_batch_run(do_batch_run):
     global batch_run
@@ -157,6 +157,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         set_show_all_plots(False)
         set_rerun(False)
         set_guided(False)
+        traces_file = str(os.path.join(os.path.dirname(csv_file_path), "parsed", os.path.basename(csv_file_path).replace(".csv", ".p")))
     elif is_first_run is False:
         traces_file = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", str(hash_config()), os.path.basename(csv_file_path).replace(".csv", ".p")))
         set_show_all_plots(False)
@@ -208,7 +209,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # LOAD PICKLE / PARSE CSV
         #########################
         if is_first_run is False:
-            traces = pickle_load(traces_file)
+            traces = load_traces(traces_file)
         ## First run and the pickled file already exists, we can skip this
         elif is_first_run is True and pickled_exist(csv_file_path, is_first_run=is_first_run):
             print(colored("This file already has saved pickled file, hence was successfully run", "green"))
@@ -223,18 +224,27 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                     if not rerun:
                         if not is_new_config(file_name=csv_file_path, is_guided=guided, is_force_merge_allowed=allow_force_merge, video_available=has_tracked_video, is_first_run=is_first_run):
                             return
-                    # parse traces from csv file
-                    scraped_traces = parse_traces(csv_file)
+                    # Check whether this csv was already parsed, used the parsed file, if yes
+                    if save_parsed_as_pickle and pickled_exist(csv_file_path, parsed=True):
+                        traces = load_traces(traces_file)
+                    else:
+                        # parse traces from csv file
+                        scraped_traces = parse_traces(csv_file)
+
+                        # Store traces as list of Traces
+                        traces = []
+            for index, trace in enumerate(scraped_traces.keys()):
+                # print(trace)
+                            # print(scraped_traces[trace])
+                            traces.append(Trace(scraped_traces[trace], index))
+
+                        # Save parsed traces
+                        if save_parsed_as_pickle:
+                            pickle_traces(traces, csv_file_path, silent=silent, debug=debug, just_parsed=True)
+
             except FileNotFoundError:
                 print(colored(f"File not found!", "magenta"))
                 return
-
-            # Store traces as list of Traces
-            traces = []
-            for index, trace in enumerate(scraped_traces.keys()):
-                # print(trace)
-                # print(scraped_traces[trace])
-                traces.append(Trace(scraped_traces[trace], index))
 
         # Storing the number of loaded traces
         counts.append(len(traces) + len(removed_full_traces))
@@ -408,7 +418,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # algorithm = "by_partition"
         algorithm = "mixed"
 
-
         single_run_filename = f"../auxiliary/{algorithm}/{metric_logic}/{shift_folder}/single_run_overlaps_count_{bees}.txt"
         filename = f"../auxiliary/{algorithm}/{metric_logic}/{shift_folder}/all_overlaps_count_{bees}.txt"
         cumulative_filename = f"../auxiliary/{algorithm}/{metric_logic}/{shift_folder}/cumulative_all_overlaps_count_{bees}.txt"
@@ -505,9 +514,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             with open(cumulative_filename, "a") as file:
                 file.write(print_cumulative() + f"; {number_of_traces_before_merging_overlapping_traces} -> {len(traces)}" + "\n")
 
-        # with open("../auxiliary/second_count_of_trimming.txt", "a") as file:
-        #     file.write(f"\n")
-
         # QA of `merge_alone_overlapping_traces`
         if len(traces) >= 2:
             if not silent:
@@ -577,8 +583,10 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         if is_new:
             convert_results_from_json_to_csv(silent=silent, debug=debug, is_first_run=is_first_run)
             # save_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug, is_first_run=is_first_run)
-            pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run)
+            ## TODO uncomment this
+            # pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run)
     else:
+        # Just_annotate
         all_final_traces = load_result_traces(csv_file_path)
         traces = all_final_traces
         removed_full_traces = traces

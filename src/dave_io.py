@@ -60,19 +60,24 @@ def get_video_path(file_path):
     return video_file, output_video_file
 
 
-def pickled_exist(csv_file_path, is_first_run=None):
+def pickled_exist(csv_file_path, is_first_run=None, parsed=False):
     """ Return whether the pickled file of the current config exists.
 
     :arg csv_file_name: (str): filename of the original csv file
     :arg is_first_run: (bool): iff True, "results_after_first_run.txt" will be used instead of standard "results.txt"
+    :arg parsed: (bool): iff True, checking for only parsed file
     """
     hash = str(hash_config())
     path = os.path.dirname(csv_file_path)
     file_name = Path(os.path.basename(csv_file_path)).stem
+
+    if parsed is True:
+        return os.path.isfile(os.path.join(path, "parsed", file_name+".p"))
+
     if is_first_run is True:
-        return os.path.isfile(os.path.join(path, hash, file_name, ".p"))
+        return os.path.isfile(os.path.join(path, hash, file_name+".p"))
     else:
-        return os.path.isfile(os.path.join("../output/traces/", hash, file_name, ".p"))
+        return os.path.isfile(os.path.join("../output/traces/", hash, file_name+".p"))
 
 
 def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available, is_first_run=None):
@@ -563,7 +568,7 @@ def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None)
         print(colored(f"Saving {len(traces)} traces as csv in {os.path.abspath(f'../output/{file_name}')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
 
-def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run=None):
+def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run=None, just_parsed=False):
     """ Saves the traces as pickle.
 
         :arg traces: (list): list of traces
@@ -591,6 +596,12 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
             pass
 
         file_path = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", hash, file_name))
+    elif just_parsed is True:
+        try:
+            os.mkdir(os.path.join(os.path.dirname(csv_file_path), "parsed"))
+        except OSError:
+            pass
+        file_path = str(os.path.join(os.path.dirname(csv_file_path), "parsed", file_name))
     else:
         try:
             os.mkdir("../output")
@@ -625,6 +636,19 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
         pickle.dump(traces, file)
 
     print(colored(f"Saving pickled {len(traces)} traces in {os.path.abspath(file_path)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+
+
+def load_traces(file):
+    """ Returns loaded pickled traces.
+
+     Args:
+        file (string or Path): filename/filepath of the file to be loaded
+    """
+    start_time = time()
+    print(colored("LOAD PICKLED TRACES", "blue"))
+    traces = pickle_load(file)
+    print(colored(f"Loaded {len(traces)} traces. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    return traces
 
 
 def pickle_load(file):
