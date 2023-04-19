@@ -2,7 +2,7 @@
 def get_distance_from_calculated_arena():
     """ Returns distance from the estimated arena circle to be assigned as outside of the arena."""
     # Usage: outside of arena
-    return 51
+    return 49
 
 
 ## SINGLE TRACE SETTING
@@ -27,7 +27,6 @@ def get_bee_max_step_len_per_frame():
 
 
 ## TWO TRACES SETTING (GAPS AND OVERLAPS SETTING)
-
 def get_min_trace_length_to_merge():
     """ Returns a minimal length of a trace to be merged with the other."""
     # Usage: gaping traces
@@ -40,6 +39,10 @@ def get_max_trace_gap():
     """
     # Usage: gaping trace - ABOVE
     return 100
+
+def get_max_overlap_len_to_merge_traces():
+    """ Return a maximal length of an overlap of two traces to be merged."""
+    return 172
 
 
 def get_max_step_distance_to_merge_overlapping_traces():
@@ -55,7 +58,15 @@ def get_min_step_distance_to_merge_overlapping_traces():
     """
     # TODO check this value
     # Usage: overlapping traces
-    return 49
+    return 43
+
+
+def get_max_shift():
+    """shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
+
+    maximal number of frames a trace is allowed to shift backwards to comply with the distance metric for merging
+    """
+    return 90
 
 
 def get_force_merge_vicinity_distance():
@@ -94,6 +105,7 @@ def hash_config(this=True):
                    get_min_trace_len(),
                    get_vicinity_of_short_traces(),
                    get_max_trace_gap(),
+                   get_max_overlap_len_to_merge_traces(),
                    get_min_trace_length_to_merge(),
                    get_bee_max_step_len(),
                    get_bee_max_step_len_per_frame(),
@@ -115,7 +127,8 @@ def hash_config(this=True):
                    this[8],
                    this[9],
                    this[10],
-                   tuple([item for sublist in this[11] for item in sublist]))
+                   this[11],
+                   tuple([item for sublist in this[12] for item in sublist]))
 
     return str(abs(hash(setting)))
 
