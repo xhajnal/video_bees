@@ -46,7 +46,8 @@ show_plots = True               # showing plots
 show_all_plots = False          # showing all plots - also those in the loops
 allow_force_merge = False       # allows force merge gaps and overlaps
 rerun = True                    # will execute also files with a setting which is already in the results
-save_parsed_as_pickle = True    # will automatically store the parsed files as pickle - should speed up the load, but unnececerilly uses the disk space
+save_parsed_as_pickle = True    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
+fast_run = True                 # will skip the least prominent parts
 
 def set_batch_run(do_batch_run):
     global batch_run
@@ -233,8 +234,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
                         # Store traces as list of Traces
                         traces = []
-            for index, trace in enumerate(scraped_traces.keys()):
-                # print(trace)
+                        for index, trace in enumerate(scraped_traces.keys()):
+                            # print(trace)
                             # print(scraped_traces[trace])
                             traces.append(Trace(scraped_traces[trace], index))
 
@@ -434,6 +435,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                 update_this_file_counts()
 
         is_first_call = True
+        # ## TODO delete this return
+        # return
 
         while before_before_number_of_traces != after_after_number_of_traces:
             before_before_number_of_traces = len(traces)
@@ -545,37 +548,38 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # if show_all_plots:
         #     scatter_detection(traces, subtitle="After merging overlapping traces.")
 
-        print("SECOND Gaping traces analysis")
-        before_second_gaping_number_of_traces = len(traces)
+        if not fast_run:
+            print("SECOND Gaping traces analysis")
+            before_second_gaping_number_of_traces = len(traces)
 
-        before_number_of_traces = len(traces)
-        after_number_of_traces = 0
-        while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
             before_number_of_traces = len(traces)
-            traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(
-                traces, population_size, silent=silent, debug=debug)
+            after_number_of_traces = 0
+            while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
+                before_number_of_traces = len(traces)
+                traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(
+                    traces, population_size, silent=silent, debug=debug)
 
-            # if before_number_of_traces != len(traces):
-            # with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
-            #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
-            if show_all_plots:
-                scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
-            traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge,
-                                                silent=silent, debug=debug)
-            if show_all_plots:
-                scatter_detection(traces, subtitle="After putting gaping traces together.")
-            after_number_of_traces = len(traces)
+                # if before_number_of_traces != len(traces):
+                # with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
+                #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
+                if show_all_plots:
+                    scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
+                traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge,
+                                                    silent=silent, debug=debug)
+                if show_all_plots:
+                    scatter_detection(traces, subtitle="After putting gaping traces together.")
+                after_number_of_traces = len(traces)
 
-        ## WRITE TRACES COUNT AFTER THIS SECOND LOOP
-        # if before_second_gaping_number_of_traces > len(traces):
-        #     # single_run_filename = f"../auxiliary/second_gaping_single_run_overlaps_count_{bees}.txt"
-        #     single_run_filename = f"../auxiliary/second_gaping_single_run_only_gaps_count_{bees}.txt"
-        #     with open(single_run_filename, "a") as file:
-        #         file.write(f"{csv_file_path}; {before_second_gaping_number_of_traces} -> {len(traces)}\n")
+            ## WRITE TRACES COUNT AFTER THIS SECOND LOOP
+            # if before_second_gaping_number_of_traces > len(traces):
+            #     # single_run_filename = f"../auxiliary/second_gaping_single_run_overlaps_count_{bees}.txt"
+            #     single_run_filename = f"../auxiliary/second_gaping_single_run_only_gaps_count_{bees}.txt"
+            #     with open(single_run_filename, "a") as file:
+            #         file.write(f"{csv_file_path}; {before_second_gaping_number_of_traces} -> {len(traces)}\n")
 
-        #
-        # # Storing the number of traces after second TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
-        # counts.append(len(traces) + len(removed_traces))
+            #
+            # # Storing the number of traces after second TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
+            # counts.append(len(traces) + len(removed_traces))
 
         ##############
         ## FULL GUIDED
