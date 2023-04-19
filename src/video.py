@@ -553,12 +553,14 @@ def align_the_video(traces, video_file, csv_file_path):
     #             da_traces = list(dictionary.keys())[0]
     #             break
 
-    da_frame = 0
+    da_frame = 5000
     points = []
     for trace in traces:
         assert isinstance(trace, Trace)
         if is_in([da_frame, da_frame], trace.frame_range):
             points.append(trace.get_location_from_frame(da_frame))
+
+    offset_frame = convert_frame_number_back(0, csv_file_path)
 
     da_converted_frame = convert_frame_number_back(da_frame, csv_file_path)
 
@@ -572,8 +574,8 @@ def align_the_video(traces, video_file, csv_file_path):
     for line in lines:
         if "points assigned:" in line:
             assigned_points = line.split(":")[1]
-        if "frame:" in line:
-            offset_frame = int(line.split(":")[1])
+        # if "frame:" in line:
+        #     offset_frame = int(line.split(":")[1])
 
     assigned_points = json.loads(assigned_points)
     leftmost_point, a = get_leftmost_point(points)
