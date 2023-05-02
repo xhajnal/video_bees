@@ -340,7 +340,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         #############################
         # CHECK FOR SWAPPING THE BEES
         #############################
-        ## TODO uncomment the following
+        ## TODO uncomment the following to show the overlaps
         # if show_all_plots:
         #     show_overlaps(traces, whole_frame_range)
 
@@ -351,7 +351,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         else:
             counts.append(0)
 
-        ## TODO uncomment the following
+        ## TODO uncomment the following to show plot of all traces
         # ## ALL TRACES SHOW
         # if show_all_plots:
         #     show_plot_locations(traces, subtitle="After swapping.")
@@ -363,6 +363,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ## TODO uncomment the following if want the plot
         # if show_all_plots:
         #     show_plot_locations(traces, subtitle="before TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER")
+
         before_number_of_traces = len(traces)
         after_number_of_traces = 0
         while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):

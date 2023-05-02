@@ -513,11 +513,7 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
         not_shifted_distances, distances, shift = compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=shift, silent=silent, debug=debug, show_all_plots=None)
 
     if show:
-        # Show the video
-        # Pick traces to show
-        traces_to_show = order_traces(traces, [trace1, trace2], selected_range=margin_range(overlap_range, 15))
-        show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 15),
-                   video_speed=0.03, wait=True, video_params=video_params)
+        ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=video_params)
 
     maximal_dist_check = all(list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), distances)))
     # old_maximal_dist_check = all(list(map(lambda x: x < 120, distances)))
@@ -544,31 +540,34 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
                 list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces(), not_shifted_distances)))
 
         if shift and sum(distances) < sum(not_shifted_distances) and not (maximal_dist_check and minimal_dist_check):
-            print()
-            # print(overlap_range)
-            # print(trace1.frames_list)
-            # print(trace1.locations)
-            # print(trace1.get_locations_from_frame_range(overlap_range))
-            print(colored(f"len distances {len(distances)}", "blue"))
-            print(colored(f"distances {distances[25:]}", "blue"))
-            print(colored(f"max distance {max(distances)}", "blue"))
-            print(colored(f"min distance {min(distances)}", "blue"))
-            print(colored(f"path lens per frame {trace1.calculate_path_len_from_range(overlap_range)/len(distances)}, {trace2.calculate_path_len_from_range(overlap_range)/len(distances)}", "blue"))
-
-            if shift:
-                print(colored(f"  shift {shift}", "blue"))
-                print(colored(f"  distances {not_shifted_distances[25:]}", "blue"))
-                print(colored(f"  max distance {max(not_shifted_distances)}", "blue"))
-                print(colored(f"  min distance {min(not_shifted_distances)}", "blue"))
-
             decisions = load_decisions()
             try:
-                decision = decisions[(trace1.trace_id, trace2.trace_id, overlap_range)]
-
+                ## Decision to merge already made and found
+                decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, overlap_range)]
+                print(colored(f" Decision loaded: {decision} to merge overlapping pair of ids - {trace1.trace_id, trace2.trace_id}", "blue"))
             except KeyError:
+                print()
+                # print(overlap_range)
+                # print(trace1.frames_list)
+                # print(trace1.locations)
+                # print(trace1.get_locations_from_frame_range(overlap_range))
+                print(colored(f"len distances {len(distances)}", "blue"))
+                print(colored(f"distances {distances[25:]}", "blue"))
+                print(colored(f"max distance {max(distances)}", "blue"))
+                print(colored(f"min distance {min(distances)}", "blue"))
+                print(colored(f"path lens per frame {trace1.calculate_path_len_from_range(overlap_range) / len(distances)},"
+                              f" {trace2.calculate_path_len_from_range(overlap_range) / len(distances)}", "blue"))
+
+                if shift:
+                    print(colored(f"  shift {shift}", "blue"))
+                    print(colored(f"  distances {not_shifted_distances[25:]}", "blue"))
+                    print(colored(f"  max distance {max(not_shifted_distances)}", "blue"))
+                    print(colored(f"  min distance {min(not_shifted_distances)}", "blue"))
+
                 decision = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=video_params)
-                decisions[(trace1.trace_id, trace2.trace_id, overlap_range)] = decision
-                save_decisions(decisions)
+                decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, overlap_range)] = decision
+                # TODO ask whether to delete a trace
+                save_decisions(decisions, silent=silent)
 
         return decision, shift
     else:
@@ -590,6 +589,13 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
 
 
 def merge_multiple_pairs_of_overlapping_traces(traces, pairs_of_traces_indices, silent=False, debug=False):
+    """ Automatically merges given pairs of traces of given indices.
+
+    :arg traces: (list): list of traces
+    :arg traces: (list of ints): list of trace indices to be merged
+    :arg silent: (bool): if True minimal output is shown
+    :arg debug: (bool): if True extensive output is shown
+    """
     indices_to_delete = []
     pairs_of_traces_indices = list(set(pairs_of_traces_indices))
 
@@ -866,6 +872,8 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
     :arg input_video: (str or bool): if set, path to the input video
     :arg possible_options: (list or tuple): list of option to pick from
     :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+
+    :returns traces_indices_to_be_removed: (list of ints): list of indices to be removed
     """
     traces_indices_to_be_removed = []
     to_delete_by_user = input("Are we going to delete any of the shown traces? (yes or no):")
