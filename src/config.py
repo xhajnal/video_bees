@@ -66,7 +66,12 @@ def get_max_shift():
 
     maximal number of frames a trace is allowed to shift backwards to comply with the distance metric for merging
     """
-    return 90
+    return 10
+
+
+def get_minimal_movement_per_frame():
+    """ Used to distinguish stationary bees, eg. when merging traces close to each other."""
+    return 5
 
 
 def get_force_merge_vicinity_distance():

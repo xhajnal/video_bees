@@ -632,23 +632,23 @@ def load_traces(file):
     return traces
 
 
-def pickle_load(file):
+def pickle_load(file_path):
     """ Returns loaded pickled data
 
     Args:
-        file (string or Path): filename/filepath of the file to be loaded
+        file_path (string or Path): filename/filepath of the file to be loaded
     """
 
-    filename, file_extension = os.path.splitext(file)
+    filename, file_extension = os.path.splitext(file_path)
 
     if file_extension == ".p":
-        with open(file, "rb") as f:
+        with open(file_path, "rb") as f:
             return pickle.load(f)
     elif file_extension == "":
-        with open(str(file) + ".p", "rb") as f:
+        with open(str(file_path) + ".p", "rb") as f:
             return pickle.load(f)
     else:
-        raise Exception("File extension does not match", f"{file} does not seem to be pickle file!")
+        raise Exception("File extension does not match", f"{file_path} does not seem to be pickle file!")
 
 
 def load_result_traces(file_path):
@@ -679,6 +679,42 @@ def parse_traces(csv_file):
         traces[int(row['oid'])][int(row['frame_number'])] = [row[''], [float(row['x']), float(row['y'])]]
     print(colored(f"Loaded {len(traces)} traces. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return traces
+
+
+def load_decisions():
+    """ Loads and returns the pickled file of the saved decisions for the first run.
+
+    :arg csv_file: (file): input file
+    """
+
+    csv_file_path = analyse.get_curr_csv_file_path()
+    csv_file = Path(csv_file_path).stem
+
+    try:
+        a = pickle_load(f"../output/partial/{csv_file}")
+        return a
+    except OSError:
+        return {}
+
+
+def save_decisions(content):
+    """ Saves decisions for the first run as a pickled file.
+
+    :arg csv_file: (file): input file
+    """
+    csv_file_path = analyse.get_curr_csv_file_path()
+    csv_file = Path(csv_file_path).stem
+
+    try:
+        os.mkdir("../output/partial")
+    except OSError:
+        pass
+
+    path = f"../output/partial/{csv_file}.p"
+    with open(path, 'wb') as file:
+        pickle.dump(content, file)
+
+    print(colored(f"Saving decisions in {os.path.abspath(path)}", "yellow"))
 
 
 if __name__ == "__main__":

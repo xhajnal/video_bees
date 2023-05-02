@@ -946,7 +946,7 @@ def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True,
         trace1_index = picked_key[0]
         trace2_index = picked_key[1]
 
-        overlap_range = dictionary[picked_key]
+        overlap_range = tuple(dictionary[picked_key])
 
         seen_pairs.add(picked_key)
         ## ACTUAL DECISION WHETHER TO MERGE

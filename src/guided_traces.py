@@ -3,7 +3,8 @@ from termcolor import colored
 from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionaries, margin_range, delete_indices, \
     range_len
 from primal_traces_logic import get_gaps_of_traces
-from traces_logic import ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap
+from traces_logic import ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap, \
+    ask_to_merge_two_traces
 from video import show_video
 from visualise import scatter_detection, show_plot_locations
 
@@ -76,26 +77,9 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
                             subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
                             silent=True)
 
-        # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-        # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
-        show_video(input_video=input_video, traces=[trace1, trace2], frame_range=margin_range(frame_range, 15), video_speed=0.02, wait=True, video_params=video_params)
+        to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=False)
 
-        # to_show_longer_video = input("Do you want to see longer video? (yes or no):")
-        to_merge_by_user = input("Merge these traces? (yes or no) (press l to see a longer video before):")
-        if "l" in to_merge_by_user.lower():
-            show_video(input_video=input_video, traces=[trace1, trace2], frame_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15),
-                       video_speed=0.02, wait=True, video_params=video_params)
-            to_merge_by_user = input("Merge these traces now? (yes or no)")
-
-        if "n" in to_merge_by_user.lower():
-            spam = ask_to_delete_a_trace(traces, input_video, key, video_params=video_params)
-            if spam:
-                traces_indices_to_be_removed.extend(spam)
-                last_edited_index = spam[0]
-            else:
-                to_skip_tuples.append([trace1.trace_id, trace2.trace_id])
-
-        elif "y" in to_merge_by_user.lower():
+        if to_merge:
             if is_overlap:
                 merge_two_overlapping_traces(traces[key[0]], traces[key[1]], key[0], key[1], silent=silent, debug=debug)
             else:
@@ -103,6 +87,13 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             traces_indices_to_be_removed.append(key[1])
             removed_traces.append(traces[key[1]])
             last_edited_index = key[1]
+        else:
+            spam = ask_to_delete_a_trace(traces, input_video, key, video_params=video_params)
+            if spam:
+                traces_indices_to_be_removed.extend(spam)
+                last_edited_index = spam[0]
+            else:
+                to_skip_tuples.append([trace1.trace_id, trace2.trace_id])
 
     # Actually delete the given traces now
     delete_indices(traces_indices_to_be_removed, traces, debug=False)
