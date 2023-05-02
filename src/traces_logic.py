@@ -578,7 +578,7 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
             elif not minimal_dist_check:
                 reason = f"all big point distance ({round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
             elif not overlap_movement_check:
-                reason = f"both traces during the overlap too stationary ({trace1_avg_distance_per_frame_in_overlap}, {trace2_avg_distance_per_frame_in_overlap} > {get_minimal_movement_per_frame()()})"
+                reason = f"both traces during the overlap too stationary ({trace1_avg_distance_per_frame_in_overlap}, {trace2_avg_distance_per_frame_in_overlap} > {get_minimal_movement_per_frame()})"
             else:
                 raise NotImplemented("Reason not implemented yet.")
 

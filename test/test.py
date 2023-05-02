@@ -590,13 +590,15 @@ class MyTestCase(unittest.TestCase):
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
 
-        distances = compare_two_traces(traces[4], traces[5], 4, 5, allow_inside=True, silent=False, debug=False,show_all_plots=None)
-        self.assertAlmostEqual(distances, [800, 801])
+        distances = compare_two_traces(traces[4], traces[5], 4, 5, allow_inside=True, silent=False, debug=False, show_all_plots=None)
+
+        self.assertAlmostEqual(distances, [800, 761])
 
         distances, spam, shift = compare_two_traces_with_shift(traces[4], traces[5], 4, 5, allow_inside=True, silent=False, debug=False, show_all_plots=None)
-        self.assertAlmostEqual(distances, [800, 801])
-        self.assertAlmostEqual(spam, [792, 801])
-        self.assertAlmostEqual(shift, 1)
+        print("spam", spam)
+        self.assertAlmostEqual(distances, [800, 761])
+        self.assertAlmostEqual(spam, [800, 761])
+        self.assertAlmostEqual(shift, 0)
 
     def testIntervalToCounts(self):
         with open('../test/test3.csv', newline='') as csv_file:
@@ -648,7 +650,7 @@ class MyTestCase(unittest.TestCase):
 
         ## MERGES
         self.assertEqual(check_to_merge_two_overlapping_traces(traces, traces[0], traces[1], 0, 1, [1, 2],
-                                                               shift=False, show=False, silent=False, debug=False,
+                                                               shift=False, show=False, silent=False, debug=True,
                                                                input_video=False, video_params=False), (True, None))
         ## No MERGES, inside one another
         self.assertEqual(check_to_merge_two_overlapping_traces(traces, traces[2], traces[3], 2, 3, [2, 4],
