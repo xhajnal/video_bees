@@ -9,7 +9,8 @@ from termcolor import colored
 from ast import literal_eval as make_tuple
 
 from config import get_max_trace_gap_to_interpolate_distance, get_max_step_distance_to_merge_overlapping_traces, \
-    get_min_step_distance_to_merge_overlapping_traces, get_max_overlap_len_to_merge_traces
+    get_min_step_distance_to_merge_overlapping_traces, get_max_overlap_len_to_merge_traces, \
+    get_minimal_movement_per_frame
 from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap, has_dot_overlap, margin_range, \
     delete_indices, range_len
 from primal_traces_logic import get_traces_from_range
@@ -513,15 +514,7 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
     if show:
         # Show the video
         # Pick traces to show
-        traces_to_show = get_traces_from_range(traces, margin_range(overlap_range, 15))[0]
-        spam = []
-        for index, trace in enumerate(traces_to_show):
-            if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
-                continue
-            else:
-                spam.append(trace)
-        traces_to_show = [trace1, trace2, *spam]
-
+        traces_to_show = order_traces(traces, [trace1, trace2], selected_range=margin_range(overlap_range, 15))
         show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 15),
                    video_speed=0.03, wait=True, video_params=video_params)
 
@@ -571,17 +564,19 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
 
             # Show the video
             # Pick traces to show
-            traces_to_show = get_traces_from_range(traces, margin_range(overlap_range, 15))[0]
-            spam = []
-            for index, trace in enumerate(traces_to_show):
-                if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
-                    continue
-                else:
-                    spam.append(trace)
-            traces_to_show = [trace1, trace2, *spam]
+            traces_to_show = order_traces(traces, [trace1, trace2], selected_range=margin_range(overlap_range, 15))
 
-            show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 50),
-                       video_speed=0.03, wait=True, video_params=video_params)
+            # if len(distances) == 52 and shift==6:
+            overlap_movement_check = trace1_avg_distance_per_frame_in_overlap < get_minimal_movement_per_frame() and \
+                                     trace2_avg_distance_per_frame_in_overlap < get_minimal_movement_per_frame()
+
+            if overlap_movement_check:
+                show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 50),
+                           video_speed=0.03, wait=True, video_params=video_params)
+            # TODO have a look here in case of hiding points [-1,-1]
+            # for tracee in traces_to_show:
+            #     print(list(filter(lambda x: x[0] > 650 and x[1] < 200, tracee.locations)))
+            # print()
 
         return True, shift
     else:
@@ -1026,7 +1021,51 @@ def check_three_traces_insides(trace1, trace2, trace3):
             is_in(trace1.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace1.frame_range))
 
 
-## TODO ad tests
+def order_traces(all_traces, selected_traces, selected_range=None):
+    """ Orders given selected traces to the beginning as given.
+        Moreover, it returns only the list of
+
+        EG. [trace1, trace2, trace3] [trace3] -> [trace3, trace1, trace2]
+
+    :arg all_traces: (list of traces): list of traces to be ordered
+    :arg selected_traces: (list of traces): list of traces to be up front
+    :arg selected_range: (interval): only
+    :returns: sorted_traces: (list of traces): list of ordered traces such that the selected traces are in the front of the list
+    """
+    ## Changed using this snippet
+    # traces_to_show = get_traces_from_range(traces, margin_range(overlap_range, 15))[0]
+    # spam = []
+    # for index, trace in enumerate(traces_to_show):
+    #     if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
+    #         continue
+    #     else:
+    #         spam.append(trace)
+    # traces_to_show = [trace1, trace2, *spam]
+    #
+    # # if len(distances) == 52 and shift==6:
+    # overlap_movement_check = trace1_avg_distance_per_frame_in_overlap < get_minimal_movement_per_frame() and \
+    #                          trace2_avg_distance_per_frame_in_overlap < get_minimal_movement_per_frame()
+    #
+    # if overlap_movement_check:
+    #     show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 50),
+    #                video_speed=0.03, wait=True, video_params=video_params)
+
+    if selected_range is not None:
+        traces_to_order = get_traces_from_range(all_traces, selected_range)[0]
+    else:
+        traces_to_order = all_traces
+
+    spam = []
+    ids = list(map(lambda x: x.trace_id, all_traces))
+    for trace in traces_to_order:
+        if trace.trace_id in ids:
+            continue
+        else:
+            spam.append(trace)
+    return [*selected_traces, *spam]
+
+
+## TODO add tests
 def is_there_full_overlap(list_of_intervals):
     """ Checks whether there is an interval which is inside of another in whole range.
 
