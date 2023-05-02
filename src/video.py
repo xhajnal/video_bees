@@ -66,6 +66,7 @@ def play_opencv(input_video, frame_range, speed, points):
 
             for index, point in enumerate(points):
                 point = list(map(round, point))
+                # if point[0] != -1 and point[1] != -1:
                 cv2.circle(frame, point, 4, color=colors[get_last_digit(index)], thickness=-1, lineType=cv2.LINE_AA)
 
         # Display each frame
@@ -157,6 +158,8 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         return
     # fps = vid_capture.get(5)
     vid_capture.release()
+
+    print(f"Gonna show frame range: {frame_range}")
 
     if video_speed > 1:
         video_speed = 1
@@ -315,16 +318,24 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                 except ValueError as err:
                     continue
 
+                # Recalculate the original's video position
                 # Round the position to whole pixels
-                pointA = list(map(lambda x: round(x), to_vect(crop_offset, trace.locations[location_index])))
+                spam = trace.locations[location_index]
+                pointA = list(map(lambda x: round(x), to_vect(crop_offset, spam)))
+                # TODO have a look here in case of hiding points [-1,-1]
+                # if spam[0] > 0 and spam[1] > 0:
+                #     pointA = list(map(lambda x: round(x), to_vect(crop_offset, spam)))
+                # else:
+                #     print()
 
-                # print(trace_index, trace.trace_id, colors[get_last_digit(trace_index)], pointA)
-
-                # cv2.line(frame, pointA, pointB, (255, 255, 0), thickness=3, lineType=cv2.LINE_AA)
                 try:
+                    # TODO have a look here in case of hiding points [-1,-1]
+                    # if pointA[0] > 0 and pointA[1] > 0:
+
+                    # cv2.line(frame, pointA, pointB, (255, 255, 0), thickness=3, lineType=cv2.LINE_AA)
                     cv2.circle(frame, pointA, 4, color=colors[get_last_digit(trace_index)], thickness=-1, lineType=cv2.LINE_AA)
                 except:
-                    print(pointA)
+                    print("Cannot show the point:", pointA)
 
                 locations_of_traces[trace_index].append(pointA)
                 for index, point in enumerate(locations_of_traces[trace_index]):

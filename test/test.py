@@ -14,7 +14,8 @@ from trace import Trace
 from primal_traces_logic import get_traces_from_range
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range, \
     partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, compare_two_traces, \
-    compare_two_traces_with_shift, merge_multiple_pairs_of_overlapping_traces, check_to_merge_two_overlapping_traces
+    compare_two_traces_with_shift, merge_multiple_pairs_of_overlapping_traces, check_to_merge_two_overlapping_traces, \
+    order_traces
 from misc import *
 from visualise import scatter_detection
 
@@ -473,6 +474,21 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(removed_traces[1].trace_id, 1)
 
     ## TRACES LOGIC TESTS
+    def test_order_traces(self):
+        with open('../test/test.csv', newline='') as csv_file:
+            scraped_traces = parse_traces(csv_file)
+            traces = []
+            for index, trace in enumerate(scraped_traces.keys()):
+                traces.append(Trace(scraped_traces[trace], index))
+
+        self.assertEqual(traces, [traces[0], traces[1], traces[2], traces[3], traces[4], traces[5], traces[6], traces[7]])
+        spam = order_traces(traces, [traces[1], traces[2]])
+        self.assertEqual(spam, [traces[1], traces[2], traces[0], traces[3], traces[4], traces[5], traces[6], traces[7]])
+
+        spam = order_traces(traces, [traces[1], traces[2]], selected_range=(1620, 1622))
+        self.assertEqual(spam, [traces[1], traces[2], traces[0], traces[6], traces[7]])
+
+
     def test_dictionary_of_m_overlaps_of_n_intervals(self):
         with open('../test/test.csv', newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
