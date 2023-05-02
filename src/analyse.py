@@ -22,19 +22,19 @@ from triplets import merge_overlapping_triplets_of_traces, merge_overlapping_tri
     merge_triplets_by_partition
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
-global batch_run
-global silent
-global debug
-global show_plots
-global show_all_plots
-global guided
-global allow_force_merge
-global rerun
-global just_annotate
+# global batch_run
+# global silent
+# global debug
+# global show_plots
+# global show_all_plots
+# global guided
+# global allow_force_merge
+# global rerun
+# global just_annotate
 just_annotate = False
-global just_align
+# global just_align
 just_align = False
-global force_new_video
+# global force_new_video
 force_new_video = False
 
 
@@ -49,6 +49,7 @@ allow_force_merge = False       # allows force merge gaps and overlaps
 rerun = True                    # will execute also files with a setting which is already in the results
 save_parsed_as_pickle = True    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
 fast_run = True                 # will skip the least prominent parts
+
 
 def set_batch_run(do_batch_run):
     global batch_run
@@ -327,11 +328,11 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # Storing the number of jumps detected
         counts.append(number_of_jump_detected)
 
-        if population_size > 1:
-            ## CHOSEN TRACE SHOW - choose i, index of trace
-            i = 0
-            # TODO uncomment the following line to show selected trace
-            # traces[i].show_trace_in_xy()
+        # TODO uncomment the following lines to show selected trace
+        # if population_size > 1:
+        #     ## CHOSEN TRACE SHOW - choose i, index of trace
+        #     i = 0
+        #     traces[i].show_trace_in_xy()
 
         ## CROSS-TRACE ANALYSIS
         cross_trace_analyse(traces, silent=silent, debug=debug)

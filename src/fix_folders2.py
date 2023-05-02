@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 from src.config import hash_config
-hash = str(hash_config())
+my_hash = str(hash_config())
 os.chdir("../data/Video_tracking")
 
 ## for each subfolder (day of tracking)
@@ -12,7 +12,7 @@ for folder in next(os.walk('.'))[1]:
     print(folder)
     os.chdir(folder)
     os.chdir("after_first_run")
-    os.chdir(hash)
+    os.chdir(my_hash)
     # try:
     #     os.mkdir(hash)
     # except:

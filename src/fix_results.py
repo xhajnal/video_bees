@@ -83,7 +83,6 @@ def add_this_config_hash_to_results(after_first_run=False, debug=False):
                 except KeyError:
                     get_vicinity_of_short_traces = -1
 
-
                 try:
                     min_trace_length_to_merge = results[file][config_hash][time_stamp]['min_trace_length']
                 except KeyError:
@@ -91,7 +90,6 @@ def add_this_config_hash_to_results(after_first_run=False, debug=False):
                         min_trace_length_to_merge = results[file][config_hash][time_stamp]['bee_min_trace_len']
                     except KeyError:
                         min_trace_length_to_merge = -1
-
 
                 try:
                     min_step_distance_to_merge_overlapping_traces = results[file][config_hash][time_stamp]['min_step_distance_to_merge_overlapping_traces']
@@ -221,13 +219,13 @@ def fix_wrong_loaded():
 
     for file in results.keys():
         all_loaded = []
-        for hash in results[file].keys():
-            for time_stamp in results[file][hash].keys():
-                item = results[file][hash][time_stamp]
+        for my_hash in results[file].keys():
+            for time_stamp in results[file][my_hash].keys():
+                item = results[file][my_hash][time_stamp]
                 ## TODO hotfix
                 if all_loaded:
                     if item["loaded"] not in all_loaded:
-                        del results[file][hash][time_stamp]
+                        del results[file][my_hash][time_stamp]
 
     with open("../output/results.txt", 'w') as file:
         file.write(json.dumps(results))

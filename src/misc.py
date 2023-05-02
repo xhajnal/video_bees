@@ -89,6 +89,7 @@ def delete_indices(indices, iterable, debug=False):
 
     return iterable
 
+
 def take(n, iterable):
     """ Returns first n items of the iterable as a list.
 
@@ -117,13 +118,13 @@ def flatten(data):
     if len(data) == 0:
         return data
 
-    a = []
+    spam = []
     for item in data:
         try:
-            a = a + list(item)
+            spam = spam + list(item)
         except Exception:
-            a = a + [item]
-    return tuple(a)
+            spam = spam + [item]
+    return tuple(spam)
 
 # print(old_flatten(((1,2,3),(4,5,9))))
 # print(flatten(((1,2,3),(4,5,9))))
@@ -555,7 +556,7 @@ def get_index_of_shortest_range(ranges):
             second_shortest_index = index
             second_shortest_range_len = interval[1] - interval[0]
 
-    if shortest_range_len == second_shortest_range_len and shortest_index!=second_shortest_index and len(ranges) >= 2:
+    if shortest_range_len == second_shortest_range_len and shortest_index != second_shortest_index and len(ranges) >= 2:
         return (shortest_index, second_shortest_index, )
         raise Exception("There is no shortest range!")
 
@@ -676,7 +677,7 @@ if __name__ == "__main__":
     print(has_strict_overlap([5, 6], [6, 10]))
     # print(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True, skip_whole_in=True))
 
-    a = [1,2,34]
+    a = [1, 2, 34]
     delete_indices([1], a)
     print(a)
 

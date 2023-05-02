@@ -67,7 +67,7 @@ def pickled_exist(csv_file_path, is_first_run=None, parsed=False):
     :arg is_first_run: (bool): iff True, "results_after_first_run.txt" will be used instead of standard "results.txt"
     :arg parsed: (bool): iff True, checking for only parsed file
     """
-    hash = str(hash_config())
+    my_hash = str(hash_config())
     path = os.path.dirname(csv_file_path)
     file_name = Path(os.path.basename(csv_file_path)).stem
 
@@ -75,9 +75,9 @@ def pickled_exist(csv_file_path, is_first_run=None, parsed=False):
         return os.path.isfile(os.path.join(path, "parsed", file_name+".p"))
 
     if is_first_run is True:
-        return os.path.isfile(os.path.join(path, hash, file_name+".p"))
+        return os.path.isfile(os.path.join(path, my_hash, file_name+".p"))
     else:
-        return os.path.isfile(os.path.join("../output/traces/", hash, file_name+".p"))
+        return os.path.isfile(os.path.join("../output/traces/", my_hash, file_name+".p"))
 
 
 def is_new_config(file_name, is_guided, is_force_merge_allowed, video_available, is_first_run=None):
@@ -469,7 +469,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
         print(colored(f"Could not write into csv file! Try to close it first.", "red"))
         return
 
-    print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(results_csv_file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n","yellow"))
+    print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(results_csv_file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
 
 def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None):
@@ -542,8 +542,8 @@ def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None)
             # obtain the index of the frame
             frame_index = trace.frames_list.index(frame)
             location = trace.locations[frame_index]
-            id = trace.trace_id
-            message = f"{index},,,{frame},{frame},,object_{id},{id},BVIEW_tracked_object,{location[0]},{location[1]}\n"
+            my_id = trace.trace_id
+            message = f"{index},,,{frame},{frame},,object_{my_id},{my_id},BVIEW_tracked_object,{location[0]},{location[1]}\n"
             file.write(message)
 
         print(colored(f"Saving {len(traces)} traces as csv in {os.path.abspath(f'../output/{file_name}')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
@@ -563,7 +563,7 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
 
     file_name = os.path.basename(csv_file_path)
     file_name = file_name.replace(".csv", ".p")
-    hash = str(hash_config())
+    my_hash = str(hash_config())
 
     if is_first_run is True:
         try:
@@ -572,11 +572,11 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
             pass
 
         try:
-            os.mkdir(os.path.join(os.path.dirname(csv_file_path), "after_first_run", hash))
+            os.mkdir(os.path.join(os.path.dirname(csv_file_path), "after_first_run", my_hash))
         except OSError:
             pass
 
-        file_path = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", hash, file_name))
+        file_path = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", my_hash, file_name))
     elif just_parsed is True:
         try:
             os.mkdir(os.path.join(os.path.dirname(csv_file_path), "parsed"))
@@ -697,7 +697,7 @@ def load_decisions():
         return {}
 
 
-def save_decisions(content):
+def save_decisions(content, silent=False):
     """ Saves decisions for the first run as a pickled file.
 
     :arg csv_file: (file): input file
@@ -714,7 +714,8 @@ def save_decisions(content):
     with open(path, 'wb') as file:
         pickle.dump(content, file)
 
-    print(colored(f"Saving decisions in {os.path.abspath(path)}", "yellow"))
+    if not silent:
+        print(colored(f"Saving decisions in {os.path.abspath(path)}", "yellow"))
 
 
 if __name__ == "__main__":

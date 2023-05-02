@@ -397,7 +397,7 @@ class Trace:
         # ax1.scatter(self.frames_tracked, xs, alpha=0.5)
         ax1.plot(list(range(self.frame_range[0], self.frame_range[1]+1)), xs, alpha=0.5, linewidth=0.4*rcParams['lines.linewidth'])
         if show_middle_point:
-                ax1.scatter([middle_index], [x_middle_pos], c="magenta", s=3)
+            ax1.scatter([middle_index], [x_middle_pos], c="magenta", s=3)
         ax1.scatter(self.overlap_frames[from_overlap_index: to_overlap_index], list(map(lambda x: x[0], overlap_locations))[from_overlap_index: to_overlap_index], c="black")
         ax1.scatter(self.gap_frames[from_gap_index: to_gap_index], list(map(lambda x: x[0], gap_locations))[from_gap_index: to_gap_index], c="white", edgecolors="black")
         ax1.set_xlabel('Time')
@@ -450,7 +450,6 @@ class Trace:
 
         ax3.set_xlabel('x')
         ax3.set_ylabel('y')
-
 
         xs = list(map(lambda x: x[0], self.locations[from_index:to_index]))
         ys = list(map(lambda x: x[1], self.locations[from_index:to_index]))

@@ -68,7 +68,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         print()
         print(colored(f"We have found a pair of {'overlapping' if is_overlap else 'gaping'} traces {key[0]}({trace1.trace_id}),{key[1]}({trace2.trace_id}).", "blue"))
 
-        frame_range = overlaps_and_gaps[key]
+        # frame_range = overlaps_and_gaps[key]
 
         # Video-guided visualisations
         scatter_detection([trace1, trace2], whole_frame_range=[min_range - 200, max_range + 200], show_trace_index=False,

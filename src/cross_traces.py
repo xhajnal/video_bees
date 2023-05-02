@@ -108,7 +108,7 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
                 if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) \
                         and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next) \
                         and math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
-                    print(colored(f"It seems the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}","yellow"))
+                    print(colored(f"It seems the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}", "yellow"))
                     print(f"first_trace_location {first_trace_locations[index]}")
                     print(f"second_trace_location {second_trace_locations[index]}")
                     print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
@@ -409,7 +409,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     extrapolated_point = [splt_x(trace1.frames_list[-1] + dist_of_traces_in_frames),
                                           splt_y(trace1.frames_list[-1] + dist_of_traces_in_frames)]
                     dist_of_trace2_and_extrapolation = math.dist(extrapolated_point, trace2.locations[0])
-                except:
+                except Exception:
                     extrapolated_point = None
                     dist_of_trace2_and_extrapolation = -999999
 
