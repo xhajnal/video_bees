@@ -531,40 +531,16 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
     # old_minimal_dist_check = any(list(map(lambda x: x < 50, distances)))
     overlap_len_check = len(distances) <= get_max_overlap_len_to_merge_traces()
 
-    # if not (maximal_dist_check and minimal_dist_check) and (old_maximal_dist_check and old_minimal_dist_check):
-    #     # TODO get this when checking the distances
-    #     print()
-    #     print(colored(f"len distances {len(distances)}", "blue"))
-    #     print(colored(f"distances {distances[25:]}", "blue"))
-    #     print(colored(f"max distance {max(distances)}", "blue"))
-    #     print(colored(f"min distance {min(distances)}", "blue"))
-    #     if shift:
-    #         print(colored(f"  shift {shift}", "blue"))
-    #         print(colored(f"  distances {not_shifted_distances[25:]}", "blue"))
-    #         print(colored(f"  max distance {max(not_shifted_distances)}", "blue"))
-    #         print(colored(f"  min distance {min(not_shifted_distances)}", "blue"))
-    #
-    #     maximal_dist_check = all(
-    #         list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), not_shifted_distances)))
-    #     minimal_dist_check = any(
-    #         list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces(), not_shifted_distances)))
-    #
-    #     if shift and sum(distances) < sum(not_shifted_distances) and not (maximal_dist_check and minimal_dist_check):
-    #         # Show the video
-    #         # Pick traces to show
-    #         traces_to_show = get_traces_from_range(traces, margin_range(overlap_range, 15))[0]
-    #         spam = []
-    #         for index, trace in enumerate(traces_to_show):
-    #             if trace.trace_id == trace1.trace_id or trace.trace_id == trace2.trace_id:
-    #                 continue
-    #             else:
-    #                 spam.append(trace)
-    #         traces_to_show = [trace1, trace2, *spam]
-    #
-    #         show_video(input_video, traces=traces_to_show, frame_range=margin_range(overlap_range, 50),
-    #                    video_speed=0.03, wait=True, video_params=video_params)
+    trace1_avg_distance_per_frame_in_overlap = trace1.calculate_path_len_from_range(overlap_range) / len(distances)
+    trace2_avg_distance_per_frame_in_overlap = trace2.calculate_path_len_from_range(overlap_range) / len(distances)
 
-    if maximal_dist_check and minimal_dist_check and overlap_len_check:
+    overlap_movement_check = True
+
+    # overlap_movement_check = trace1_avg_distance_per_frame_in_overlap > get_minimal_movement_per_frame() and \
+    #                          trace2_avg_distance_per_frame_in_overlap > get_minimal_movement_per_frame()
+
+    # TO MERGE CHECK
+    if maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check:
         if debug:
             print(colored(f"Will merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "blue"))
 
@@ -573,13 +549,20 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
         minimal_dist_check = any(
             list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces(), not_shifted_distances)))
 
-        if shift and sum(distances) < sum(not_shifted_distances) and not (maximal_dist_check and minimal_dist_check) and 173 > len(distances):
-            # TODO get this when checking the distances
+        if shift and sum(distances) < sum(not_shifted_distances) and not (maximal_dist_check and minimal_dist_check):
+
+
             print()
+            # print(overlap_range)
+            # print(trace1.frames_list)
+            # print(trace1.locations)
+            # print(trace1.get_locations_from_frame_range(overlap_range))
             print(colored(f"len distances {len(distances)}", "blue"))
             print(colored(f"distances {distances[25:]}", "blue"))
             print(colored(f"max distance {max(distances)}", "blue"))
             print(colored(f"min distance {min(distances)}", "blue"))
+            print(colored(f"path lens per frame {trace1.calculate_path_len_from_range(overlap_range)/len(distances)}, {trace2.calculate_path_len_from_range(overlap_range)/len(distances)}", "blue"))
+
             if shift:
                 print(colored(f"  shift {shift}", "blue"))
                 print(colored(f"  distances {not_shifted_distances[25:]}", "blue"))

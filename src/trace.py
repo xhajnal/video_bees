@@ -148,6 +148,8 @@ class Trace:
         """
         start_index = self.frames_list.index(interval[0])
         end_index = self.frames_list.index(interval[1])
+        # print(start_index)
+        # print(end_index)
         return self.locations[start_index:end_index + 1]
 
     def get_number_of_frames_tracked(self):
@@ -169,6 +171,20 @@ class Trace:
         else:
             self.is_done = False
             return False
+
+    def calculate_path_len_from_range(self, interval):
+        ## TODO make more tests
+        """ For a given frame range it calculate the length of the path
+
+        :arg interval: (pair): given frame range
+        """
+        path_len = 0
+        locations = self.get_locations_from_frame_range(interval)
+        for index, location in enumerate(locations):
+            if index == 0:
+                continue
+            path_len = path_len + math.dist(locations[index-1], location)
+        return path_len
 
     def recalculate_trace_lengths(self, recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True):
         ## TODO make more tests
