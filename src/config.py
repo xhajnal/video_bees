@@ -104,7 +104,10 @@ def get_screen_size():
 
 
 def hash_config(this=True):
-    """ Creates a hash of the given config file."""
+    """ Creates a hash of the given config file.
+
+    :arg this: (bool or list): if True the hash is calculated from config, else the values are given in this param
+    """
     if this is True:
         setting = (get_distance_from_calculated_arena(),
                    get_min_trace_len(),

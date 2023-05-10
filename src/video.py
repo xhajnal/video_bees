@@ -8,7 +8,8 @@ from sys import platform
 import cv2
 from termcolor import colored
 
-from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit
+from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit, \
+    modulo, get_colour
 from trace import Trace
 
 
@@ -67,7 +68,7 @@ def play_opencv(input_video, frame_range, speed, points):
             for index, point in enumerate(points):
                 point = list(map(round, point))
                 # if point[0] != -1 and point[1] != -1:
-                cv2.circle(frame, point, 4, color=colors[get_last_digit(index)], thickness=-1, lineType=cv2.LINE_AA)
+                cv2.circle(frame, point, 4, color=colors[modulo(len(colors), index)], thickness=-1, lineType=cv2.LINE_AA)
 
         # Display each frame
         if frame_range:
@@ -134,7 +135,7 @@ def play_opencv(input_video, frame_range, speed, points):
     return points
 
 
-def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True):
+def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True, fix_x_first_colors=False):
     """ Shows given video.
 
         :arg input_video: (Path or str): path to the input video
@@ -144,6 +145,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         :arg wait: (bool): if True it will wait for the end of the video
         :arg points: (tuple of points): points to be shown over the video
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+        :arg fix_x_first_colors: (int): first given colors will be used only once in the video
     """
     if not input_video:
         return
@@ -173,13 +175,13 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         except AssertionError:
             video_params = (0, (0, 0))
         # show traces over
-        p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], True,))
+        p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], fix_x_first_colors, True,))
     p.start()
     if wait:
         p.join()
 
 
-def annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False, force_new_video=False, debug=False):
+def annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), fix_x_first_colors=False, show=False, force_new_video=False, debug=False):
     """ Annotates given video with the tracked position of individual bees.
 
     :arg input_video: (Path or str): path to the input video
@@ -190,6 +192,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     :arg trace_offset: (int): number of the first frames where there is no trace
     :arg trim_offset: (int): number of the first frames to trim from original video
     :arg crop_offset: (tuple): a pair of pints, a vector to offset the location in order to match the input video
+    :arg fix_x_first_colors: (int): first given colors will be used only once in the video
     :arg show: (bool): if True showing the frames
     :arg force_new_video: (bool): iff True, a new video will be created, even a video with the same amount of traces is there
     """
@@ -274,7 +277,6 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
     ## INITIALISE ANNOTATION
     locations_of_traces = []
-    ## TODO fix this as it is SUPER slow for big number of traces
     colors = get_colors(len(traces))
     if debug:
         print("traces colours (R,G,B):", colors)

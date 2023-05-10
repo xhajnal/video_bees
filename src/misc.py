@@ -11,7 +11,19 @@ from termcolor import colored
 
 
 def get_last_digit(number):
+    """ Returns the last digit of a number.
+
+        :arg number: (number): number to get the last digit of
+    """
     return int(str(number)[-1])
+
+
+def modulo(a, b):
+    """ Returns modulo a,b."""
+    if b == 0:
+        return 0
+    else:
+        return a % b
 
 
 def calculate_cosine_distance(vect1, vect2):
@@ -636,9 +648,26 @@ def convert_frame_number_back(frame, csv_file_path):
             return frame + difference
 
 
+def get_colour(index, fix_x_first_colors):
+    colors = list(map(hex_to_rgb,
+                      ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
+                       '#bcbd22', '#37ebfe', '#ffffff', '#FFEA00']))
+
+    if index <= len(colors)-1:
+        try:
+            return colors[index]
+        except IndexError as err:
+            raise err
+    else:
+        colors = colors[fix_x_first_colors:]
+        # print("index", index)
+        # print("len(colors)", len(colors))
+        return colors[modulo(index, len(colors))]
+
+
 def get_colors(number_of_colors):
     """ Returns a list of colors up to 10 colors."""
-    colors = list(map(hex_to_rgb, ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']))
+    colors = list(map(hex_to_rgb, ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#37ebfe', '#ffffff', '#FFEA00']))
 
     if number_of_colors <= 10:
         colors = colors[:number_of_colors]

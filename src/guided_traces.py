@@ -79,7 +79,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
 
         to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=False)
 
-        if to_merge:
+        if to_merge is True:
             if is_overlap:
                 merge_two_overlapping_traces(traces[key[0]], traces[key[1]], key[0], key[1], silent=silent, debug=debug)
             else:
