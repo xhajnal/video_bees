@@ -94,8 +94,12 @@ class Trace:
                     # print("Error:", str(err))
                     raise err
 
+    def get_hash(self):
+        """ Returns a hash of the class."""
+        return hash((self.trace_id, self.locations))
+
     def get_frame_list(self):
-        """ Return the whole frame list - frame range as list from beginning to the end"""
+        """ Return the whole frame list - frame range as list from beginning to the end."""
         return list(range(self.frame_range[0], self.frame_range[1]+1))
 
     def get_gap_frame_range(self):

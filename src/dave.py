@@ -1,4 +1,3 @@
-import analyse
 from analyse import analyse, set_just_annotate, set_force_new_video, set_just_align
 
 
