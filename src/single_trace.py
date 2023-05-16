@@ -26,6 +26,7 @@ def remove_full_traces(traces, removed_traces, population_size, silent=False, de
         :returns new_population_size: (int): population population_size of new traces
         """
     try:
+        # real_whole_frame_range = analyse.whole_frame_range
         real_whole_frame_range = get_real_whole_frame_range()
     except:
         real_whole_frame_range = compute_whole_frame_range(traces)

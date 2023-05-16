@@ -4,13 +4,16 @@ from _socket import gethostname
 from multiprocessing import Process
 from os.path import exists
 from sys import platform
-
+from tkinter import *
 import cv2
 from termcolor import colored
 
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit, \
     modulo, get_colour
 from trace import Trace
+
+global show_single
+global show_number
 
 
 def play_opencv(input_video, frame_range, speed, points):
@@ -139,7 +142,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
     """ Shows given video.
 
         :arg input_video: (Path or str): path to the input video
-        :arg traces: (list): list of Traces
+        :arg traces: (list): list of Traces to be shown
         :arg frame_range: (list or tuple): if set shows only given frame range of the video
         :arg video_speed: (float): ratio of rate, hence default speed is 1
         :arg wait: (bool): if True it will wait for the end of the video
@@ -181,22 +184,40 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         p.join()
 
 
-def annotate_video(input_video, output_video, traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), fix_x_first_colors=False, show=False, force_new_video=False, debug=False):
+def show_all_traces(spam, egg):
+    global show_single
+    show_single = False
+
+
+def show_single_trace(spam, number):
+    global show_single
+    global show_number
+    show_single = True
+    print(number)
+    show_number = number[0]
+
+
+def annotate_video(input_video, output_video, traces_to_show, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), fix_x_first_colors=False, show=False, force_new_video=False, debug=False):
     """ Annotates given video with the tracked position of individual bees.
 
     :arg input_video: (Path or str): path to the input video
     :arg output_video: (Path or str): path to the input video
-    :arg traces: (list): a list of Traces
+    :arg traces: (list): a list of Traces to be shown
     :arg frame_range: (list or tuple): if set shows only given frame range of the video
     :arg speed: ratio of rate, hence default speed is 1
     :arg trace_offset: (int): number of the first frames where there is no trace
     :arg trim_offset: (int): number of the first frames to trim from original video
     :arg crop_offset: (tuple): a pair of pints, a vector to offset the location in order to match the input video
     :arg fix_x_first_colors: (int): first given colors will be used only once in the video
-    :arg show: (bool): if True showing the frames
-    :arg force_new_video: (bool): iff True, a new video will be created, even a video with the same amount of traces is there
+    :arg show: (bool): if True showing the frames, used with False only to annotate the video at the end of analysis
+    :arg force_new_video: (bool): iff True, a new video will be created, even if video with the same amount of traces is there
     """
-    if traces and not show:
+    from traces_logic import delete_trace_with_id
+    global show_single
+    global show_number
+    show_single = False
+
+    if traces_to_show and not show:
         print(colored("ANNOTATES THE VIDEO WITH NEW TRACES", "blue"))
 
     if output_video:
@@ -225,9 +246,8 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     trim_offset = 0 if trim_offset is None else trim_offset
     crop_offset = (0, 0) if crop_offset is None else crop_offset
 
-
     trace_ranges = []
-    for trace in traces:
+    for trace in traces_to_show:
         assert isinstance(trace, Trace)
         trace_ranges.append(trace.frame_range)
 
@@ -241,6 +261,15 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     else:
         cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
 
+    # cv2.createTrackbar('R', 'video', 0, 255, nothing)
+    # cv2.createButton("button2", callbackButton, None, cv2.QT_CHECKBOX, 0)
+
+    cv2.createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
+
+    for index, trace in enumerate(traces_to_show):
+        cv2.createButton(f"Highlight Trace {index}", show_single_trace, [index], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
+        cv2.createButton(f"Delete Trace {index}", delete_trace_with_id, traces_to_show[index].trace_id, cv2.QT_PUSH_BUTTON, 1)
+
     if str(gethostname()) == "Skadi":
         cv2.moveWindow("video", 0, 0)
         cv2.resizeWindow("video", 1900, 800)
@@ -250,6 +279,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
     else:
         if show:
             print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
+            print("Press 0-9 to show only respective trace, Enter to start the video when the trace starts, or . to show all traces")
 
         fps = video.get(5)
         if debug:
@@ -277,13 +307,13 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
     ## INITIALISE ANNOTATION
     locations_of_traces = []
-    colors = get_colors(len(traces))
+    colors = get_colors(len(traces_to_show))
     if debug:
         print("traces colours (R,G,B):", colors)
     colors = list(map(rgb_to_bgr, colors))
     # print("traces colours (G,B,R):", colors)
 
-    for trace in traces:
+    for trace in traces_to_show:
         ## TODO this can be optimised using queue instead of list
         locations_of_traces.append([])
 
@@ -311,7 +341,10 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
         if ret == True:
             ## ANNOTATION
-            for trace_index, trace in enumerate(traces):
+            for trace_index, trace in enumerate(traces_to_show):
+                if show_single:
+                    if trace_index != show_number:
+                        continue
                 # if trace_index > 0:
                 #     continue
 
@@ -335,7 +368,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                     # if pointA[0] > 0 and pointA[1] > 0:
 
                     # cv2.line(frame, pointA, pointB, (255, 255, 0), thickness=3, lineType=cv2.LINE_AA)
-                    cv2.circle(frame, pointA, 4, color=colors[get_last_digit(trace_index)], thickness=-1, lineType=cv2.LINE_AA)
+                    cv2.circle(frame, pointA, 4, color=rgb_to_bgr(get_colour(trace_index, fix_x_first_colors)), thickness=-1, lineType=cv2.LINE_AA)
                 except:
                     print("Cannot show the point:", pointA)
 
@@ -344,7 +377,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                     if index == 0:
                         continue
                     try:
-                        cv2.line(frame, locations_of_traces[trace_index][index-1], point, color=colors[get_last_digit(trace_index)], thickness=1, lineType=cv2.LINE_AA)
+                        cv2.line(frame, locations_of_traces[trace_index][index-1], point, color=rgb_to_bgr(get_colour(trace_index, fix_x_first_colors)), thickness=1, lineType=cv2.LINE_AA)
                     except IndexError as err:
                         print("index", index)
                         print(len(locations_of_traces[trace_index]))
@@ -373,7 +406,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                         video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset)
                     # locations_of_traces = [[]]*len(traces)
                     locations_of_traces = []
-                    for trace in traces:
+                    for trace in traces_to_show:
                         locations_of_traces.append([])
 
                 if key == ord('a') or key == ord('A'):
@@ -383,7 +416,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
                         video.set(cv2.CAP_PROP_POS_FRAMES, max(trim_offset + frame_number - 100, trim_offset + 0))
                     # locations_of_traces = [[]]*len(traces)
                     locations_of_traces = []
-                    for trace in traces:
+                    for trace in traces_to_show:
                         locations_of_traces.append([])
 
                 if key == ord('d') or key == ord('D'):
@@ -394,7 +427,7 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
                     # locations_of_traces = [[]]*len(traces)
                     locations_of_traces = []
-                    for trace in traces:
+                    for trace in traces_to_show:
                         locations_of_traces.append([])
 
                 if key == ord('+'):
@@ -402,6 +435,22 @@ def annotate_video(input_video, output_video, traces, frame_range, speed=1, trac
 
                 if key == ord('-'):
                     speed = 0.9 * speed
+
+                for numeral in range(10):
+                    if key == ord(f'{numeral}'):
+                        show_single = True
+                        show_number = numeral
+                        # print(f"key {numeral} pressed")
+
+                if key == ord('.'):
+                    show_single = False
+
+                if key == ord('\n') or key == ord('\r'):
+                    print("Enter pressed ")
+                    video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + traces_to_show[show_number].frame_range[0])
+                    locations_of_traces = []
+                    for trace in traces_to_show:
+                        locations_of_traces.append([])
 
             # Write the frame to the output files
             if output_video:

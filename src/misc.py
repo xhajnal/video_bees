@@ -4,7 +4,7 @@ from copy import copy
 import numpy as np
 from interval import Interval
 from mpmath import mpi
-import pandas as pd
+# import pandas as pd
 from itertools import islice
 from scipy import spatial
 from termcolor import colored
@@ -649,9 +649,11 @@ def convert_frame_number_back(frame, csv_file_path):
 
 
 def get_colour(index, fix_x_first_colors):
+    # colors = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
     colors = list(map(hex_to_rgb,
-                      ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
-                       '#bcbd22', '#37ebfe', '#ffffff', '#FFEA00']))
+                      ['#1f77b4', '#ff7f0e', '#ffffff', '#d62728', '#5f15a3',
+                       '#8c564b', '#e377c2', '#7f7f7f', '#f9f700', '#37ebfe',
+                       '#ffffff']))
 
     if index <= len(colors)-1:
         try:
@@ -659,6 +661,7 @@ def get_colour(index, fix_x_first_colors):
         except IndexError as err:
             raise err
     else:
+        index = index - len(colors)
         colors = colors[fix_x_first_colors:]
         # print("index", index)
         # print("len(colors)", len(colors))
@@ -703,11 +706,14 @@ def rgb_to_bgr(rgb):
 
 
 if __name__ == "__main__":
-    print(has_strict_overlap([5, 6], [6, 10]))
-    # print(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True, skip_whole_in=True))
+    # print(has_strict_overlap([5, 6], [6, 10]))
+    # # print(dictionary_of_m_overlaps_of_n_intervals(4, [(5, 10), (6, 11), (6, 10), (3, 7), (5, 6)], strict=True, skip_whole_in=True))
+    #
+    # a = [1, 2, 34]
+    # delete_indices([1], a)
+    # print(a)
+    #
+    # print(dictionary_of_m_overlaps_of_n_intervals(3, [(5, 10), (9, 11), (9, 11)], strict=True, skip_whole_in=True))
 
-    a = [1, 2, 34]
-    delete_indices([1], a)
-    print(a)
-
-    print(dictionary_of_m_overlaps_of_n_intervals(3, [(5, 10), (9, 11), (9, 11)], strict=True, skip_whole_in=True))
+    for i in range(20):
+        print(get_colour(i, 1))

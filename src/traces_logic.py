@@ -19,6 +19,7 @@ from primal_traces_logic import get_traces_from_range
 from trace import Trace
 from video import show_video
 from visualise import show_overlap_distances, show_plot_locations, scatter_detection
+import analyse
 
 
 # TODO add tests
@@ -881,6 +882,34 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
         # return ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_params=video_params)
 
 
+# TODO add tests
+def delete_trace_with_id(spam, trace_id):
+    """ Deletes a trace with a trace_id from the list of traces.
+
+    :arg trace_id (int): trace id of the trace to be deleted
+    """
+    # print("trace id", trace_id)
+    # print(len(analyse.traces))
+    # print(analyse.traces)
+
+    ## NORMAL
+    # for index, trace in enumerate(analyse.traces):
+    ## BEES-SPECIFIC
+    for index, trace in enumerate(analyse.traces[:trace_id+1]):
+        # print(f"looking at index {index}")
+        if trace.trace_id == trace_id:
+            print(f"Deleting trace with id {trace_id}.")
+            # Save the decisions
+            decisions = load_decisions()
+            decisions[("delete_trace", trace.trace_id, trace.get_hash())] = True
+            save_decisions(decisions, silent=True)
+            # Delete the trace
+            del analyse.traces[index]
+            # Stop searching
+            return
+    print(f"Trace with id {trace_id} not found.")
+
+
 def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=False):
     """ Creates a user dialogue to ask whether to delete a certain trace while showing video of the trace
 
@@ -938,7 +967,7 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
 def delete_traces_from_saved_decisions(traces):
     """ Deletes the traces which have been previously selected to be deleted.
 
-    :arg traces: (list): a list of Traces
+    :arg traces: (list): a list of all Traces
     """
     indices_to_delete = []
 

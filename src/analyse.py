@@ -22,6 +22,10 @@ from triplets import merge_overlapping_triplets_of_traces, merge_overlapping_tri
     merge_triplets_by_partition
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
+global traces
+global real_whole_frame_range
+global whole_frame_range
+
 # global batch_run
 # global silent
 # global debug
@@ -36,7 +40,7 @@ just_annotate = False
 just_align = False
 # global force_new_video
 force_new_video = False
-
+traces = []
 
 # USER - please set up the following 8 flags
 batch_run = False               # sets silent, not debug, not show_plots, not guided, rerun
@@ -50,6 +54,10 @@ rerun = True                    # will execute also files with a setting which i
 save_parsed_as_pickle = True    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
 fast_run = True                 # will skip the least prominent parts
 
+
+# def get_traces():
+#     global traces
+#     return traces
 
 def set_batch_run(do_batch_run):
     global batch_run
@@ -134,6 +142,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     """
     global just_annotate
     global just_align
+    global traces
 
     set_curr_csv_file_path(csv_file_path)
 
