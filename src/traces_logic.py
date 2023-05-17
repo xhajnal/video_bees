@@ -559,7 +559,7 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
             print(colored(f"  min distance {min(not_shifted_distances)}", "blue"))
 
         ## TO ASK USER
-        decision = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=video_params, silent=silent)
+        decision = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=video_params, silent=silent, overlapping=True)
 
         if debug:
             if decision:
@@ -814,26 +814,35 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
 
 
 # TODO make tests
-def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_params=False, silent=False):
+def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_params=False, silent=False, overlapping=False, gaping=False):
     """ Creates a user dialogue to ask whether to merge selected pair of traces while showing video of the traces
 
         :arg all_traces: (list): a list of all Traces (to be shown in the video)
         :arg selected_traces: (list): two selected traces
         :arg input_video: (str or bool): if set, path to the input video
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+        :arg silent: (bool): if True minimal output is shown
+        :arg overlapping: (bool): if True selected traces have an overlap
+        :arg gaping: (bool): if True selected traces have a gap
     """
     assert len(selected_traces) == 2
     trace1, trace2 = selected_traces
 
     overlap_range = get_overlap(trace1.frame_range, trace2.frame_range)
+    gap_range = get_gap(trace1.frame_range, trace2.frame_range)
 
     # Look whether there is not an answer already
     decisions = load_decisions()
     try:
         ## Decision to merge already made and found
-        decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
+        if overlapping:
+            decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
+        elif gaping:
+            decision = decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
+        else:
+            raise Exception("gaping/overlapping not chosen.")
         if not silent:
-            print(colored(f" Decision loaded: {decision} to merge overlapping pair of ids - {trace1.trace_id, trace2.trace_id}", "blue"))
+            print(colored(f" Decision loaded: {decision} to merge {'overlapping' if overlapping else 'gaping'} pair of ids - {trace1.trace_id, trace2.trace_id}", "blue"))
         return decision
 
     except KeyError:
@@ -866,11 +875,17 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
             to_merge_by_user = input("Merge these traces now? (yes or no)")
 
         if "n" in to_merge_by_user.lower():
-            decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = False
+            if overlapping:
+                decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = False
+            else:
+                decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))] = False
             save_decisions(decisions, silent=silent)
             return False
         elif "y" in to_merge_by_user.lower():
-            decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = True
+            if overlapping:
+                decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = True
+            else:
+                decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))] = True
             save_decisions(decisions, silent=silent)
             return True
         else:

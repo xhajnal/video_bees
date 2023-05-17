@@ -280,6 +280,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         if show:
             print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
             print("Press 0-9 to show only respective trace, Enter to start the video when the trace starts, or . to show all traces")
+            print("Press Ctrl+P to show trace management - deleting and showing the traces.")
 
         fps = video.get(5)
         if debug:

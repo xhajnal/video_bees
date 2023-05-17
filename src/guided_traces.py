@@ -1,11 +1,11 @@
 from termcolor import colored
 
+import analyse
 from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionaries, margin_range, delete_indices, \
     range_len
 from primal_traces_logic import get_gaps_of_traces
 from traces_logic import ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap, \
     ask_to_merge_two_traces
-from video import show_video
 from visualise import scatter_detection, show_plot_locations
 
 
@@ -77,7 +77,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
                             subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
                             silent=True)
 
-        to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=False)
+        to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=analyse.video_params, overlapping=is_overlap, gaping=not is_overlap)
 
         if to_merge is True:
             if is_overlap:

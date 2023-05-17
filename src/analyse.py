@@ -25,6 +25,8 @@ from visualise import scatter_detection, show_plot_locations, show_overlaps, sho
 global traces
 global real_whole_frame_range
 global whole_frame_range
+global video_file
+global video_params
 
 # global batch_run
 # global silent
@@ -143,6 +145,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     global just_annotate
     global just_align
     global traces
+    global video_file
+    global video_params
 
     set_curr_csv_file_path(csv_file_path)
 
@@ -289,11 +293,11 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # show_video(input_video=video_file, frame_range=[8000, 8500], wait=True, video_params=True)
         # show alignment to the original video
         ## TODO uncomment to show the original video with original tracking
-        # show_video(input_video=video_file, traces=traces, frame_range=(), wait=True, points=(), video_params=video_params)
+        # show_video(input_video=video_file, traces=traces, frame_range=(), wait=True, points=(), video_params=video_params, fix_x_first_colors=2)
 
-        ############
-        ### ANALYSIS
-        ############
+        #########################
+        ### SINGLE TRACE ANALYSIS
+        #########################
         if show_all_plots:
             # scatter_detection(traces, from_to_frame=[0, 2000], subtitle="Initial.")
             # show_plot_locations(traces, from_to_frame=[0, 1800], subtitle="Initial.")
@@ -350,6 +354,10 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
         ## CROSS-TRACE ANALYSIS
         cross_trace_analyse(traces, silent=silent, debug=debug)
+
+        ############################
+        ### MULTIPLE TRACES ANALYSIS
+        ############################
 
         #############################
         # CHECK FOR SWAPPING THE BEES

@@ -18,7 +18,7 @@ from primal_traces_logic import get_traces_from_range
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
     compute_whole_frame_range, get_video_whole_frame_range, partition_frame_range_by_number_of_traces, \
     reverse_partition_frame_range_by_number_of_traces, check_to_merge_two_overlapping_traces, \
-    merge_multiple_pairs_of_overlapping_traces
+    merge_multiple_pairs_of_overlapping_traces, ask_to_merge_two_traces
 from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
@@ -417,6 +417,9 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                 to_merge = True
                 reason = ""
 
+
+
+
                 # Check for force_merge
                 gap_range = [trace1.frame_range[1], trace2.frame_range[0]]
                 if allow_force_merge:
@@ -475,6 +478,12 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     print(colored(msg, "yellow" if to_merge else "red"))
 
                 if to_merge:
+                    ### Check for FalsePositives
+
+                    # to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
+                    if to_merge is False:
+                        break
+
                     # print(colored(f"Merging gaping traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id})", "yellow"))
                     trace = merge_two_traces_with_gap(trace1, trace2)
                     if debug:
