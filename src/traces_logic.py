@@ -374,11 +374,12 @@ def reverse_partition_frame_range_by_number_of_traces(traces_or_interval_to_coun
     return traces_count_to_intervals
 
 
-def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=False):
+def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, interpolate_gap=None, silent=False, debug=False):
     """ Puts two traces together.
 
     :arg trace1: (Trace): a Trace to be merged with the following trace
     :arg trace2: (Trace): a Trace to be merged with the following trace
+    :arg interpolate_gap: (bool): whether to interpolate the locations within the gap
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
 
@@ -425,8 +426,8 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, silent=False, debug=
         trace1.gap_frames.append(frame)
     trace1.frames_list.extend(trace2.frames_list)
 
-    # Based on the gap population_size
-    if frame_gap_size <= get_max_trace_gap_to_interpolate_distance():
+    # Decide on interpolating the locations within the gap
+    if interpolate_gap is True or frame_gap_size <= get_max_trace_gap_to_interpolate_distance():
         # set a point of location of the gap as linear interpolation of two bordering points
         if debug:
             print("frame_gap_size", frame_gap_size)
@@ -559,7 +560,8 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
             print(colored(f"  min distance {min(not_shifted_distances)}", "blue"))
 
         ## TO ASK USER
-        decision = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=video_params, silent=silent, overlapping=True)
+        # decision = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=video_params, silent=silent, overlapping=True)
+        decision =True
 
         if debug:
             if decision:
@@ -859,7 +861,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
                    video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
 
         # to_show_longer_video = input("Do you want to see longer video? (yes or no):")
-        to_merge_by_user = input("Merge these traces? (yes or no) (press l to see a longer video before, f to see full and both traces):")
+        to_merge_by_user = input("Merge these traces? (Yes or No or Dunno - not saving) (press l to see a longer video before, f to see full and both traces):")
         if "l" in to_merge_by_user.lower():
             selected_range = (max(show_range[0] - 100, trace1.frame_range[0] - 15), min(show_range[1] + 100, trace2.frame_range[1] + 15))
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=selected_range)
@@ -899,7 +901,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
 
 # TODO add tests
 def delete_trace_with_id(spam, trace_id):
-    """ Deletes a trace with a trace_id from the list of traces.
+    """ Deletes a trace with a trace_id from the list of traces + save decisions.
 
     :arg trace_id (int): trace id of the trace to be deleted
     """
@@ -918,11 +920,40 @@ def delete_trace_with_id(spam, trace_id):
             decisions = load_decisions()
             decisions[("delete_trace", trace.trace_id, trace.get_hash())] = True
             save_decisions(decisions, silent=True)
+            # Save deleted trace
+            analyse.deleted_traces[(index, trace_id)] = analyse.traces[index]
             # Delete the trace
             del analyse.traces[index]
             # Stop searching
             return
-    print(f"Trace with id {trace_id} not found.")
+    print(colored(f"Trace with id {trace_id} not found.", "red"))
+
+
+def undelete_trace_with_id(spam, egg):
+    """ Undeletes a trace with a trace_id from the list of traces + unsave decision.
+
+    :arg egg (list): [trace id of the trace to be deleted, former index in the list of traces]
+    """
+
+    trace_id, index = egg
+
+    # Remove trace from saved deleted traces
+    decisions = load_decisions()
+    for key in decisions.keys():
+        if key[0] == "delete_trace":
+            if key[1] == trace_id:
+                del decisions[key]
+                break
+    save_decisions(decisions, silent=True)
+
+    # Remove the trace from deleted traces
+    try:
+        analyse.traces = analyse.traces[:index] + [analyse.deleted_traces[(index, trace_id)]] + analyse.traces[index:]
+        del analyse.deleted_traces[(index, trace_id)]
+        print(f" Undeleting trace {trace_id}.")
+    except KeyError:
+        print(f" Trying to undelete trace {trace_id} failed, not found")
+        return
 
 
 def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=False):
@@ -995,16 +1026,24 @@ def delete_traces_from_saved_decisions(traces):
     while i < len(delete_decisions):
         while j < len(traces):
             # if the trace.id to be deleted is further, move the traces index
-            if delete_decisions[i][1] > traces[j].trace_id:
-                j = j + 1
-            # if the trace.id is equal to the one to be deleted
-            elif delete_decisions[i][1] == traces[j].trace_id:
-                if delete_decisions[i][2] == traces[j].get_hash():
-                    indices_to_delete.append(j)
-                i = i + 1
+            try:
+                if delete_decisions[i][1] > traces[j].trace_id:
+                    j = j + 1
+                # if the trace.id is equal to the one to be deleted
+                elif delete_decisions[i][1] == traces[j].trace_id:
+                    if delete_decisions[i][2] == traces[j].get_hash():
+                        indices_to_delete.append(j)
 
-    delete_indices(indices_to_delete, traces)
-    print(f"Just deleted the traces with the following indices {indices_to_delete} by loading the saved decisions.")
+                    i = i + 1
+            except IndexError:
+                print(f"Could not find deleted trace in saved decisions.")
+                break
+
+    if indices_to_delete:
+        delete_indices(indices_to_delete, traces)
+        print(f"Just deleted the traces with the following indices {indices_to_delete} by loading the saved decisions.")
+
+    print(f"Could not find deleted trace in saved decisions.")
     return traces
 
 

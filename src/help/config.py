@@ -30,7 +30,7 @@ def get_bee_max_step_len_per_frame():
 def get_min_trace_length_to_merge():
     """ Returns a minimal length of a trace to be merged with the other."""
     # Usage: gaping traces
-    return 50
+    return 50*1.2
 
 
 def get_max_trace_gap():
@@ -38,7 +38,8 @@ def get_max_trace_gap():
         Effectively computes how long an agent can hide from being tracked (max_trace_gap / frame rate).
     """
     # Usage: gaping trace - ABOVE
-    return 100
+    return 100/1.2
+
 
 def get_max_overlap_len_to_merge_traces():
     """ Return a maximal length of an overlap of two traces to be merged."""
@@ -58,7 +59,7 @@ def get_min_step_distance_to_merge_overlapping_traces():
     """
     # TODO check this value
     # Usage: overlapping traces
-    return 43
+    return 49
 
 
 def get_max_shift():
@@ -66,7 +67,12 @@ def get_max_shift():
 
     maximal number of frames a trace is allowed to shift backwards to comply with the distance metric for merging
     """
-    return 90
+    return 10
+
+
+def get_minimal_movement_per_frame():
+    """ Used to distinguish stationary bees, eg. when merging traces close to each other."""
+    return 10
 
 
 def get_force_merge_vicinity_distance():
@@ -99,7 +105,10 @@ def get_screen_size():
 
 
 def hash_config(this=True):
-    """ Creates a hash of the given config file."""
+    """ Creates a hash of the given config file.
+
+    :arg this: (bool or list): if True the hash is calculated from config, else the values are given in this param
+    """
     if this is True:
         setting = (get_distance_from_calculated_arena(),
                    get_min_trace_len(),

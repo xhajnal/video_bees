@@ -145,3 +145,13 @@ src/merge_result_dicts.py
 
 auxiliary/*
 !auxiliary/transpositions.txt
+
+src/asdf.py
+
+src/axcv.py
+
+Input.jpg
+
+src/dasfsdfsf.py
+
+src/fdsfsdf.py

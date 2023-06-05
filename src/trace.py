@@ -96,7 +96,7 @@ class Trace:
 
     def get_hash(self):
         """ Returns a hash of the class."""
-        return hash((self.trace_id, self.locations))
+        return hash((self.trace_id, tuple(map(lambda x: tuple(x), self.locations))))
 
     def get_frame_list(self):
         """ Return the whole frame list - frame range as list from beginning to the end."""

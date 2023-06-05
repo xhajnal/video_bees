@@ -27,6 +27,7 @@ global real_whole_frame_range
 global whole_frame_range
 global video_file
 global video_params
+global deleted_traces
 
 # global batch_run
 # global silent
@@ -147,6 +148,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     global traces
     global video_file
     global video_params
+    global deleted_traces
+    deleted_traces = {}
 
     set_curr_csv_file_path(csv_file_path)
 
@@ -294,6 +297,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # show alignment to the original video
         ## TODO uncomment to show the original video with original tracking
         # show_video(input_video=video_file, traces=traces, frame_range=(), wait=True, points=(), video_params=video_params, fix_x_first_colors=2)
+
+        spam = load_decisions()
 
         #########################
         ### SINGLE TRACE ANALYSIS

@@ -212,7 +212,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     :arg show: (bool): if True showing the frames, used with False only to annotate the video at the end of analysis
     :arg force_new_video: (bool): iff True, a new video will be created, even if video with the same amount of traces is there
     """
-    from traces_logic import delete_trace_with_id
+    from traces_logic import delete_trace_with_id, undelete_trace_with_id
     global show_single
     global show_number
     show_single = False
@@ -267,8 +267,9 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     cv2.createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
 
     for index, trace in enumerate(traces_to_show):
-        cv2.createButton(f"Highlight Trace {index}", show_single_trace, [index], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
-        cv2.createButton(f"Delete Trace {index}", delete_trace_with_id, traces_to_show[index].trace_id, cv2.QT_PUSH_BUTTON, 1)
+        cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [index], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
+        cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, traces_to_show[index].trace_id, cv2.QT_PUSH_BUTTON, 1)
+        cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[index].trace_id, index], cv2.QT_PUSH_BUTTON, 1, )
 
     if str(gethostname()) == "Skadi":
         cv2.moveWindow("video", 0, 0)
@@ -370,8 +371,14 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
                     # cv2.line(frame, pointA, pointB, (255, 255, 0), thickness=3, lineType=cv2.LINE_AA)
                     cv2.circle(frame, pointA, 4, color=rgb_to_bgr(get_colour(trace_index, fix_x_first_colors)), thickness=-1, lineType=cv2.LINE_AA)
-                except:
+                    cv2.putText(frame, str(trace.trace_id), [pointA[0]+12, pointA[1]-12], fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1.2,
+                                color=rgb_to_bgr(get_colour(trace_index, fix_x_first_colors)),
+                                thickness=2, lineType=cv2.LINE_AA)
+                except Exception as err:
+                    print(err)
                     print("Cannot show the point:", pointA)
+
+
 
                 locations_of_traces[trace_index].append(pointA)
                 for index, point in enumerate(locations_of_traces[trace_index]):
