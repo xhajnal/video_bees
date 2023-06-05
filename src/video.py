@@ -187,13 +187,14 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
 def show_all_traces(spam, egg):
     global show_single
     show_single = False
+    print("Showing all traces.")
 
 
 def show_single_trace(spam, number):
     global show_single
     global show_number
     show_single = True
-    print(number)
+    print("Showing single trace", number)
     show_number = number[0]
 
 
@@ -269,7 +270,8 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     for index, trace in enumerate(traces_to_show):
         cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [index], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
         cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, traces_to_show[index].trace_id, cv2.QT_PUSH_BUTTON, 1)
-        cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[index].trace_id, index], cv2.QT_PUSH_BUTTON, 1, )
+        cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[index].trace_id, index], cv2.QT_PUSH_BUTTON, 1)
+        cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", fake, None, cv2.QT_PUSH_BUTTON, 1, )
 
     if str(gethostname()) == "Skadi":
         cv2.moveWindow("video", 0, 0)
@@ -681,6 +683,10 @@ def align_the_video(traces, video_file, csv_file_path):
         file.write(json.dumps(transpositions))
 
     return vector, offset_frame
+
+
+def fake():
+    pass
 
 
 if __name__ == "__main__":
