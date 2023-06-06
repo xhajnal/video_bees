@@ -6,19 +6,15 @@ import analyse
 from dave_io import load_result
 
 
-def write_dave(is_first_run=False):
+def write_dave(show_first_run_result=False, show_second_run_result=False):
     """ Writes the dave script main without result values.
 
-    arg: is_first_run (bool): whether to pick the results of the first run
+    arg: show_first_run_result (bool): whether to show the results of the first run
+    arg: show_second_run_result (bool): whether to show the results of the second run
     """
     a = [190822, 190823, 190903, 190904, 190905, 190906, 190916, 190917, 190918, 190919, 190920, 190922, 190924, 190925, 190926, 190927, 190928, 190929, 190930, 191001, 191002, 191003, 191007, 191008, 191011, 191014, 191016, 191017, 191018]
 
     path = '../data/Video_tracking/'
-
-    if is_first_run:
-        which_run = "1stRun"
-    else:
-        which_run = "finalRun"
 
     print("a = is_first_run")
     for population_size in [1, 2, 5, 7, 10, 15]:
@@ -51,10 +47,11 @@ def write_dave(is_first_run=False):
 
                 # print("#")
                 # print("#")
-                if is_first_run:
+                if show_first_run_result:
+                    which_run = "1stRun"
                     try:
                         ## TODO pick
-                        file_results = load_result(file_name=f"{original_file}", is_first_run=is_first_run)
+                        file_results = load_result(file_name=f"{original_file}", is_first_run=True)
                         all_loaded = []
                         all_single = []
                         all_final = []
@@ -102,64 +99,66 @@ def write_dave(is_first_run=False):
                             except IndexError:
                                 print(f"# # {which_run} -> -> ")
 
-                try:
-                    ## TODO pick
-                    file_results = load_result(file_name=f"{original_file}", is_first_run=False)
-                    all_loaded = []
-                    all_single = []
-                    all_final = []
-
-                    for hash in file_results.keys():
-                        for time_stamp in file_results[hash].keys():
-                            item = file_results[hash][time_stamp]
-                            # print(item)
-
-                            ## TODO hotfix
-                            if all_loaded:
-                                if item["loaded"] not in all_loaded:
-                                    continue
-
-                            all_loaded.append(item["loaded"])
-                            try:
-                                all_single.append(item["zero length"])
-                            except KeyError:
-                                pass
-                            all_final.append(item["after merging overlapping traces"])
-
-                    if len(set(all_loaded)) != 1:
-                        raise Exception(f"{file2} some 'loaded' are not the same")
-                    # if len(set(all_single)) != 1:
-                    #     raise Exception(f"{file2} some after single are not the same")
-
-                    if all_final[-1] == min(all_final):
-                        is_found = "*"
-                    else:
-                        is_found = ""
-                except KeyError:
-                    all_loaded = [""]
-                    all_single = [""]
-                    all_final = [""]
-                    is_found = ""
-                except FileNotFoundError:
-                    all_loaded = [""]
-                    all_single = [""]
-                    all_final = [""]
-                    is_found = ""
-
-                try:
-                    print(f"# # {all_loaded[0]} -> {all_single[0]} -> {all_final[-1]} {is_found}")
-                except IndexError:
+                if show_second_run_result:
+                    which_run = "finalRun"
                     try:
-                        print(f"# # {all_loaded[0]} -> {all_single[0]} -> ")
+                        ## TODO pick
+                        file_results = load_result(file_name=f"{original_file}", is_first_run=False)
+                        all_loaded = []
+                        all_single = []
+                        all_final = []
+
+                        for hash in file_results.keys():
+                            for time_stamp in file_results[hash].keys():
+                                item = file_results[hash][time_stamp]
+                                # print(item)
+
+                                ## TODO hotfix
+                                if all_loaded:
+                                    if item["loaded"] not in all_loaded:
+                                        continue
+
+                                all_loaded.append(item["loaded"])
+                                try:
+                                    all_single.append(item["zero length"])
+                                except KeyError:
+                                    pass
+                                all_final.append(item["after merging overlapping traces"])
+
+                        if len(set(all_loaded)) != 1:
+                            raise Exception(f"{file2} some 'loaded' are not the same")
+                        # if len(set(all_single)) != 1:
+                        #     raise Exception(f"{file2} some after single are not the same")
+
+                        if all_final[-1] == min(all_final):
+                            is_found = "*"
+                        else:
+                            is_found = ""
+                    except KeyError:
+                        all_loaded = [""]
+                        all_single = [""]
+                        all_final = [""]
+                        is_found = ""
+                    except FileNotFoundError:
+                        all_loaded = [""]
+                        all_single = [""]
+                        all_final = [""]
+                        is_found = ""
+
+                    try:
+                        print(f"# # {which_run} {all_loaded[0]} -> {all_single[0]} -> {all_final[-1]} {is_found}")
                     except IndexError:
                         try:
-                            print(f"# # {all_loaded[0]} -> -> ")
+                            print(f"# # {which_run} {all_loaded[0]} -> {all_single[0]} -> ")
                         except IndexError:
-                            print(f"# # -> -> ")
+                            try:
+                                print(f"# # {which_run} {all_loaded[0]} -> -> ")
+                            except IndexError:
+                                print(f"# # {which_run} -> -> ")
 
-                print(f"# analyse('{file}', {population_size}{if_video})")
-                print("#")
+                    print(f"# analyse('{file}', {population_size}{if_video})")
+                    print("#")
 
 
 if __name__ == "__main__":
-    write_dave(is_first_run=True)
+    write_dave(show_first_run_result=True, show_second_run_result=True)
