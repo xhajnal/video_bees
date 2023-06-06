@@ -64,7 +64,7 @@ If you trimmed or cropped the video, a one-time user-guided process will save th
 
 ## HOW AND WHERE TO STORE INPUT
 Select a folder such as `data`. 
-Get your `*_nn.csv` and `*.mp4` files, the results of loopy analysis, into this folder with/without your folder structure. 
+Get your tracking `*_nn.csv` and video `*.mp4` files, the results of loopy analysis, into this folder with/without your folder structure. 
 
 Now, edit `dave.py` (located in `src` folder) or use automatic dave generation `help_write_dave.py`.
 `dave.py` contains lines for each file you would like to analyse.
@@ -72,16 +72,16 @@ In each line, function `analyse` calls the given file e.g.:
 
 `analyse('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', population_size=2, has_tracked_video=True, is_first_run=a)`
 
-where the first parameter is path to the `.csv` file, second is `population_size` (number of objects tracked in the video), flag has_tracked_video whether there is a video as a result of loopy tracking and last flag is_first_run, you do not need to set as this is a part of two-run setting (see more in TWO RUNS DAVE section).
+where the first parameter is path to the `.csv` file, second is `population_size` (number of objects tracked in the video), flag has_tracked_video whether there is a video as a result of loopy tracking and last flag, `is_first_run`, you do not need to set as this is a part of two-run setting (see more in TWO RUNS DAVE section).
 
 
 ### (OPTIONAL) FIXING FRAME RANGES
 In our case studies, the videos were trimmed and hence the first frame of the video was not recognised by loopy as the first. 
-If you want to overcome this problem, put the files in one deeper folder `original` and edit `fix_ranges.py` in a similar way as `dave.py` e.g:
+If you want to overcome this problem, put the files in one folder deeper and name it `original` and edit the main of `fix_ranges.py` in a similar way as `dave.py` e.g:
 
-`fix_ranges('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', 2)`
+`fix_ranges('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv')`
 
-(Or simply edit the paths and population sizes of already given calls in the file.)
+for each file to be fixed or use recursive call to fix ranges of all the `_nn.csv` files by accomodating your folder structure.  
 
 Now run file `fix_ranges.py`
 ```
@@ -89,18 +89,17 @@ Now run file `fix_ranges.py`
 >> python fix_ranges.py
 ```
 it saves fixed frame ranges by editing `frame_number` column, while keeping column `frame_count` intact. 
-if these are the same (in our case they were) you can now delete `original` folder, since all information is stored in the new files. 
+original files are moved to the folder `original` and the fixed are in the folder they have been before. 
 
 ## SETUP THE RUN
 In the `analysis.py`, which dictates the sequence of the logic, visualisations, and I/O calls;
-there are 6 flags, `batch_run`, `silent`, `debug`, `show_plots`, `guided`, and `rerun`.
+there are 8 flags, `batch_run`, `silent`, `debug`, `show_plots`, `show_plots`, `guided`, `allow_force_merge`, and `rerun`.
 These dictate global systematic settings such as the level of output, recalling a file with a known result as it was already run with the same setting, and user-guided version. Documentation of individual flag is in the file.
-
 
 In the `config.py` there are some fixed values which alter the boundaries and thresholds of the analysis. 
 Documentation of individual value is in the file.
 Changing these values may cause a different result of the analysis.
-In principe, the most important values are at the top. 
+In principle, the most important values are at the top. 
 
 ## HOW TO RUN
 In the `dave.py` there are individual lines loading and parsing individual `_nn.csv` file in the main function. Such as:
@@ -111,18 +110,18 @@ In the `dave.py` there are individual lines loading and parsing individual `_nn.
     analyse("../data/Video_tracking/190903/20190903_134034775_1BEE_generated_20210511_083234_nn.csv", 1)
 ` 
 
-Hence you can run the analysis of selected files by:
+Hence you can run the analysis of these files by:
 
 ```
 >> cd src
 >> python dave.py
 ```
 
-It will run the analysis for each of the selected files.
+It will run the analysis for each of the file.
 
 ### (OPTIONAL, ADVANCED) HELP DAVE WRITER
 There is also a script `help_write_dave.py` which can help you to write the whole `dave.py` by parsing the content of the `data` folder.
-It requires to have population size in the name of the csv file and to have name similarities with the video file. 
+It requires to have population size in the name of the `.csv` file and to have name similarities with the video file. 
 
 Simply edit and run `help_write_dave.py` to obtain the text to paste into `dave.py`.
 
@@ -188,19 +187,19 @@ Here you have an option to:
 - Delete a trace (decision will be save), 
 - hence there is also a button to undo this (Undelete trace). 
 
-you also see the frame range (starting and ending frame number) of each trace in the last column.
+you can also see the frame range (starting and ending frame number) of each trace in the last column.
 
 After the video is closed (press `q`), a question appears in prompt whether to merge blue and orange trace.
 - press `y` to merge and save decision, 
 - press `n` to not merge and save decision, 
 - press `d` to not merge and NOT save decision (when you are not sure what to choose)
 
-if you do not merge, you will be asked whether to ask any trace. 
+if you do not merge, you will be asked whether to delete ask any trace. 
 Also you have an option to see larger proportion of the video, press `l` to see larger portion or `f` to see full 
 
 After this, process continues by moving to another problematic trace pair until all problems are solved for the file.
 
-Each user-guided decision is saved (in pickled dictionary) and in next run automatically used. 
+Each user-guided decision is saved (in pickled dictionary) and in the next run automatically used. 
 Currently to change the decision, the only way is to find auxilary file of the respective file and manually delete the item.
 
 
