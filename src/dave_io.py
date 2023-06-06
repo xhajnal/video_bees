@@ -472,7 +472,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
     print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(results_csv_file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
 
-def save_traces(traces, file_name, silent=False, debug=False, is_first_run=None):
+def save_traces_as_csv(traces, file_name, silent=False, debug=False, is_first_run=None):
     """ Saves the traces as csv file in loopy manner.
 
         :arg traces (list) list of traces
@@ -563,7 +563,8 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
 
     file_name = os.path.basename(csv_file_path)
     file_name = file_name.replace(".csv", ".p")
-    my_hash = str(hash_config())
+    my_hash = hash_config()
+    my_hash = str(my_hash)
 
     if is_first_run is True:
         try:
@@ -595,11 +596,11 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
             pass
 
         try:
-            os.mkdir(f"../output/traces/{hash}")
+            os.mkdir(f"../output/traces/{my_hash}")
         except OSError:
             pass
 
-        file_path = f"../output/traces/{hash}/{file_name}"
+        file_path = f"../output/traces/{my_hash}/{file_name}"
 
         ## Old save place
         # digit = parse_population_size(file_name)

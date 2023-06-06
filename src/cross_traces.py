@@ -467,8 +467,8 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     print(f"max_trace_gap: {trace2.frame_range[0] - step_to} < {get_max_trace_gap() * const}")
                     print(
                         f"min_trace_length_to_merge: {trace2.frame_range_len} > {get_min_trace_length_to_merge() / const}")
-                    to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file,
-                                                       video_params=analyse.video_params, silent=silent, gaping=True)
+                    to_merge, spam = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file,
+                                                             video_params=analyse.video_params, silent=silent, gaping=True)
 
                 if trace2.frame_range[0] - trace1.frame_range[-1] == 0:  # fix distance of zero len gap
                     distance_per_frame = None

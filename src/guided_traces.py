@@ -20,6 +20,8 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :arg to_skip_tuples: (tuple): pairs of trace ids, which to be skipped (as they have been already checked)
         :arg has_tracked_video: (bool): flag whether a video with tracking is available
+
+        :returns: traces, removed_traces, to_skip_tuples
     """
     print(colored("VIDEO-GUIDED SOLVER", "blue"))
     if not input_video:
@@ -44,7 +46,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             delete_indices(traces_indices_to_be_removed, traces, debug=False)
             traces, spam, to_skip_tuples = full_guided(traces, input_video, show=show, silent=silent, debug=debug, video_params=video_params, to_skip_tuples=to_skip_tuples, has_tracked_video=has_tracked_video)
             removed_traces.extend(spam)
-            return traces, removed_traces
+            return traces, removed_traces, to_skip_tuples
 
         trace1 = traces[key[0]]
         trace2 = traces[key[1]]
@@ -77,7 +79,8 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
                             subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
                             silent=True)
 
-        to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=analyse.video_params, overlapping=is_overlap, gaping=not is_overlap)
+        # to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
+        to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, overlapping=is_overlap, gaping=not is_overlap)
 
         if to_merge is True:
             if is_overlap:
@@ -87,7 +90,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             traces_indices_to_be_removed.append(key[1])
             removed_traces.append(traces[key[1]])
             last_edited_index = key[1]
-        else:
+        elif video_was_shown:
             spam = ask_to_delete_a_trace(traces, input_video, key, video_params=video_params)
             if spam:
                 traces_indices_to_be_removed.extend(spam)

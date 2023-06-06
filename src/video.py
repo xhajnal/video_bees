@@ -4,7 +4,7 @@ from _socket import gethostname
 from multiprocessing import Process
 from os.path import exists
 from sys import platform
-from tkinter import *
+# from tkinter import *
 import cv2
 from termcolor import colored
 

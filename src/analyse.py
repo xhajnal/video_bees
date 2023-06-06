@@ -16,7 +16,7 @@ from cross_traces import put_gaping_traces_together, track_reappearance, cross_t
     merge_alone_overlapping_traces, track_swapping_loop
 from traces_logic import compute_whole_frame_range, get_video_whole_frame_range, delete_traces_from_saved_decisions
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
-    parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist, save_traces, load_traces, \
+    parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist, save_traces_as_csv, load_traces, \
     load_decisions
 from triplets import merge_overlapping_triplets_of_traces, merge_overlapping_triplets_brutto, \
     merge_triplets_by_partition
@@ -630,14 +630,13 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         all_final_traces.extend(traces)
         print(colored(f"ANALYSIS FINISHED. There are {len(all_final_traces)} traces left.", "green"))
 
-        ## SAVE RESULTS
+        ## SAVE RESULTS (TABLE)
         is_new = save_current_result(counts, file_name=csv_file_path, population_size=original_population_size, is_first_run=is_first_run,
                                      is_guided=guided, is_force_merge_allowed=allow_force_merge, video_available=has_tracked_video, silent=silent, debug=debug)
         if is_new:
             convert_results_from_json_to_csv(silent=silent, debug=debug, is_first_run=is_first_run)
             if not is_first_run:
-                save_traces(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug, is_first_run=is_first_run)
-            ## TODO uncomment this
+                save_traces_as_csv(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug, is_first_run=is_first_run)
             pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run)
     else:
         # Just_annotate

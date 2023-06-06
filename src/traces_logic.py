@@ -826,6 +826,8 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
         :arg silent: (bool): if True minimal output is shown
         :arg overlapping: (bool): if True selected traces have an overlap
         :arg gaping: (bool): if True selected traces have a gap
+
+        :returns: to_merge, video_was_shown
     """
     assert len(selected_traces) == 2
     trace1, trace2 = selected_traces
@@ -845,7 +847,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
             raise Exception("gaping/overlapping not chosen.")
         if not silent:
             print(colored(f" Decision loaded: {decision} to merge {'overlapping' if overlapping else 'gaping'} pair of ids - {trace1.trace_id, trace2.trace_id}", "blue"))
-        return decision
+        return decision, False
 
     except KeyError:
         # Compute which part of the traces to show
@@ -889,11 +891,11 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
             else:
                 decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))] = True
             save_decisions(decisions, silent=silent)
-            return True
+            return True, True
         else:
             if not silent:
                 print("Not merging, not saving.")
-            return False
+            return False, True
 
         # # if the answer was neither yes nor no
         # return ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_params=video_params)
