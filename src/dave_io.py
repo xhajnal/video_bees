@@ -563,8 +563,7 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
 
     file_name = os.path.basename(csv_file_path)
     file_name = file_name.replace(".csv", ".p")
-    my_hash = hash_config()
-    my_hash = str(my_hash)
+    my_hash = str(hash_config())
 
     if is_first_run is True:
         try:

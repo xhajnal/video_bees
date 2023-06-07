@@ -1020,7 +1020,11 @@ def delete_traces_from_saved_decisions(traces):
     indices_to_delete = []
 
     decisions = load_decisions()
+
+    # print(decisions)
+
     delete_decisions = list(filter(lambda x: x[0] == "delete_trace", decisions))
+    delete_decisions = list(sorted(delete_decisions))
 
     i = 0
     j = 0

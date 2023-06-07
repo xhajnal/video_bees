@@ -268,7 +268,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # Storing the number of loaded traces
         counts.append(len(traces) + len(removed_full_traces))
 
+        #########################
         ### AUXILIARY COMPUTATION
+        #########################
         ## FRAME RANGE
         # obtain the frame range of the video
         global real_whole_frame_range
@@ -287,7 +289,14 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         if just_align:
             return
 
+        ####################################
+        # DELETE TRACES FROM SAVED DECISIONS
+        ####################################
+        traces = delete_traces_from_saved_decisions(traces)
+
+        #################
         ## SHOW THE VIDEO
+        #################
         # simple show
         # show_video(input_video=video_file, traces=(), frame_range=(), wait=True, points=(), video_params=True)
         # show slower
@@ -298,8 +307,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ## TODO uncomment to show the original video with original tracking
         # show_video(input_video=video_file, traces=traces, frame_range=(), wait=True, points=(), video_params=video_params, fix_x_first_colors=2)
 
-        spam = load_decisions()
-
         #########################
         ### SINGLE TRACE ANALYSIS
         #########################
@@ -308,11 +315,6 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             # show_plot_locations(traces, from_to_frame=[0, 1800], subtitle="Initial.")
             scatter_detection(traces, subtitle="Initial.")
             show_plot_locations(traces, subtitle="Initial.")
-
-        ####################################
-        # DELETE TRACES FROM SAVED DECISIONS
-        ####################################
-        traces = delete_traces_from_saved_decisions(traces)
 
         ##################################
         # FIND TRACES OUTSIDE OF THE ARENA
@@ -633,6 +635,14 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ## SAVE RESULTS (TABLE)
         is_new = save_current_result(counts, file_name=csv_file_path, population_size=original_population_size, is_first_run=is_first_run,
                                      is_guided=guided, is_force_merge_allowed=allow_force_merge, video_available=has_tracked_video, silent=silent, debug=debug)
+
+        # TODO delete the following
+        if is_first_run:
+            pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run)
+        if not is_first_run:
+            print(f"gonna pickle traces {csv_file_path}")
+            pickle_traces(all_final_traces, csv_file_path, silent=False, debug=True, is_first_run=is_first_run)
+
         if is_new:
             convert_results_from_json_to_csv(silent=silent, debug=debug, is_first_run=is_first_run)
             if not is_first_run:
