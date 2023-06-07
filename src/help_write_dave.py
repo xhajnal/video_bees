@@ -3,29 +3,45 @@ import os.path
 from glob import glob
 
 import analyse
+from config import hash_config
 from dave_io import load_result
 
 
-def write_dave(show_first_run_result=False, show_second_run_result=False):
-    """ Writes the dave script main without result values.
+## TODO ATTENTION CASE SPECIFIC
+def write_dave(show_first_run_result=False, show_second_run_result=False, get_for_current_hash=True):
+    """ Writes the dave script.
 
     arg: show_first_run_result (bool): whether to show the results of the first run
     arg: show_second_run_result (bool): whether to show the results of the second run
+    arg: get_for_current_hash (bool): whether to obtain the results for the current hash, otherwise the ast result is used
     """
-    a = [190822, 190823, 190903, 190904, 190905, 190906, 190916, 190917, 190918, 190919, 190920, 190922, 190924, 190925, 190926, 190927, 190928, 190929, 190930, 191001, 191002, 191003, 191007, 191008, 191011, 191014, 191016, 191017, 191018]
-
+    ## INITIATION
+    # PATH TO THE FILES
     path = '../data/Video_tracking/'
 
+    # LIST OF DATA FOLDERS
+    a = [190822, 190823, 190903, 190904, 190905, 190906, 190916, 190917, 190918, 190919, 190920, 190922, 190924, 190925, 190926, 190927, 190928, 190929, 190930, 191001, 191002, 191003, 191007, 191008, 191011, 191014, 191016, 191017, 191018]
+
+    # LIST OF POPULATION SIZES
+    population_sizes = [1, 2, 5, 7, 10, 15]
+
+    # Get current hash
+    if get_for_current_hash:
+        my_hash = str(hash_config())
+
+    # RUN
     print("a = is_first_run")
-    for population_size in [1, 2, 5, 7, 10, 15]:
+    for population_size in population_sizes:
         if population_size == 1:
             print(f"# ############################################# SINGLE BEE #######################################################")
         else:
             print(f"# ############################################# {population_size} BEES #######################################################")
         for folder in a:
             print(f"# ## {folder}")
+            # find csv files with xBee in name ending with _nn
             for file in glob(f"{path}/{folder}/*_{population_size}[B|b][E|e][E|e]*_nn.csv", recursive=False):
 
+                # skip loopy results which have more parts
                 if "part" in file:
                     continue
 
@@ -57,6 +73,9 @@ def write_dave(show_first_run_result=False, show_second_run_result=False):
                         all_final = []
 
                         for hash in file_results.keys():
+                            if get_for_current_hash:
+                                if hash != my_hash:
+                                    continue
                             for time_stamp in file_results[hash].keys():
                                 item = file_results[hash][time_stamp]
                                 # print(item)
@@ -102,13 +121,15 @@ def write_dave(show_first_run_result=False, show_second_run_result=False):
                 if show_second_run_result:
                     which_run = "finalRun"
                     try:
-                        ## TODO pick
                         file_results = load_result(file_name=f"{original_file}", is_first_run=False)
                         all_loaded = []
                         all_single = []
                         all_final = []
 
                         for hash in file_results.keys():
+                            if get_for_current_hash:
+                                if hash != my_hash:
+                                    continue
                             for time_stamp in file_results[hash].keys():
                                 item = file_results[hash][time_stamp]
                                 # print(item)
