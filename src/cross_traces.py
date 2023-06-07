@@ -307,7 +307,8 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
         print(len(traces))
         print(len(reappearance))
 
-    trace_indices_to_merge = []
+    merged_trace_indices_to_delete = []
+    trace_ids_to_delete = []
 
     video_range = compute_whole_frame_range(traces)
     if debug:
@@ -320,7 +321,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
         next_steps_to = []  # list of end of ranges to go to
         indices_in_between = []  # list of indices within selected window
         for trace_index, trace in enumerate(traces):
-            if trace_index in trace_indices_to_merge:  # skipping the traces which we are gonna merge
+            if trace_index in merged_trace_indices_to_delete:  # skipping the traces which we are gonna merge
                 continue
             assert isinstance(trace, Trace)
             if trace.frame_range[0] <= step_to < trace.frame_range[1]:  # if the window is inside of trace frame range
@@ -346,6 +347,9 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                 print(f"Fixing empty next_steps_to while step_to: {step_to} and next_step_to:{next_step_to}")
             traces_after = 0
             for index3, trace3 in enumerate(traces):
+                if index3 in merged_trace_indices_to_delete:
+                    continue
+
                 assert isinstance(trace3, Trace)
                 # if trace3.frame_range[0] < step_to:
                 if trace3.frame_range[0] < next_step_to:
@@ -383,8 +387,11 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                 print(colored(f"Gonna have a look for a second mergeable trace from frame {step_to} till {next_step_to}.", "blue"))
             step_to = next_step_to
             for index2, trace2 in enumerate(traces):
+                if index2 in merged_trace_indices_to_delete:
+                    continue
+
                 assert isinstance(trace2, Trace)
-                if index2 in trace_indices_to_merge:
+                if index2 in merged_trace_indices_to_delete:
                     continue
                 if trace2.frame_range[0] < step_to:
                     if debug:
@@ -393,6 +400,9 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     continue
 
                 trace1 = traces[index_to_go]
+
+                if trace1.trace_id == 0 or trace2.trace_id == 0:
+                    pass
 
                 # COMPUTE DISTANCES AND REST
                 dist_of_traces_in_frames = trace2.frame_range[0] - trace1.frame_range[-1]
@@ -416,9 +426,6 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                 # COMPUTE WHETHER THE TWO TRACES ARE "ALIGNED"
                 to_merge = True
                 reason = ""
-
-
-
 
                 # Check for force_merge
                 gap_range = [trace1.frame_range[1], trace2.frame_range[0]]
@@ -449,6 +456,10 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     # CHECK FOR DISTANCE OF TRACES IN X,Y
                     # if the distance of traces in frames is high
                     if to_merge:
+
+                        if trace1.trace_id == 0 or trace2.trace_id == 0:
+                            pass
+
                         if dist_of_traces_in_frames > get_max_trace_gap()/10:
                             if dist_of_traces_in_xy > get_bee_max_step_len()*3:
                                 reason = f"long gap too distant (> {get_bee_max_step_len() * 3})"
@@ -468,7 +479,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     print(
                         f"min_trace_length_to_merge: {trace2.frame_range_len} > {get_min_trace_length_to_merge() / const}")
                     to_merge, spam = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file,
-                                                             video_params=analyse.video_params, silent=silent, gaping=True)
+                                                             video_params=analyse.video_params, silent=silent, gaping=True, trace_ids_to_skip=trace_ids_to_delete)
 
                 if trace2.frame_range[0] - trace1.frame_range[-1] == 0:  # fix distance of zero len gap
                     distance_per_frame = None
@@ -499,7 +510,10 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     trace = merge_two_traces_with_gap(trace1, trace2, interpolate_gap=to_merge_by_user)
                     if debug:
                         print(trace)
-                    trace_indices_to_merge.append(index2)
+
+                    print(colored(f"adding trace index {index2} with id {trace2.trace_id} to be deleted", "magenta"))
+                    merged_trace_indices_to_delete.append(index2)
+                    trace_ids_to_delete.append(trace2.trace_id)
                     step_to = trace.frame_range[1]
                 elif "gap too long" in reason:
                     if not silent:
@@ -511,11 +525,11 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
             print(colored(f"jumping to step {step_to}", "blue"))
 
     if debug:
-        print(f"Will delete the following traces as we have merged them: {trace_indices_to_merge}")
-    delete_indices(trace_indices_to_merge, traces)
+        print(f"Will delete the following traces as we have merged them: {merged_trace_indices_to_delete}")
+    delete_indices(merged_trace_indices_to_delete, traces)
 
     print(colored(f"GAPING TRACES analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "yellow"))
-    print(colored(f"Returning {len(traces)} traces, {len(trace_indices_to_merge)} shorter than in previous iteration.", "green"))
+    print(colored(f"Returning {len(traces)} traces, {len(merged_trace_indices_to_delete)} shorter than in previous iteration.", "green"))
     print()
     return traces
 

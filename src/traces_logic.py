@@ -816,12 +816,13 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
 
 
 # TODO make tests
-def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_params=False, silent=False, overlapping=False, gaping=False):
+def ask_to_merge_two_traces(all_traces, selected_traces, input_video, trace_ids_to_skip=(), video_params=False, silent=False, overlapping=False, gaping=False):
     """ Creates a user dialogue to ask whether to merge selected pair of traces while showing video of the traces
 
         :arg all_traces: (list): a list of all Traces (to be shown in the video)
         :arg selected_traces: (list): two selected traces
         :arg input_video: (str or bool): if set, path to the input video
+        :arg trace_ids_to_skip: (list): list of ids to skip
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :arg silent: (bool): if True minimal output is shown
         :arg overlapping: (bool): if True selected traces have an overlap
@@ -857,7 +858,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
             # use the gap instead
             show_range = (trace1.frame_range[1], trace2.frame_range[0])
 
-        traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=margin_range(show_range, 15))
+        traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=margin_range(show_range, 15), trace_ids_to_skip=trace_ids_to_skip)
 
         show_video(input_video=input_video, traces=traces_to_show, frame_range=margin_range(show_range, 15),
                    video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
@@ -866,7 +867,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_para
         to_merge_by_user = input("Merge these traces? (Yes or No or Dunno - not saving) (press l to see a longer video before, f to see full and both traces):")
         if "l" in to_merge_by_user.lower():
             selected_range = (max(show_range[0] - 100, trace1.frame_range[0] - 15), min(show_range[1] + 100, trace2.frame_range[1] + 15))
-            traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=selected_range)
+            traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=selected_range, trace_ids_to_skip=trace_ids_to_skip)
             show_video(input_video=input_video, traces=traces_to_show,
                        frame_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15),
                        video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
@@ -1213,7 +1214,7 @@ def check_three_traces_insides(trace1, trace2, trace3):
             is_in(trace1.frame_range, trace3.frame_range) or is_in(trace3.frame_range, trace1.frame_range))
 
 
-def order_traces(all_traces, selected_traces, selected_range=None):
+def order_traces(all_traces, selected_traces, selected_range=None, trace_ids_to_skip=()):
     """ Orders given selected traces to the beginning as given.
         Moreover, it returns only the list of
 
@@ -1222,6 +1223,8 @@ def order_traces(all_traces, selected_traces, selected_range=None):
     :arg all_traces: (list of traces): list of traces to be ordered
     :arg selected_traces: (list of traces): list of traces to be up front
     :arg selected_range: (interval): only
+    :arg trace_ids_to_skip: (list): list of trace ids no skip
+
     :returns: sorted_traces: (list of traces): list of ordered traces such that the selected traces are in the front of the list
     """
     ## Changed using this snippet
@@ -1251,6 +1254,8 @@ def order_traces(all_traces, selected_traces, selected_range=None):
     ids = list(map(lambda x: x.trace_id, selected_traces))
     for trace in traces_to_order:
         if trace.trace_id in ids:
+            continue
+        elif trace.trace_id in trace_ids_to_skip:
             continue
         else:
             spam.append(trace)
