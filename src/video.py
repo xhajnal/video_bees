@@ -262,9 +262,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     else:
         cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
 
-    # cv2.createTrackbar('R', 'video', 0, 255, nothing)
-    # cv2.createButton("button2", callbackButton, None, cv2.QT_CHECKBOX, 0)
-
     cv2.createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
 
     for index, trace in enumerate(traces_to_show):
@@ -379,8 +376,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
                 except Exception as err:
                     print(err)
                     print("Cannot show the point:", pointA)
-
-
 
                 locations_of_traces[trace_index].append(pointA)
                 for index, point in enumerate(locations_of_traces[trace_index]):

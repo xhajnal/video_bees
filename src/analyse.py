@@ -399,6 +399,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             before_number_of_traces = len(traces)
             traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, silent=silent, debug=debug)
 
+            # show_video(input_video=video_file, traces=traces, frame_range=(9530, 9989), wait=True, points=(),
+            #            video_params=video_params, fix_x_first_colors=2)
+
             # if before_number_of_traces != len(traces):
             # with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
             #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
@@ -408,6 +411,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             if show_all_plots:
                 scatter_detection(traces, subtitle="After putting gaping traces together.")
             after_number_of_traces = len(traces)
+
+            # show_video(input_video=video_file, traces=traces, frame_range=(9530, 9989), wait=True, points=(),
+            #            video_params=video_params, fix_x_first_colors=2)
 
         # Storing the number of traces after TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
         counts.append(len(traces) + len(removed_full_traces))

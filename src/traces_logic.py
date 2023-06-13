@@ -843,7 +843,11 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, trace_ids_
         if overlapping:
             decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
         elif gaping:
-            decision = decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
+            try:
+                decision = decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
+            except TypeError as err:
+                print()
+                raise err
         else:
             raise Exception("gaping/overlapping not chosen.")
         if not silent:
@@ -885,7 +889,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, trace_ids_
             else:
                 decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))] = False
             save_decisions(decisions, silent=silent)
-            return False
+            return False, True
         elif "y" in to_merge_by_user.lower():
             if overlapping:
                 decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = True

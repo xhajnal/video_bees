@@ -393,7 +393,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                 assert isinstance(trace2, Trace)
                 if index2 in merged_trace_indices_to_delete:
                     continue
-                if trace2.frame_range[0] < step_to:
+                if trace2.frame_range[0] <= step_to:
                     if debug:
                         # print(colored(f"skipping trace {index2} with id {trace2.trace_id} which starts in {trace2.frame_range[0]}", "green"))
                         print(colored(f"skipping trace {index2} which starts in {trace2.frame_range[0]}", "green"))
@@ -456,10 +456,11 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     # CHECK FOR DISTANCE OF TRACES IN X,Y
                     # if the distance of traces in frames is high
                     if to_merge:
-
+                        ## TODO add comment here
                         if trace1.trace_id == 0 or trace2.trace_id == 0:
                             pass
 
+                        # If traces are far apart in FRAME RANGE, do NOT MERGE
                         if dist_of_traces_in_frames > get_max_trace_gap()/10:
                             if dist_of_traces_in_xy > get_bee_max_step_len()*3:
                                 reason = f"long gap too distant (> {get_bee_max_step_len() * 3})"
@@ -467,6 +468,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                                 # print(f" hell, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3}).")
                                 to_merge = False
                         else:
+                            # If traces are far apart in SPACE, do NOT MERGE
                             if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
                                 reason = f"short gap too distant (> {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()})"
                                 # print(f" hell2, we do not merge traces {index} with id {trace1.trace_id} and {index2} with id {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
@@ -474,12 +476,18 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                                 to_merge = False
 
                 ## Check for FalseNegatives
-                if trace2.frame_range[0] - step_to < get_max_trace_gap() * const and trace2.frame_range_len > get_min_trace_length_to_merge() / const:
-                    print(f"max_trace_gap: {trace2.frame_range[0] - step_to} < {get_max_trace_gap() * const}")
-                    print(
-                        f"min_trace_length_to_merge: {trace2.frame_range_len} > {get_min_trace_length_to_merge() / const}")
-                    to_merge, spam = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file,
-                                                             video_params=analyse.video_params, silent=silent, gaping=True, trace_ids_to_skip=trace_ids_to_delete)
+                # if to be merged ask whether to merge actually
+                # if gap range is smaller AND second trace long
+                if trace2.frame_range[0] - step_to < get_max_trace_gap() * const and trace2.frame_range_len > get_min_trace_length_to_merge() / const and not to_merge:
+                    print(f"max_trace_gap: {trace2.frame_range[0] - step_to} < {get_max_trace_gap()} * {const}")
+                    print(f"min_trace_length_to_merge: {trace2.frame_range_len} > {get_min_trace_length_to_merge()} / {const}")
+
+                    try:
+                        to_merge, spam = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file,
+                                                                 video_params=analyse.video_params, silent=silent, gaping=True, trace_ids_to_skip=trace_ids_to_delete)
+                    except TypeError as err:
+                        print()
+                        raise err
 
                 if trace2.frame_range[0] - trace1.frame_range[-1] == 0:  # fix distance of zero len gap
                     distance_per_frame = None
@@ -510,8 +518,8 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     trace = merge_two_traces_with_gap(trace1, trace2, interpolate_gap=to_merge_by_user)
                     if debug:
                         print(trace)
+                        print(colored(f"adding trace index {index2} with id {trace2.trace_id} to be deleted", "magenta"))
 
-                    print(colored(f"adding trace index {index2} with id {trace2.trace_id} to be deleted", "magenta"))
                     merged_trace_indices_to_delete.append(index2)
                     trace_ids_to_delete.append(trace2.trace_id)
                     step_to = trace.frame_range[1]

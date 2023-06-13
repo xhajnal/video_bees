@@ -30,7 +30,7 @@ def get_bee_max_step_len_per_frame():
 def get_min_trace_length_to_merge():
     """ Returns a minimal length of a trace to be merged with the other."""
     # Usage: gaping traces
-    return 50*1.2
+    return 50
 
 
 def get_max_trace_gap():
@@ -38,7 +38,7 @@ def get_max_trace_gap():
         Effectively computes how long an agent can hide from being tracked (max_trace_gap / frame rate).
     """
     # Usage: gaping trace - ABOVE
-    return 100/1.2
+    return 100
 
 
 def get_max_overlap_len_to_merge_traces():
