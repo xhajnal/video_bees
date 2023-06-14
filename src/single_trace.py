@@ -10,6 +10,7 @@ from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices, has_strict_overlap
 from trace import Trace
 from traces_logic import compute_arena, compute_whole_frame_range
+from video import show_video
 
 
 def remove_full_traces(traces, removed_traces, population_size, silent=False, debug=False):
@@ -117,7 +118,7 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
 
 ## BEE SPECIFIC
 # TODO add tests
-def check_inside_of_arena(traces, silent=False, debug=False):
+def check_inside_of_arena(traces, guided=False, silent=False, debug=False):
     """ Checks all traces whether each is inside the arena.
 
     Specificity: the ARENA is ROUND, all the individuals SHOULD BE INSIDE IT ALL THE TIME
@@ -139,9 +140,15 @@ def check_inside_of_arena(traces, silent=False, debug=False):
     traces_to_be_deleted = []
     for index, trace in enumerate(traces):
         for location in trace.locations:
+            if location == [-1, -1]:
+                continue
             if (location[0] - mid_x)**2 + (location[1] - mid_y)**2 > (diam/2 + get_distance_from_calculated_arena())**2:
+
+                # if guided:
+                #     show_video(input_video=video_file, traces=traces, frame_range=(), wait=True, points=(),
+                #                video_params=video_params, fix_x_first_colors=2)
+
                 traces_to_be_deleted.append(index)
-                # print(colored(f"checking trace {trace.trace_id} location {location} seems to be outside of the arena! Will delete this trace!", "red"))
                 if not silent:
                     print(colored(f"checking trace {index}({trace.trace_id}) of {trace.frame_range_len} frames: location {location} seems to be outside of the arena! Will delete this trace!", "red"))
                 break

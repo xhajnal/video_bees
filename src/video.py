@@ -266,8 +266,8 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
     for index, trace in enumerate(traces_to_show):
         cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [index], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
-        cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, traces_to_show[index].trace_id, cv2.QT_PUSH_BUTTON, 1)
-        cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[index].trace_id, index], cv2.QT_PUSH_BUTTON, 1)
+        cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, [traces_to_show[index].trace_id, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
+        cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[index].trace_id, index, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
         cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", fake, None, cv2.QT_PUSH_BUTTON, 1, )
 
     if str(gethostname()) == "Skadi":

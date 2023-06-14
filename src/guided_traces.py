@@ -73,11 +73,12 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         # frame_range = overlaps_and_gaps[key]
 
         # Video-guided visualisations
-        scatter_detection([trace1, trace2], whole_frame_range=[min_range - 200, max_range + 200], show_trace_index=False,
-                          subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue, {trace2_index}({trace2.trace_id}) orange.")
-        show_plot_locations([trace1, trace2], whole_frame_range=[0, 0], from_to_frame=show_range,
-                            subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
-                            silent=True)
+        # TODO MAYBE UNCOMMENT THE FOLLOWING LINES
+        # scatter_detection([trace1, trace2], whole_frame_range=[min_range - 200, max_range + 200], show_trace_index=False,
+        #                   subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue, {trace2_index}({trace2.trace_id}) orange.")
+        # show_plot_locations([trace1, trace2], whole_frame_range=[0, 0], from_to_frame=show_range,
+        #                     subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
+        #                     silent=True)
 
         # to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
         to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, overlapping=is_overlap, gaping=not is_overlap)

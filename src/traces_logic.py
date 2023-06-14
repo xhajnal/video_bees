@@ -867,16 +867,22 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, trace_ids_
         show_video(input_video=input_video, traces=traces_to_show, frame_range=margin_range(show_range, 15),
                    video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
 
-        # to_show_longer_video = input("Do you want to see longer video? (yes or no):")
-        to_merge_by_user = input("Merge these traces? (Yes or No or Dunno - not saving) (press l to see a longer video before, f to see full and both traces):")
+        # TODO this does not work as analyse.deleted_traces is being accessed within a new process
+        # if trace1.trace_id in analyse.deleted_traces.keys() or trace2.trace_id in analyse.deleted_traces.keys():
+        #     return False, True
+
+        to_merge_by_user = input("Merge these traces? (Yes or No or Dunno - not saving) (press l to see a longer video before, b to see both traces (whole range), f to see full video):")
         if "l" in to_merge_by_user.lower():
             selected_range = (max(show_range[0] - 100, trace1.frame_range[0] - 15), min(show_range[1] + 100, trace2.frame_range[1] + 15))
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=selected_range, trace_ids_to_skip=trace_ids_to_skip)
-            show_video(input_video=input_video, traces=traces_to_show,
-                       frame_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15),
+            show_video(input_video=input_video, traces=traces_to_show, frame_range=margin_range(show_range, 115),
                        video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
             to_merge_by_user = input("Merge these traces now? (yes or no)")
         elif "f" in to_merge_by_user.lower():
+            traces_to_show = order_traces(all_traces, [trace1, trace2])
+            show_video(input_video=input_video, traces=traces_to_show,
+                       video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
+        elif "b" in to_merge_by_user.lower():
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15))
             show_video(input_video=input_video, traces=traces_to_show,
                        frame_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15),
@@ -907,30 +913,36 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, trace_ids_
 
 
 # TODO add tests
-def delete_trace_with_id(spam, trace_id):
+def delete_trace_with_id(spam, egg):
     """ Deletes a trace with a trace_id from the list of traces + save decisions.
 
     :arg trace_id (int): trace id of the trace to be deleted
     """
-    # print("trace id", trace_id)
-    # print(len(analyse.traces))
-    # print(analyse.traces)
+    trace_id, traces_to_show = egg
 
-    ## NORMAL
-    # for index, trace in enumerate(analyse.traces):
     ## BEES-SPECIFIC
     for index, trace in enumerate(analyse.traces[:trace_id+1]):
         # print(f"looking at index {index}")
         if trace.trace_id == trace_id:
             print(f"Deleting trace with id {trace_id}.")
+
             # Save the decisions
             decisions = load_decisions()
             decisions[("delete_trace", trace.trace_id, trace.get_hash())] = True
             save_decisions(decisions, silent=True)
+
             # Save deleted trace
-            analyse.deleted_traces[(index, trace_id)] = analyse.traces[index]
+            analyse.deleted_traces[trace_id] = analyse.traces[index]
+
             # Delete the trace
             del analyse.traces[index]
+
+            # TODO UNCOMMENT THIS AFTER BEING FIXED
+            # for index2, trace2 in enumerate(traces_to_show):
+            #     if trace2.trace_id == trace_id:
+            #         del traces_to_show[index2]
+            #         break
+
             # Stop searching
             return
     print(colored(f"Trace with id {trace_id} not found.", "red"))
@@ -942,7 +954,7 @@ def undelete_trace_with_id(spam, egg):
     :arg egg (list): [trace id of the trace to be deleted, former index in the list of traces]
     """
 
-    trace_id, index = egg
+    trace_id, index, traces_to_show = egg
 
     # Remove trace from saved deleted traces
     decisions = load_decisions()
@@ -953,10 +965,16 @@ def undelete_trace_with_id(spam, egg):
                 break
     save_decisions(decisions, silent=True)
 
+    # TODO UNCOMMENT THIS AFTER BEING FIXED
+    # Add the trace to traces to be shown
+    # for index2, trace2 in enumerate(traces_to_show):
+    #     if trace2.trace_id < trace_id:
+    #         traces_to_show = traces_to_show[:index2] + [analyse.deleted_traces[trace_id]] + traces_to_show[index2]
+
     # Remove the trace from deleted traces
     try:
-        analyse.traces = analyse.traces[:index] + [analyse.deleted_traces[(index, trace_id)]] + analyse.traces[index:]
-        del analyse.deleted_traces[(index, trace_id)]
+        analyse.traces = analyse.traces[:index] + [analyse.deleted_traces[trace_id]] + analyse.traces[index:]
+        del analyse.deleted_traces[trace_id]
         print(f" Undeleting trace {trace_id}.")
     except KeyError:
         print(f" Trying to undelete trace {trace_id} failed, not found")
@@ -1017,35 +1035,57 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
 
 
 # TODO make test
-def delete_traces_from_saved_decisions(traces):
+def delete_traces_from_saved_decisions(traces, debug=False):
     """ Deletes the traces which have been previously selected to be deleted.
 
     :arg traces: (list): a list of all Traces
     """
+    # debug=True
+
     indices_to_delete = []
 
     decisions = load_decisions()
 
     # print(decisions)
 
-    delete_decisions = list(filter(lambda x: x[0] == "delete_trace", decisions))
-    delete_decisions = list(sorted(delete_decisions))
+    new_decisions = {}
+    for key, value in decisions.items():
+        if key[0] == 'delete_trace':
+            new_decisions[key] = value
+            # print(key, value)
+
+    # print("new_decisions", new_decisions)
+    # delete_decisions = {key: value for key, value in decisions.items() if key[0] == "delete_trace"}
+    # delete_decisions = list(filter(lambda x: x[0] == "delete_trace", decisions))
+    new_decisions = list(sorted(new_decisions))
+    print(new_decisions)
 
     i = 0
     j = 0
 
-    while i < len(delete_decisions):
+    while i < len(new_decisions):
+        if debug:
+            print("i", i)
         while j < len(traces):
+            if debug:
+                print("j", j)
             # if the trace.id to be deleted is further, move the traces index
             try:
-                if delete_decisions[i][1] > traces[j].trace_id:
+                if new_decisions[i][1] > traces[j].trace_id:
                     j = j + 1
+                if new_decisions[i][1] < traces[j].trace_id:
+                    i = i + 1
                 # if the trace.id is equal to the one to be deleted
-                elif delete_decisions[i][1] == traces[j].trace_id:
-                    if delete_decisions[i][2] == traces[j].get_hash():
+                elif new_decisions[i][1] == traces[j].trace_id:
+                    if new_decisions[i][2] == traces[j].get_hash():
                         indices_to_delete.append(j)
+                    elif debug:
+                        print(f"decision hash {new_decisions[i][2]}")
+                        print(f"trace hash {traces[j].get_hash()}")
 
                     i = i + 1
+                # else:
+                #     i = i + 1
             except IndexError:
                 print(f"Could not find deleted trace in saved decisions.")
                 break
@@ -1053,6 +1093,7 @@ def delete_traces_from_saved_decisions(traces):
     if indices_to_delete:
         delete_indices(indices_to_delete, traces)
         print(f"Just deleted the traces with the following indices {indices_to_delete} by loading the saved decisions.")
+        print()
 
     print(f"Could not find deleted trace in saved decisions.")
     return traces
