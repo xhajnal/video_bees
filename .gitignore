@@ -145,6 +145,7 @@ src/merge_result_dicts.py
 
 auxiliary/*
 !auxiliary/transpositions.txt
+!auxiliary/arena_boundaries.txt
 
 src/asdf.py
 

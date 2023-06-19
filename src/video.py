@@ -8,6 +8,7 @@ from sys import platform
 import cv2
 from termcolor import colored
 
+import analyse
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit, \
     modulo, get_colour
 from trace import Trace
@@ -16,7 +17,7 @@ global show_single
 global show_number
 
 
-def play_opencv(input_video, frame_range, speed, points):
+def play_opencv(input_video, frame_range, speed, points, align_traces, align_arena):
     """ Plays the given video in a new window.
 
     :arg input_video: (Path or str): path to the input video
@@ -126,19 +127,41 @@ def play_opencv(input_video, frame_range, speed, points):
                 else:
                     video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
+            if key == ord("+"):
+                left, right, up, down = points
+                left = [left[0]-1, left[1]]
+                right = [right[0]+1, right[1]]
+                up = [up[0], up[1]+1]
+                down = [down[0], down[1]-1]
+                points = [left, right, up, down]
+
+            if key == ord("-"):
+                left, right, up, down = points
+                left = [left[0]+1, left[1]]
+                right = [right[0]-1, right[1]]
+                up = [up[0], up[1]-1]
+                down = [down[0], down[1]+1]
+                points = [left, right, up, down]
+
     video.release()
     # Exit and destroy all windows
     cv2.destroyAllWindows()
     if points:
-        with open("../auxiliary/point.txt", "w") as file:
-            file.write(f"video file: {input_video})\n")
-            file.write(f"frame: {frame_range[0]}\n")
-            file.write(f"points assigned: {points}\n")
-
+        if align_traces:
+            with open("../auxiliary/point.txt", "w") as file:
+                file.write(f"video file: {input_video})\n")
+                file.write(f"frame: {frame_range[0]}\n")
+                file.write(f"points assigned: {points}\n")
+        if align_arena:
+            with open("../auxiliary/arena.txt", "w") as file:
+                file.write(f"video file: {input_video})\n")
+                file.write(f"frame: {frame_range[0]}\n")
+                file.write(f"points assigned: {points}\n")
     return points
 
 
-def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True, fix_x_first_colors=False):
+def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True,
+               fix_x_first_colors=False, align_traces=False, align_arena=False):
     """ Shows given video.
 
         :arg input_video: (Path or str): path to the input video
@@ -149,6 +172,8 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         :arg points: (tuple of points): points to be shown over the video
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :arg fix_x_first_colors: (int): first given colors will be used only once in the video
+        :arg align_traces: (bool): if True use points to align traces
+        :arg align_arena: (bool): if True use points to align arena boundaries
     """
     if not input_video:
         return
@@ -169,16 +194,16 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
     if video_speed > 1:
         video_speed = 1
 
-    if points:
+    if align_traces or align_arena:
         # to show points
-        p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points,))
+        p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena))
     else:
         try:
             assert isinstance(video_params, tuple) or isinstance(video_params, list)
         except AssertionError:
             video_params = (0, (0, 0))
         # show traces over
-        p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], fix_x_first_colors, True,))
+        p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
     p.start()
     if wait:
         p.join()
@@ -198,7 +223,7 @@ def show_single_trace(spam, number):
     show_number = number[0]
 
 
-def annotate_video(input_video, output_video, traces_to_show, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), fix_x_first_colors=False, show=False, force_new_video=False, debug=False):
+def annotate_video(input_video, output_video, traces_to_show, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), points=(), fix_x_first_colors=False, show=False, force_new_video=False, debug=False):
     """ Annotates given video with the tracked position of individual bees.
 
     :arg input_video: (Path or str): path to the input video
@@ -341,6 +366,10 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         #     return
 
         if ret == True:
+            for point in points:
+                pointA = list(map(lambda x: round(x), to_vect(crop_offset, point)))
+                cv2.circle(frame, pointA, 4, color=rgb_to_bgr((255, 255, 255)), thickness=-1, lineType=cv2.LINE_AA)
+
             ## ANNOTATION
             for trace_index, trace in enumerate(traces_to_show):
                 if show_single:
@@ -632,7 +661,8 @@ def align_the_video(traces, video_file, csv_file_path):
     da_converted_frame = convert_frame_number_back(da_frame, csv_file_path)
 
     # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-    show_video(input_video=video_file, traces=(), frame_range=[da_converted_frame, da_converted_frame], wait=True, points=points, video_params=True)
+    show_video(input_video=video_file, traces=(), frame_range=[da_converted_frame, da_converted_frame], wait=True,
+               points=points, video_params=True, align_traces=True)
 
     # READ THE OUTPUT FILE
     with open("../auxiliary/point.txt", "r") as file:
@@ -678,6 +708,74 @@ def align_the_video(traces, video_file, csv_file_path):
         file.write(json.dumps(transpositions))
 
     return vector, offset_frame
+
+
+# BEES SPECIFIC
+def obtain_arena_boundaries(video_file, csv_file_path, center, diameter):
+    """ User-guided alignment of the arena boundaries
+
+    :arg video_file: (Path or str): path to the input video
+    :arg csv_file_path: (str or Path): path to the csv_file
+    :arg center: (point): location of the center of the arena
+    :arg diameter: (int): diameter of the arena (in pixels)
+    :return: new_center, new_diameter
+    """
+
+    da_frame = 5000
+
+    x, y = center
+
+    # LEFT RIGHT UP DOWN
+    points = [[x-diameter/2, y], [x+diameter/2, y], [x, y+diameter/2], [x, y-diameter/2]]
+
+    da_converted_frame = convert_frame_number_back(da_frame, csv_file_path)
+
+    show_video(input_video=video_file, traces=(), frame_range=[da_converted_frame, da_converted_frame], wait=True,
+               points=points, video_params=True, align_arena=True)
+
+    # READ THE OUTPUT FILE
+    with open("../auxiliary/arena.txt", "r") as file:
+        lines = file.readlines()
+
+    for line in lines:
+        if "points assigned:" in line:
+            assigned_points = line.split(":")[1]
+        # if "frame:" in line:
+        #     offset_frame = int(line.split(":")[1])
+
+    assigned_points = json.loads(assigned_points)
+
+    left, right, up, down = assigned_points
+
+    new_center = [round((right[0] + left[0])/2), round((up[1] + down[1])/2)]
+
+    ## RECALCULATE FROM THE VIDEO
+    trim, crop = analyse.video_params
+    new_center = [new_center[0] + crop[0], new_center[1] + crop[1]]
+
+    new_diameter = right[0] - left[0]
+
+    ## STORE THE ALIGNMENT
+    try:
+        if os.stat("../auxiliary/arena_boundaries.txt").st_size == 0:
+            transpositions = {}
+        else:
+            with open("../auxiliary/arena_boundaries.txt") as file:
+                transpositions = json.load(file)
+    except FileNotFoundError as err:
+        file = open("../auxiliary/arena_boundaries.txt", "a")
+        file.close()
+        transpositions = {}
+
+    # if video_file in transpositions.keys():
+    #     raise Exception("Arena boundaries for this video already in the file.")
+
+    transpositions[video_file] = [new_center, new_diameter]
+
+    with open("../auxiliary/arena_boundaries.txt", 'w') as file:
+        file.write(json.dumps(transpositions))
+
+    return new_center, new_diameter
 
 
 def fake():

@@ -1,16 +1,20 @@
 import csv
+import json
 import math
+import os
 from time import time
 import numpy as np
 from _socket import gethostname
 from termcolor import colored
 
+import analyse
+from dave_io import load_decisions, save_decisions
 from fake import get_real_whole_frame_range, get_whole_frame_range
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
-from misc import delete_indices, has_strict_overlap
+from misc import delete_indices, has_strict_overlap, margin_range
 from trace import Trace
 from traces_logic import compute_arena, compute_whole_frame_range
-from video import show_video
+from video import show_video, obtain_arena_boundaries
 
 
 def remove_full_traces(traces, removed_traces, population_size, silent=False, debug=False):
@@ -118,12 +122,13 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
 
 ## BEE SPECIFIC
 # TODO add tests
-def check_inside_of_arena(traces, guided=False, silent=False, debug=False):
+def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, debug=False):
     """ Checks all traces whether each is inside the arena.
 
     Specificity: the ARENA is ROUND, all the individuals SHOULD BE INSIDE IT ALL THE TIME
 
     :arg traces: (list): a list of Traces
+    :arg csv_file_path: (str): filename of the original csv file
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns traces: (list): a list of Traces
@@ -132,25 +137,85 @@ def check_inside_of_arena(traces, guided=False, silent=False, debug=False):
     start_time = time()
     number_of_traces = len(traces)
 
+    ## LOAD SAVED DECISIONS
+    decisions = load_decisions()
+    ## FILTER OUTSIDE ARENA DECISIONS
+    outside_arena_decisions = {}
+    for key, value in decisions.items():
+        if key[0] == 'outside_arena':
+            outside_arena_decisions[key] = value
+
     ## COMPUTE THE ARENA SIZE
     center, diam = compute_arena(traces, debug)
     mid_x, mid_y = center
 
+    ## ALIGN THE ARENA ACCORDING TO VIDEO
+    if guided:
+        trim, crop = analyse.video_params
+        # LOAD ARENA BOUNDARIES FROM FILE
+        try:
+            try:
+                # if transpositions empty
+                if os.stat("../auxiliary/arena_boundaries.txt").st_size == 0:
+                    raise KeyError
+                # load transpositions
+                with open("../auxiliary/arena_boundaries.txt") as file:
+                    transpositions = json.load(file)
+            except FileNotFoundError as err:
+                # transpositions.txt not found
+                raise KeyError
+            # load video record
+            center, diam = transpositions[analyse.video_file]
+            mid_x, mid_y = center
+
+        except KeyError:
+            # OBTAIN ARENA BOUNDARIES FROM VIDEO
+            # recalculate arena according to crop
+
+            video_mid_x = mid_x - crop[0]
+            video_mid_y = mid_y - crop[1]
+
+            # ask user to assign
+            center, diam = obtain_arena_boundaries(analyse.video_file, csv_file_path, [video_mid_x, video_mid_y], diam)
+            mid_x, mid_y = center
+
     ## CHECK FOR THE BEES OUTSIDE OF THE COMPUTED ARENA
     traces_to_be_deleted = []
     for index, trace in enumerate(traces):
-        for location in trace.locations:
-            if location == [-1, -1]:
+        ## CHECK FOR THE DECISIONS
+        try:
+            if outside_arena_decisions[("outside_arena", trace.trace_id, trace.get_hash())] is True:
                 continue
+        except KeyError:
+            pass
+
+        ## CHECK THE ARENA
+        for location in trace.locations:
+            try:
+                if list(location) == [-1, -1]:
+                    continue
+            except ValueError as err:
+                print()
+                raise err
             if (location[0] - mid_x)**2 + (location[1] - mid_y)**2 > (diam/2 + get_distance_from_calculated_arena())**2:
 
-                # if guided:
-                #     show_video(input_video=video_file, traces=traces, frame_range=(), wait=True, points=(),
-                #                video_params=video_params, fix_x_first_colors=2)
+                to_delete_trace = True
+                if guided:
+                    print(f"At some point this trace is {round(math.sqrt((location[0] - mid_x) ** 2 + (location[1] - mid_y) ** 2), 2)} > {round((diam/2 + get_distance_from_calculated_arena()), 2)} far from center [{mid_x}, {mid_y}]")
+                    show_video(input_video=analyse.video_file, traces=[trace], frame_range=margin_range(trace.frame_range, 15),
+                               video_speed=0.02, wait=True, video_params=analyse.video_params, points=[(mid_x, mid_y)], fix_x_first_colors=2)
 
-                traces_to_be_deleted.append(index)
-                if not silent:
-                    print(colored(f"checking trace {index}({trace.trace_id}) of {trace.frame_range_len} frames: location {location} seems to be outside of the arena! Will delete this trace!", "red"))
+                    to_delete_trace = input("Is this trace outside of arena in whole range? (yes or no):")
+                    to_delete_trace = True if "y" in to_delete_trace.lower() else False
+
+                    # SAVE DECISIONS
+                    decisions[("outside_arena", trace.trace_id, trace.get_hash())] = to_delete_trace
+                    save_decisions(decisions, silent=silent)
+
+                if to_delete_trace:
+                    traces_to_be_deleted.append(index)
+                    if not silent:
+                        print(colored(f"checking trace {index}({trace.trace_id}) of {trace.frame_range_len} frames: location {location} seems to be outside of the arena! Will delete this trace!", "red"))
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)

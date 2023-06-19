@@ -1050,6 +1050,8 @@ def delete_traces_from_saved_decisions(traces, debug=False):
 
     new_decisions = {}
     for key, value in decisions.items():
+        if key[0] == 'outside_arena':
+            new_decisions[key] = value
         if key[0] == 'delete_trace':
             new_decisions[key] = value
             # print(key, value)
