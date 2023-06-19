@@ -320,7 +320,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # FIND TRACES OUTSIDE OF THE ARENA
         ##################################
         ## BEE SPECIFIC
-        check_inside_of_arena(traces)
+        # TODO change guided to guided
+        check_inside_of_arena(traces, csv_file_path, guided=True, silent=silent, debug=debug)
+        return
         # Storing the number of traces inside of arena
         counts.append(len(traces) + len(removed_full_traces))
 
@@ -374,7 +376,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         #     show_overlaps(traces, whole_frame_range)
 
         if has_tracked_video and guided:
-            number_of_swaps = track_swapping_loop(traces, automatically_swap=swaps, input_video=video_file, silent=silent, debug=debug, video_params=True)
+            number_of_swaps = track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
             # Storing the number of swaps done
             counts.append(number_of_swaps)
         else:
@@ -466,8 +468,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
 
         # todo UNCOMMENT THIS AFTER counts done
         if algorithm == "mixed":
-            a, b = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), input_video=video_file, silent=silent, debug=debug,
-                                                               video_params=video_params, do_count=do_count)
+            a, b = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), silent=silent, debug=debug, do_count=do_count)
             trace_indices_to_merge, ids_of_traces_to_be_merged = a, b
             if do_count:
                 update_this_file_counts()
@@ -484,16 +485,16 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
                 before_number_of_traces = len(traces)
                 if algorithm == "by_partition":
-                    trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), input_video=video_file, silent=silent, debug=debug, video_params=video_params, do_count=do_count)
+                    trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), silent=silent, debug=debug, do_count=do_count)
 
                 if algorithm == "by_build":
                     merge_alone_overlapping_traces(traces, shift=get_max_shift(), allow_force_merge=allow_force_merge, guided=guided,
-                                                   input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                                                   video_params=video_params, do_count=do_count, is_first_call=is_first_call)
+                                                   silent=silent, debug=debug, show=show_all_plots,
+                                                   do_count=do_count, is_first_call=is_first_call)
                 if algorithm == "by_build_brutto" or algorithm == "mixed":
                     merge_overlapping_traces_brutto(traces, shift=get_max_shift(), allow_force_merge=allow_force_merge, guided=guided,
-                                                    input_video=video_file, silent=silent, debug=debug, show=show_all_plots,
-                                                    video_params=video_params, do_count="is_first" if is_first_run else do_count, is_first_call=is_first_call, alg=algorithm)
+                                                    silent=silent, debug=debug, show=show_all_plots, do_count="is_first" if is_first_run else do_count,
+                                                    is_first_call=is_first_call, alg=algorithm)
                 if is_first_call and do_count:
                     is_first_call = False
                     if algorithm == "by_partition":

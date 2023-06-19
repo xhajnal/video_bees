@@ -23,7 +23,7 @@ from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
 
-def track_swapping_loop(traces, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
+def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=False):
     """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
@@ -41,7 +41,7 @@ def track_swapping_loop(traces, automatically_swap=False, input_video=False, sil
     number_of_swaps = 0
 
     while keep_looking:
-        keep_looking = track_swapping(traces, automatically_swap=automatically_swap, input_video=input_video, silent=silent, debug=debug, video_params=video_params)
+        keep_looking = track_swapping(traces, automatically_swap=automatically_swap, silent=silent, debug=debug)
         if keep_looking:
             number_of_swaps = number_of_swaps + 1
 
@@ -52,13 +52,13 @@ def track_swapping_loop(traces, automatically_swap=False, input_video=False, sil
     return number_of_swaps
 
 
-def track_swapping(traces, automatically_swap=False, input_video=False, silent=False, debug=False, video_params=False):
+def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
         :arg traces: (list): list of Traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg automatically_swap: (bool or list of int): if True swaps all without asking, if list it contains frames to autopass
-        :arg input_video: (str or bool): if set, path to the input video
+        :arg video_file: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg video_params: (bool or tuple): i if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
@@ -129,13 +129,13 @@ def track_swapping(traces, automatically_swap=False, input_video=False, silent=F
                                             show_middle_point=True,
                                             subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
                         # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-                        show_video(input_video, traces=[trace1, trace2], frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
-                                   video_speed=0.1, wait=True, video_params=video_params)
+                        show_video(analyse.video_file, traces=[trace1, trace2], frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
+                                   video_speed=0.1, wait=True, video_params=analyse.video_params)
 
                         to_show_longer_video = input("Do you want to see longer video? (yes or no):")
                         if "y" in to_show_longer_video.lower():
-                            show_video(input_video, traces=[trace1, trace2], frame_range=[trace1.frame_range[0]-15, trace2.frame_range[1]+15],
-                                       video_speed=0.1, wait=True, video_params=video_params)
+                            show_video(analyse.video_file, traces=[trace1, trace2], frame_range=[trace1.frame_range[0]-15, trace2.frame_range[1]+15],
+                                       video_speed=0.1, wait=True, video_params=analyse.video_params)
 
                         answer = input("Is this right? (yes or no)")
                     if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
@@ -477,7 +477,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                                 # print(f" hell2, we do not merge traces {index}({trace1.trace_id}) and {index2}({trace2.trace_id}) as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
                                 to_merge = False
 
-                ## Check for FalseNegatives
+                ## Check for False Negatives
                 # if to be merged ask whether to merge actually
                 # if gap range is smaller AND second trace long
                 if guided and trace2.frame_range[0] - step_to < get_max_trace_gap() * const and trace2.frame_range_len > get_min_trace_length_to_merge() / const and \
@@ -493,8 +493,8 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     #     print(f"short gap: {dist_of_traces_in_xy} < {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()}")
 
                     try:
-                        to_merge, spam = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file,
-                                                                 video_params=analyse.video_params, silent=silent, gaping=True, trace_ids_to_skip=trace_ids_to_delete)
+                        to_merge, spam = ask_to_merge_two_traces(traces, [trace1, trace2], silent=silent, gaping=True,
+                                                                 trace_ids_to_skip=trace_ids_to_delete)
                         # if spam is True:
                         #     print()
                     except TypeError as err:
@@ -645,7 +645,7 @@ def cross_trace_analyse(traces, silent=False, debug=False):
     print()
 
 
-def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=False, debug=False, do_count=False, input_video=False, video_params=False):
+def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=False, debug=False, do_count=False):
     """ Merges traces which have the only overlap at given time
         # Puts traces together such that all the agents but two are being tracked.
 
@@ -654,7 +654,7 @@ def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=Fals
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg do_count: (bool): flag whether to count the numbers of events occurring
-        :arg input_video: (str or bool): if set, path to the input video
+        :arg video_file: (str or bool): if set, path to the input video
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :returns: traces: (list): list of concatenated Traces
     """
@@ -723,7 +723,8 @@ def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=Fals
 
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
                                                                     overlap_range, shift=shift, show=False, silent=silent,
-                                                                    debug=debug, input_video=input_video, video_params=video_params)
+                                                                    debug=debug, input_video=analyse.video_file,
+                                                                    video_params=analyse.video_params)
 
         if to_merge is None:
             # One trace is inside of another,
@@ -744,7 +745,8 @@ def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=Fals
     return pairs_of_traces_indices_to_merge, ids_of_traces_to_be_merged
 
 
-def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True, is_first_call=None):
+def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, guided=False, silent=False, debug=False,
+                                   show=False, do_count=True, is_first_call=None):
     """ Merges traces with only a single overlap.
         # Puts traces together such that all the agents but one is being tracked.
 
@@ -753,7 +755,7 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg allow_force_merge: (bool): iff True force merge is allow
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
-        :arg input_video: (str or bool): if set, path to the input video
+        :arg video_file: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
@@ -874,8 +876,8 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
             seen_pairs.add(picked_key)
             to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
                                                                         overlap_range, shift=shift, show=False,
-                                                                        silent=silent, debug=debug, input_video=input_video,
-                                                                        video_params=video_params)
+                                                                        silent=silent, debug=debug, input_video=analyse.video_file,
+                                                                        video_params=analyse.video_params)
             if allow_force_merge:
                 force_merge = False
                 # Check whether there is overlap of overlaps
@@ -929,7 +931,8 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
     return
 
 
-def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True, guided=False, input_video=False, silent=False, debug=False, show=False, video_params=False, do_count=True, is_first_call=None, alg=""):
+def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True, guided=False, silent=False, debug=False,
+                                    show=False, do_count=True, is_first_call=None, alg=""):
     """ Merges traces with only a single overlap.
         # Puts traces together such that all the agents but one is being tracked.
 
@@ -939,7 +942,7 @@ def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True,
         :arg alone: (bool): if alone, only traces with a single overlap will be taken into account
         :arg allow_force_merge: (bool): iff True force merge is allow
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
-        :arg input_video: (str or bool): if set, path to the input video
+        :arg video_file: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
@@ -1006,8 +1009,8 @@ def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True,
         ## ACTUAL DECISION WHETHER TO MERGE
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
                                                                     overlap_range, shift=shift, show=False,
-                                                                    silent=silent, debug=debug, input_video=input_video,
-                                                                    video_params=video_params)
+                                                                    silent=silent, debug=debug, input_video=analyse.video_file,
+                                                                    video_params=analyse.video_params)
         if allow_force_merge:
             force_merge = False
             # Check whether there is overlap of overlaps

@@ -2,7 +2,7 @@
 def get_distance_from_calculated_arena():
     """ Returns distance from the estimated arena circle to be assigned as outside of the arena."""
     # Usage: outside of arena
-    return 49
+    return 50
 
 
 ## SINGLE TRACE SETTING

@@ -816,12 +816,12 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
 
 
 # TODO make tests
-def ask_to_merge_two_traces(all_traces, selected_traces, input_video, trace_ids_to_skip=(), video_params=False, silent=False, overlapping=False, gaping=False):
+def ask_to_merge_two_traces(all_traces, selected_traces, trace_ids_to_skip=(), silent=False, overlapping=False, gaping=False):
     """ Creates a user dialogue to ask whether to merge selected pair of traces while showing video of the traces
 
         :arg all_traces: (list): a list of all Traces (to be shown in the video)
         :arg selected_traces: (list): two selected traces
-        :arg input_video: (str or bool): if set, path to the input video
+        :arg video_file: (str or bool): if set, path to the input video
         :arg trace_ids_to_skip: (list): list of ids to skip
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :arg silent: (bool): if True minimal output is shown
@@ -864,8 +864,8 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, trace_ids_
 
         traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=margin_range(show_range, 15), trace_ids_to_skip=trace_ids_to_skip)
 
-        show_video(input_video=input_video, traces=traces_to_show, frame_range=margin_range(show_range, 15),
-                   video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
+        show_video(input_video=analyse.video_file, traces=traces_to_show, frame_range=margin_range(show_range, 15),
+                   video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=2)
 
         # TODO this does not work as analyse.deleted_traces is being accessed within a new process
         # if trace1.trace_id in analyse.deleted_traces.keys() or trace2.trace_id in analyse.deleted_traces.keys():
@@ -875,18 +875,18 @@ def ask_to_merge_two_traces(all_traces, selected_traces, input_video, trace_ids_
         if "l" in to_merge_by_user.lower():
             selected_range = (max(show_range[0] - 100, trace1.frame_range[0] - 15), min(show_range[1] + 100, trace2.frame_range[1] + 15))
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=selected_range, trace_ids_to_skip=trace_ids_to_skip)
-            show_video(input_video=input_video, traces=traces_to_show, frame_range=margin_range(show_range, 115),
-                       video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
+            show_video(input_video=analyse.video_file, traces=traces_to_show, frame_range=margin_range(show_range, 115),
+                       video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=2)
             to_merge_by_user = input("Merge these traces now? (yes or no)")
         elif "f" in to_merge_by_user.lower():
             traces_to_show = order_traces(all_traces, [trace1, trace2])
-            show_video(input_video=input_video, traces=traces_to_show,
-                       video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
+            show_video(input_video=analyse.video_file, traces=traces_to_show,
+                       video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=2)
         elif "b" in to_merge_by_user.lower():
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15))
-            show_video(input_video=input_video, traces=traces_to_show,
+            show_video(input_video=analyse.video_file, traces=traces_to_show,
                        frame_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15),
-                       video_speed=0.02, wait=True, video_params=video_params, fix_x_first_colors=2)
+                       video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=2)
             to_merge_by_user = input("Merge these traces now? (yes or no)")
 
         if "n" in to_merge_by_user.lower():
@@ -1023,7 +1023,7 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
             to_delete = True
 
         if to_delete:
-            # Save the decisions
+            # SAVE DECISIONS
             decisions = load_decisions()
             for trace in traces_to_delete:
                 decisions[("delete_trace", trace.trace_id, trace.get_hash())] = True

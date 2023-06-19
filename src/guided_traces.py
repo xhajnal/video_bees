@@ -81,7 +81,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         #                     silent=True)
 
         # to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
-        to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, overlapping=is_overlap, gaping=not is_overlap)
+        to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, overlapping=is_overlap, gaping=not is_overlap)
 
         if to_merge is True:
             if is_overlap:
