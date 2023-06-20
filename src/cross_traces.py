@@ -10,6 +10,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import analyse
 from counts import *
 from config import *
+from dave_io import load_decisions, save_decisions
 from fake import get_whole_frame_range
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, range_len, to_vect, \
     calculate_cosine_similarity, flatten, has_strict_overlap, margin_range, has_dot_overlap
@@ -23,12 +24,12 @@ from video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlap_distances
 
 
-def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=False):
+def track_swapping_loop(traces, guided=False, silent=False, debug=False):
     """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
-        :arg automatically_swap: (bool): if True swaps without asking
+        :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
         :arg input_video: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
@@ -41,7 +42,7 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
     number_of_swaps = 0
 
     while keep_looking:
-        keep_looking = track_swapping(traces, automatically_swap=automatically_swap, silent=silent, debug=debug)
+        keep_looking = track_swapping(traces, guided=guided, silent=silent, debug=debug)
         if keep_looking:
             number_of_swaps = number_of_swaps + 1
 
@@ -52,13 +53,13 @@ def track_swapping_loop(traces, automatically_swap=False, silent=False, debug=Fa
     return number_of_swaps
 
 
-def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
+def track_swapping(traces, guided=False, silent=False, debug=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
         :arg traces: (list): list of Traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
-        :arg automatically_swap: (bool or list of int): if True swaps all without asking, if list it contains frames to autopass
         :arg video_file: (str or bool): if set, path to the input video
+        :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg video_params: (bool or tuple): i if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
@@ -68,6 +69,14 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
 
     # Obtained variables
     # whole_frame_range = get_whole_frame_range()
+
+    decisions = load_decisions()
+
+    ## FILTER OUTSIDE ARENA DECISIONS
+    outside_arena_decisions = {}
+    for key, value in decisions.items():
+        if key[0] == 'swap_bees':
+            outside_arena_decisions[key] = value
 
     # Check
     if len(traces) < 2:
@@ -95,6 +104,22 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
         # maybe use in future to store distances of points of the two traces
         # distances = []
 
+        # SEARCHING IN LOADED DECISIONS
+        for key in outside_arena_decisions:
+            if trace1.trace_id in key and trace2.trace_id in key and trace1.get_hash() in key and trace2.get_hash() in key:
+                result = outside_arena_decisions[key]
+                if result:
+                    a, b = swap_two_overlapping_traces(trace1, trace2, key[5], silent=silent, debug=debug)
+                    traces[trace1_index], traces[trace2_index] = a, b
+                    if debug:
+                        print(f"Loaded decision to swap traces with ids {trace1.trace_id}, {trace2.trace_id} at frame {key[5]}")
+                    return True
+                else:
+                    if debug:
+                        print(f"Loaded decision NOT to swap traces with ids {trace1.trace_id}, {trace2.trace_id} at frame {key[5]}")
+                    return False
+
+        # CALCULATING WHETHER TO SWAP
         for index in range(2, len(first_trace_locations)):
             dist = math.dist(first_trace_locations[index], second_trace_locations[index])
             # distances.append(dist)
@@ -115,21 +140,18 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
                     print(f"cosine_similarity(vector2, vector1_next) > cosine_similarity(vector2, vector2_next): {calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
                     print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
 
-                    if automatically_swap is True:
-                        answer = "6"
-                    elif isinstance(automatically_swap, list) and dictionary[overlapping_pair_of_traces][0] + index in automatically_swap:
-                        answer = "6"
-                    else:
-                        scatter_detection([trace1, trace2],
-                                          get_video_whole_frame_range([trace1, trace2]),
-                                          subtitle="Traces to be swapped.")
+                    scatter_detection([trace1, trace2],
+                                      get_video_whole_frame_range([trace1, trace2]),
+                                      subtitle="Traces to be swapped.")
+                    if not guided:
                         show_plot_locations([trace1, trace2], whole_frame_range=[0, 0],
                                             from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30,
                                                            dictionary[overlapping_pair_of_traces][0] + index + 30],
                                             show_middle_point=True,
                                             subtitle=f"Traces to be swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}. +-30frames")
+                    if guided:
                         # show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=False, points=(), video_params=True)
-                        show_video(analyse.video_file, traces=[trace1, trace2], frame_range=[dictionary[overlapping_pair_of_traces][0] + index - 30, dictionary[overlapping_pair_of_traces][0] + index + 30],
+                        show_video(analyse.video_file, traces=[trace1, trace2], frame_range=margin_range(dictionary[overlapping_pair_of_traces][0] + index, 30),
                                    video_speed=0.1, wait=True, video_params=analyse.video_params)
 
                         to_show_longer_video = input("Do you want to see longer video? (yes or no):")
@@ -137,12 +159,17 @@ def track_swapping(traces, automatically_swap=False, silent=False, debug=False):
                             show_video(analyse.video_file, traces=[trace1, trace2], frame_range=[trace1.frame_range[0]-15, trace2.frame_range[1]+15],
                                        video_speed=0.1, wait=True, video_params=analyse.video_params)
 
-                        answer = input("Is this right? (yes or no)")
-                    if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
-                        print(colored(f"Swapping the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
-                        a, b = swap_two_overlapping_traces(trace1, trace2, dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
-                        traces[trace1_index], traces[trace2_index] = a, b
-                        return True
+                            answer = input("Is this right? (yes or no)")
+                        if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
+                            print(colored(f"Swapping the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
+                            a, b = swap_two_overlapping_traces(trace1, trace2, dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
+                            traces[trace1_index], traces[trace2_index] = a, b
+                            decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0]+index] = True
+                            save_decisions(decisions)
+                            return True
+                        elif "n" in answer.lower():
+                            decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0] + index] = False
+                            save_decisions(decisions)
                 else:
                     if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next):
                         if debug:
@@ -640,8 +667,7 @@ def cross_trace_analyse(traces, silent=False, debug=False):
                             print(colored(message, "yellow"))
                     else:
                         print(message)
-    print(colored(f"Cross_trace analysis done. "
-                  f"It took {gethostname()} {round(time() - start_time, 3)} seconds.", "green"))
+    print(colored(f"Cross_trace analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "green"))
     print()
 
 

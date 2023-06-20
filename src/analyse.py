@@ -324,8 +324,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # FIND TRACES OUTSIDE OF THE ARENA
         ##################################
         ## BEE SPECIFIC
-        # TODO change guided value to guided
-        check_inside_of_arena(traces, csv_file_path, guided=False, silent=silent, debug=debug)
+        check_inside_of_arena(traces, csv_file_path, guided=guided, silent=silent, debug=debug)
 
         # Storing the number of traces inside of arena
         counts.append(len(traces) + len(removed_full_traces))
@@ -380,7 +379,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         #     show_overlaps(traces, whole_frame_range)
 
         if has_tracked_video and guided:
-            number_of_swaps = track_swapping_loop(traces, automatically_swap=swaps, silent=silent, debug=debug)
+            number_of_swaps = track_swapping_loop(traces, guided=guided, silent=silent, debug=debug)
             # Storing the number of swaps done
             counts.append(number_of_swaps)
         else:
