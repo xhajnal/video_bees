@@ -41,8 +41,57 @@ def track_swapping_loop(traces, guided=False, silent=False, debug=False):
     keep_looking = True
     number_of_swaps = 0
 
+    # PAIRS TO SKIP
+    pairs_to_skip = []
+
+    # LOAD DECISIONS
+    decisions = load_decisions()
+
+    ## FILTER OUTSIDE ARENA DECISIONS
+    swap_decisions = {}
+    for key, value in decisions.items():
+        if key[0] == 'swap_bees':
+            swap_decisions[key] = value
+
+    # SEARCHING IN LOADED DECISIONS
+    for key in swap_decisions:
+        try:
+            what, trace_id1, hash1, trace_id2, hash2, swap_place = key
+        except ValueError:
+            print()
+        result = swap_decisions[key]
+
+        # Obtain the traces from TRACES
+        trace1 = None
+        trace1_index = None
+        trace2 = None
+        trace2_index = None
+        for index, trace in enumerate(traces):
+            if trace1 is not None and trace2 is not None:
+                break
+            if trace.trace_id == trace_id1:
+                trace1 = trace
+                trace1_index = index
+                continue
+            if trace.trace_id == trace_id2:
+                trace2 = trace
+                trace2_index = index
+                continue
+
+        # Solve the decision
+        if result:
+            a, b = swap_two_overlapping_traces(trace1, trace2, key[5], silent=silent, debug=debug)
+            traces[trace1_index], traces[trace2_index] = a, b
+            if debug:
+                print(f"Loaded decision to swap traces with ids {trace1.trace_id}, {trace2.trace_id} at frame {key[5]}")
+            pairs_to_skip.append([trace_id1, trace_id2])
+        else:
+            if debug:
+                print(f"Loaded decision NOT to swap traces with ids {trace1.trace_id}, {trace2.trace_id} at frame {key[5]}")
+            pairs_to_skip.append([trace_id1, trace_id2])
+
     while keep_looking:
-        keep_looking = track_swapping(traces, guided=guided, silent=silent, debug=debug)
+        keep_looking = track_swapping(traces, pairs_to_skip=pairs_to_skip, guided=guided, silent=silent, debug=debug)
         if keep_looking:
             number_of_swaps = number_of_swaps + 1
 
@@ -53,10 +102,11 @@ def track_swapping_loop(traces, guided=False, silent=False, debug=False):
     return number_of_swaps
 
 
-def track_swapping(traces, guided=False, silent=False, debug=False):
+def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=False):
     """ Tracks the possible swapping traces of two bees in the run.
 
         :arg traces: (list): list of Traces
+        :arg pairs_to_skip: (list or tuple): pairs of trace ids, indicates to skip these pairs
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg video_file: (str or bool): if set, path to the input video
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
@@ -70,15 +120,10 @@ def track_swapping(traces, guided=False, silent=False, debug=False):
     # Obtained variables
     # whole_frame_range = get_whole_frame_range()
 
+    # LOAD DECISIONS
     decisions = load_decisions()
 
-    ## FILTER OUTSIDE ARENA DECISIONS
-    outside_arena_decisions = {}
-    for key, value in decisions.items():
-        if key[0] == 'swap_bees':
-            outside_arena_decisions[key] = value
-
-    # Check
+    # Check number of traces
     if len(traces) < 2:
         print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
         return
@@ -96,6 +141,9 @@ def track_swapping(traces, guided=False, silent=False, debug=False):
         trace1 = traces[trace1_index]
         trace2 = traces[trace2_index]
 
+        if [trace1.trace_id, trace2.trace_id] in pairs_to_skip:
+            continue
+
         # get locations of the first pair
         first_trace_locations = trace1.get_locations_from_frame_range(dictionary[overlapping_pair_of_traces])
         # get locations of the second pair
@@ -103,21 +151,6 @@ def track_swapping(traces, guided=False, silent=False, debug=False):
 
         # maybe use in future to store distances of points of the two traces
         # distances = []
-
-        # SEARCHING IN LOADED DECISIONS
-        for key in outside_arena_decisions:
-            if trace1.trace_id in key and trace2.trace_id in key and trace1.get_hash() in key and trace2.get_hash() in key:
-                result = outside_arena_decisions[key]
-                if result:
-                    a, b = swap_two_overlapping_traces(trace1, trace2, key[5], silent=silent, debug=debug)
-                    traces[trace1_index], traces[trace2_index] = a, b
-                    if debug:
-                        print(f"Loaded decision to swap traces with ids {trace1.trace_id}, {trace2.trace_id} at frame {key[5]}")
-                    return True
-                else:
-                    if debug:
-                        print(f"Loaded decision NOT to swap traces with ids {trace1.trace_id}, {trace2.trace_id} at frame {key[5]}")
-                    return False
 
         # CALCULATING WHETHER TO SWAP
         for index in range(2, len(first_trace_locations)):
@@ -154,18 +187,28 @@ def track_swapping(traces, guided=False, silent=False, debug=False):
                         show_video(analyse.video_file, traces=[trace1, trace2], frame_range=margin_range(dictionary[overlapping_pair_of_traces][0] + index, 30),
                                    video_speed=0.1, wait=True, video_params=analyse.video_params)
 
-                        to_show_longer_video = input("Do you want to see longer video? (yes or no):")
-                        if "y" in to_show_longer_video.lower():
-                            show_video(analyse.video_file, traces=[trace1, trace2], frame_range=[trace1.frame_range[0]-15, trace2.frame_range[1]+15],
-                                       video_speed=0.1, wait=True, video_params=analyse.video_params)
+                        answer = input("Do you want to swap these traces? (yes or no). Press 'l' to see longer video or press 'b' to se a video with both traces of whole range: ")
+                        if "l" in answer.lower() or "b" in answer.lower():
+                            if "l" in answer.lower():
+                                show_video(analyse.video_file, traces=[trace1, trace2],
+                                           frame_range=margin_range(dictionary[overlapping_pair_of_traces][0] + index, 130),
+                                           video_speed=0.1, wait=True, video_params=analyse.video_params)
+                            else:
+                                show_video(analyse.video_file, traces=[trace1, trace2],
+                                           frame_range=[trace1.frame_range[0], trace2.frame_range[1]],
+                                           video_speed=0.1, wait=True, video_params=analyse.video_params)
 
-                            answer = input("Is this right? (yes or no)")
+                            answer = input("Do you want to swap these traces? (yes or no).")
                         if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
                             print(colored(f"Swapping the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
+                            # SAVE DECISION
+                            decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0] + index] = True
+                            save_decisions(decisions)
+
+                            # ACTUALLY SWAP THE TRACES
                             a, b = swap_two_overlapping_traces(trace1, trace2, dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
                             traces[trace1_index], traces[trace2_index] = a, b
-                            decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0]+index] = True
-                            save_decisions(decisions)
+
                             return True
                         elif "n" in answer.lower():
                             decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0] + index] = False

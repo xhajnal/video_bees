@@ -374,16 +374,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         #############################
         # CHECK FOR SWAPPING THE BEES
         #############################
-        ## TODO uncomment the following to show the overlaps
-        # if show_all_plots:
-        #     show_overlaps(traces, whole_frame_range)
-
-        if has_tracked_video and guided:
-            number_of_swaps = track_swapping_loop(traces, guided=guided, silent=silent, debug=debug)
-            # Storing the number of swaps done
-            counts.append(number_of_swaps)
-        else:
-            counts.append(0)
+        number_of_swaps = track_swapping_loop(traces, guided=True, silent=silent, debug=True)
+        # Storing the number of swaps done
+        counts.append(number_of_swaps)
 
         ## TODO uncomment the following to show plot of all traces
         # ## ALL TRACES SHOW
