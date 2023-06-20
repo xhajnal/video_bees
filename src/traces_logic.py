@@ -1097,7 +1097,7 @@ def delete_traces_from_saved_decisions(traces, debug=False):
         print(f"Just deleted the traces with the following indices {indices_to_delete} by loading the saved decisions.")
         print()
 
-    print(f"Could not find deleted trace in saved decisions.")
+    # print(f"Could not find deleted trace in saved decisions.")
     return traces
 
 
@@ -1151,6 +1151,80 @@ def compute_arena(traces, debug=False):
     center = [mid_x, mid_y]
 
     return center, diam
+
+
+def smoothen_traces_from_saved_decisions(traces, debug=False):
+    """ Smoothens the traces which have been previously selected to be smoothened.
+
+    :arg traces: (list): a list of all Traces
+    """
+    indices_to_smoothen = []
+    decisions = load_decisions()
+
+    new_decisions = {}
+    for key, value in decisions.items():
+        if key[0] == 'smoothen_trace':
+            new_decisions[key] = value
+
+    new_decisions = list(sorted(new_decisions))
+    print(new_decisions)
+
+    i = 0
+    j = 0
+
+    while i < len(new_decisions):
+        if debug:
+            print("i", i)
+        while j < len(traces):
+            if debug:
+                print("j", j)
+            # if the trace.id to be deleted is further, move the traces index
+            try:
+                if new_decisions[i][1] > traces[j].trace_id:
+                    j = j + 1
+                if new_decisions[i][1] < traces[j].trace_id:
+                    i = i + 1
+                # if the trace.id is equal to the one to be deleted
+                elif new_decisions[i][1] == traces[j].trace_id:
+                    if new_decisions[i][3] == traces[j].get_hash():
+                        indices_to_smoothen.append(j)
+                        traces[j].smoothen(new_decisions[i][2][0], new_decisions[i][2][1])
+                    elif debug:
+                        print(f"decision hash {new_decisions[i][3]}")
+                        print(f"trace hash {traces[j].get_hash()}")
+
+                    i = i + 1
+                # else:
+                #     i = i + 1
+            except IndexError as err:
+                print(f"Could not find trace to be smoothened in saved decisions.")
+                # raise err
+                break
+
+    if indices_to_smoothen:
+        delete_indices(indices_to_smoothen, traces)
+        print(f"Just smoothened the traces with the following indices {indices_to_smoothen} by loading the saved decisions.")
+        print()
+
+    # print(f"Could not find deleted trace in saved decisions.")
+    return traces
+
+
+def fix_decisions():
+    key_to_delete = []
+    decisions = load_decisions()
+
+    new_decisions = {}
+    for key, value in decisions.items():
+        if key[0] == 'smoothen_trace':
+            key_to_delete.append(key)
+            continue
+
+    for key in key_to_delete:
+        del decisions[key]
+
+
+    save_decisions(decisions)
 
 
 def compute_whole_frame_range(traces):

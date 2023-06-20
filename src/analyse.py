@@ -14,7 +14,8 @@ from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
 from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
     merge_alone_overlapping_traces, track_swapping_loop
-from traces_logic import compute_whole_frame_range, get_video_whole_frame_range, delete_traces_from_saved_decisions
+from traces_logic import compute_whole_frame_range, get_video_whole_frame_range, delete_traces_from_saved_decisions, \
+    smoothen_traces_from_saved_decisions, fix_decisions
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist, save_traces_as_csv, load_traces, \
     load_decisions
@@ -292,7 +293,10 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ####################################
         # DELETE TRACES FROM SAVED DECISIONS
         ####################################
-        traces = delete_traces_from_saved_decisions(traces)
+        traces = delete_traces_from_saved_decisions(traces, debug=debug)
+
+        # fix_decisions()
+        traces = smoothen_traces_from_saved_decisions(traces, debug=debug)
 
         #################
         ## SHOW THE VIDEO
@@ -320,9 +324,9 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # FIND TRACES OUTSIDE OF THE ARENA
         ##################################
         ## BEE SPECIFIC
-        # TODO change guided to guided
-        check_inside_of_arena(traces, csv_file_path, guided=True, silent=silent, debug=debug)
-        return
+        # TODO change guided value to guided
+        check_inside_of_arena(traces, csv_file_path, guided=False, silent=silent, debug=debug)
+
         # Storing the number of traces inside of arena
         counts.append(len(traces) + len(removed_full_traces))
 
@@ -347,7 +351,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         print(colored(f"TRACE JUMP BACK AND FORTH CHECKER", "blue"))
         number_of_jump_detected = 0
         for index, trace in enumerate(traces):
-            number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, index, show_plots=True, silent=silent, debug=debug)
+            number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, index, guided=guided, show_plots=True, silent=silent, debug=debug)
         print(colored(f"We have found and fixed {number_of_jump_detected} jumps. "
                       f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
         # if show_all_plots:

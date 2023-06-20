@@ -1,5 +1,6 @@
 import math
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import rcParams
 
 from config import *
@@ -189,6 +190,18 @@ class Trace:
                 continue
             path_len = path_len + math.dist(locations[index-1], location)
         return path_len
+
+    def smoothen(self, location_index, location_index2):
+        ## TODO make more tests
+        """ Smoothens the trace using linspace between two points
+
+        :arg location_index: (int): beginning of the smoothening
+        :arg location_index2: (int): end of the smoothening
+        """
+        spam = np.linspace(self.locations[location_index], self.locations[location_index2],
+                           num=location_index2 - location_index + 1, endpoint=True)
+        for index_index, location_index in enumerate(range(location_index, location_index2 + 1)):
+            self.locations[location_index] = spam[index_index]
 
     def recalculate_trace_lengths(self, recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True):
         ## TODO make more tests

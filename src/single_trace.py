@@ -129,6 +129,7 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
 
     :arg traces: (list): a list of Traces
     :arg csv_file_path: (str): filename of the original csv file
+    :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns traces: (list): a list of Traces
@@ -139,6 +140,7 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
 
     ## LOAD SAVED DECISIONS
     decisions = load_decisions()
+
     ## FILTER OUTSIDE ARENA DECISIONS
     outside_arena_decisions = {}
     for key, value in decisions.items():
@@ -148,27 +150,33 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
     ## COMPUTE THE ARENA SIZE
     center, diam = compute_arena(traces, debug)
     mid_x, mid_y = center
+    if debug:
+        print(f"calculated arena_boundaries: mid [{mid_x, mid_y}], diam {diam}")
 
     ## ALIGN THE ARENA ACCORDING TO VIDEO
-    if guided:
-        trim, crop = analyse.video_params
-        # LOAD ARENA BOUNDARIES FROM FILE
+    trim, crop = analyse.video_params
+    # LOAD ARENA BOUNDARIES FROM FILE
+    try:
         try:
-            try:
-                # if transpositions empty
-                if os.stat("../auxiliary/arena_boundaries.txt").st_size == 0:
-                    raise KeyError
-                # load transpositions
-                with open("../auxiliary/arena_boundaries.txt") as file:
-                    transpositions = json.load(file)
-            except FileNotFoundError as err:
-                # transpositions.txt not found
+            # if arena_boundaries empty
+            if os.stat("../auxiliary/arena_boundaries.txt").st_size == 0:
                 raise KeyError
-            # load video record
-            center, diam = transpositions[analyse.video_file]
-            mid_x, mid_y = center
+            # load arena_boundaries
+            with open("../auxiliary/arena_boundaries.txt") as file:
+                transpositions = json.load(file)
+        except FileNotFoundError as err:
+            if debug:
+                print(colored("arena_boundaries file not found", "red"))
+            # arena_boundaries.txt not found
+            raise KeyError
+        # load video record
+        center, diam = transpositions[analyse.video_file]
+        mid_x, mid_y = center
+        if debug:
+            print(f"arena_boundaries loaded: mid [{mid_x, mid_y}], diam {diam}")
 
-        except KeyError:
+    except KeyError:
+        if guided:
             # OBTAIN ARENA BOUNDARIES FROM VIDEO
             # recalculate arena according to crop
 
@@ -253,22 +261,27 @@ def simple_additional_bee_finder(csv_file, population_size):
 
 ## TODO add to config - probably only cosmetic to the trace (should not alter the further analysis that much)
 # TODO add tests
-def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False, debug=False):
+def track_jump_back_and_forth(trace, trace_index, show_plots=False, guided=False, silent=False, debug=False):
     """ Tracks when the tracking of the bee jumped at some place and then back quickly.
 
     :arg trace: (Trace): a Trace to check
     :arg trace_index: (int): print auxiliary information of index in list of traces of the trace
     :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
     :arg show_plots: (bool): a flag whether to show the jump in a plot
+    :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
+    # CHECK VALUES
     assert isinstance(trace, Trace)
-    whole_frame_range = get_whole_frame_range()
-    # if not silent:
-    #     print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace {trace_index}({trace.trace_id})", "blue"))
-    start_time = time()
+    if debug:
+        silent = False
 
+    ## INITIALISATIONS
+    whole_frame_range = get_whole_frame_range()
+    if debug:
+        print(colored(f"TRACE JUMP BACK AND FORTH CHECKER with trace {trace_index}({trace.trace_id})", "blue"))
+    start_time = time()
     number_of_jump_detected = 0
 
     # define surrounding in frames to find a jump
@@ -280,6 +293,7 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False
     # define surrounding to jump back
     jump_back_dist = 10
 
+    ## CALCULATION
     location_index = 0
     while location_index < len(trace.locations)-1:
         potential_jump_detected = False
@@ -288,9 +302,14 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False
                 a = trace.locations[location_index2]
             except IndexError:
                 break
+
+            jump_range = [trace.frame_range[0] + location_index, trace.frame_range[0] + location_index2]
             if not potential_jump_detected and math.dist(trace.locations[location_index], trace.locations[location_index2]) >= jump_len:
+                if debug:
+                    print(f"Potential jump detected at {jump_range}.")
                 potential_jump_detected = True
                 jump_to_index = location_index2
+
             if potential_jump_detected:
                 if math.dist(trace.locations[location_index], trace.locations[location_index2]) <= jump_back_dist:
                     # A jump found
@@ -304,13 +323,27 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False
                               f" {math.dist(trace.locations[location_index], trace.locations[location_index2])}")
 
                     # Show the jump in plot
-                    if show_plots and debug:
+                    if show_plots and debug and not guided:
                         trace.show_trace_in_xy(from_to_frame=[trace.frames_list[location_index]-2, trace.frames_list[location_index2]+2], show=True, subtitle=f" jump to {trace.frames_list[jump_to_index]}")
 
+                    to_smoothen = True
+                    # Show the jump in video
+                    if guided:
+                        decisions = load_decisions()
+                        print(f"Smoothening jump in trace {trace.trace_id}")
+                        show_video(input_video=analyse.video_file, traces=[trace],
+                                   frame_range=margin_range(jump_range, 0),
+                                   video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=1)
+                        to_smoothen = input("Should we smoothen this trace? (yes or no):")
+                        to_smoothen = True if "y" in to_smoothen.lower() else False
+
+                        # SAVE DECISIONS
+                        decisions[("smoothen_trace", trace.trace_id, (location_index, location_index2), trace.get_hash())] = to_smoothen
+                        save_decisions(decisions, silent=silent)
+
                     # Smoothen the jump
-                    spam = np.linspace(trace.locations[location_index], trace.locations[location_index2], num=location_index2 - location_index + 1, endpoint=True)
-                    for index_index, location_index in enumerate(range(location_index, location_index2+1)):
-                        trace.locations[location_index] = spam[index_index]
+                    if to_smoothen:
+                        trace.smoothen(location_index, location_index2)
 
                     # if show_plots:
                     #     trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[index]-2, trace.frames_list[index2]+2], show=True, subtitle=f" Smoothened jump to {trace.frames_list[jump_to_index]}")
@@ -320,5 +353,6 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, silent=False
                     potential_jump_detected = False
         location_index = location_index + 1
 
-    # print(colored(f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    if debug:
+        print(colored(f"track_jump_back_and_forth of trace with trace {trace_index}({trace.trace_id}) took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
     return number_of_jump_detected
