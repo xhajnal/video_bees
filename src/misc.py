@@ -165,7 +165,12 @@ def margin_range(interval, margin):
     :param margin: margin to be added to both sides
     :return:
     """
-    return (interval[0] - margin, interval[1] + margin)
+    try:
+        assert len(interval) == 2
+        return (interval[0] - margin, interval[1] + margin)
+    except TypeError:
+        assert isinstance(interval, int)
+        return (interval - margin, interval + margin)
 
 
 def is_in(range1, range2, strict=False):

@@ -198,7 +198,7 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
             pass
 
         ## CHECK THE ARENA
-        for location in trace.locations:
+        for location_index, location in enumerate(trace.locations):
             try:
                 if list(location) == [-1, -1]:
                     continue

@@ -29,9 +29,13 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     video = cv2.VideoCapture(input_video)
     # window name and size
     if "lin" in platform:
-        cv2.namedWindow("video", cv2.WINDOW_NORMAL)
+        cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
     else:
         cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
+
+    # TODO ONLY FOR SKADI
+    #cv2.resizeWindow("video", 15, 600)
+
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
 
@@ -75,13 +79,15 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
                 cv2.circle(frame, point, 4, color=colors[modulo(len(colors), index)], thickness=-1, lineType=cv2.LINE_AA)
 
         # Display each frame
+
+        if str(gethostname()) == "Skadi":
+            frame = cv2.resize(frame, [1736, 864], interpolation=cv2.INTER_AREA)
+
         if frame_range:
             if frame_range[0] <= frame_number <= frame_range[1]:
                 cv2.imshow("video", frame)
         else:
             cv2.imshow("video", frame)
-        if str(gethostname()) == "Skadi":
-            cv2.resizeWindow("video", 1900, 800)
 
         key = cv2.waitKey(round(2*(100/fps)/speed))
 
