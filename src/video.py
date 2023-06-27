@@ -42,7 +42,7 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     if points:
         print("Press WASD keys to move point(s) to respective direction, press q to save the alignment and close the window.")
     else:
-        print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
+        print("Press q (while video window) to stop the video and continue to question, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
 
     fps = video.get(5)
 
@@ -216,17 +216,26 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
 
 
 def show_all_traces(spam, egg):
+    """ Shows all traces in the video. """
     global show_single
     show_single = False
     print("Showing all traces.")
 
 
 def show_single_trace(spam, number):
+    """ Shows single trace in the video. """
     global show_single
     global show_number
     show_single = True
     print("Showing single trace", number)
     show_number = number[0]
+
+
+def go_to_start_frame(spam, egg):
+    """ In the video, goes to the beginning of the given trace. """
+    video, index, traces_to_show, trim_offset = egg
+    start = traces_to_show[index].frame_range[0]
+    video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + start)
 
 
 def annotate_video(input_video, output_video, traces_to_show, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), points=(), fix_x_first_colors=False, show=False, force_new_video=False, debug=False):
@@ -295,11 +304,12 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
     cv2.createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
 
-    for index, trace in enumerate(traces_to_show):
-        cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [index], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
-        cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, [traces_to_show[index].trace_id, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
-        cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[index].trace_id, index, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
-        cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", fake, None, cv2.QT_PUSH_BUTTON, 1, )
+    for indexx, trace in enumerate(traces_to_show):
+        spam = indexx
+        cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [indexx], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
+        cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, [traces_to_show[indexx].trace_id, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
+        cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[indexx].trace_id, indexx, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
+        cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", go_to_start_frame, [video, spam, traces_to_show, trim_offset], cv2.QT_PUSH_BUTTON, 1, )
 
     if str(gethostname()) == "Skadi":
         cv2.moveWindow("video", 0, 0)
@@ -309,9 +319,9 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         print(colored("Error opening the video file", "red"))
     else:
         if show:
-            print("Press q (while video window) to stop the video, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
-            print("Press 0-9 to show only respective trace, Enter to start the video when the trace starts, or . to show all traces")
-            print("Press Ctrl+P to show trace management - deleting and showing the traces.")
+            print("Press q (while video window) to stop the video and continue to question. \nPress r to restart, a to rewind, d to forward, - to slow down, + to speed up.")
+            # print("Press 0-9 to show only respective trace, Enter to start the video when the trace starts, or . to show all traces")
+            print("Press Ctrl+P to show trace management - deleting, undeleting and showing the traces.")
 
         fps = video.get(5)
         if debug:
@@ -782,11 +792,6 @@ def obtain_arena_boundaries(video_file, csv_file_path, center, diameter):
         file.write(json.dumps(transpositions))
 
     return new_center, new_diameter
-
-
-def fake():
-    pass
-
 
 if __name__ == "__main__":
     # make_help_video()
