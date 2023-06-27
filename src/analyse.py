@@ -324,7 +324,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # FIND TRACES OUTSIDE OF THE ARENA
         ##################################
         ## BEE SPECIFIC
-        check_inside_of_arena(traces, csv_file_path, guided=guided, silent=silent, debug=debug)
+        # TODO set guided value to guides
+        check_inside_of_arena(traces, csv_file_path, guided=False, silent=silent, debug=debug)
 
         # Storing the number of traces inside of arena
         counts.append(len(traces) + len(removed_full_traces))
@@ -350,7 +351,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         print(colored(f"TRACE JUMP BACK AND FORTH CHECKER", "blue"))
         number_of_jump_detected = 0
         for index, trace in enumerate(traces):
-            number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, index, guided=guided, show_plots=True, silent=silent, debug=debug)
+            # TODO set guided value back to guided
+            number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, index, guided=False, show_plots=True, silent=silent, debug=debug)
         print(colored(f"We have found and fixed {number_of_jump_detected} jumps. "
                       f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
         # if show_all_plots:
@@ -374,7 +376,8 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         #############################
         # CHECK FOR SWAPPING THE BEES
         #############################
-        number_of_swaps = track_swapping_loop(traces, guided=True, silent=silent, debug=True)
+        # TODO set guided value to guides
+        number_of_swaps = track_swapping_loop(traces, guided=False, silent=silent, debug=debug)
         # Storing the number of swaps done
         counts.append(number_of_swaps)
 
@@ -387,7 +390,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         ##################################################################
         # TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
         ##################################################################
-        ## TODO uncomment the following if want the plot
+        ## TODO uncomment the following if you want to see the plot
         # if show_all_plots:
         #     show_plot_locations(traces, subtitle="before TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER")
 
@@ -405,7 +408,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
             if show_all_plots:
                 scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
-            traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge, guided=not is_first_run, silent=silent, debug=debug)
+            traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge, guided=guided, silent=silent, debug=debug)
             if show_all_plots:
                 scatter_detection(traces, subtitle="After putting gaping traces together.")
             after_number_of_traces = len(traces)
@@ -470,7 +473,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                 update_this_file_counts()
 
         is_first_call = True
-        # ## TODO delete this return
+        ## TODO delete this return
         # return
 
         while before_before_number_of_traces != after_after_number_of_traces:

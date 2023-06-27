@@ -504,8 +504,7 @@ def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_v
         ## ACTUAL DECISION WHETHER TO MERGE
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
                                                                     overlap_range, shift=shift, show=False,
-                                                                    silent=silent, debug=debug, input_video=input_video,
-                                                                    video_params=video_params)
+                                                                    silent=silent, debug=debug)
         # Manage the merge event
         if to_merge:
             # Merge these two traces later

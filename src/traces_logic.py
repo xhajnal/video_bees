@@ -485,7 +485,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, interpolate_gap=None
 
 
 def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, trace1_index, trace2_index, overlap_range,
-                                          shift=False, show=False, silent=False, debug=False, input_video=False, video_params=False):
+                                          shift=False, show=False, silent=False, debug=False):
     """ Check whether to merge given two overlapping traces or not.
 
     :arg traces: (list): list of traces
@@ -561,7 +561,7 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
 
         ## TO ASK USER
         # decision = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=video_params, silent=silent, overlapping=True)
-        decision =True
+        decision = True
 
         if debug:
             if decision:
