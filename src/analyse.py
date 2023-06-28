@@ -166,6 +166,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         print(colored(f"Gonna analyse: {csv_file_path}", "magenta"))
 
     global force_new_video
+    global guided
 
     #################
     # Set run setting
@@ -465,9 +466,11 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         # with open(filename, "a") as file:
         #     file.write(f"{csv_file_path} all_overlaps_count; get_all_seen_overlaps; all_allowed_overlaps_count; all_seen_overlaps_deleted\n")
 
+        guided = True
+
         # todo UNCOMMENT THIS AFTER counts done
         if algorithm == "mixed":
-            a, b = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), silent=silent, debug=debug, do_count=do_count)
+            a, b = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), guided=guided, silent=silent, debug=debug, do_count=do_count)
             trace_indices_to_merge, ids_of_traces_to_be_merged = a, b
             if do_count:
                 update_this_file_counts()
@@ -484,7 +487,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             while before_number_of_traces != after_number_of_traces and len(traces) >= 2:
                 before_number_of_traces = len(traces)
                 if algorithm == "by_partition":
-                    trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), silent=silent, debug=debug, do_count=do_count)
+                    trace_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), guided=guided, silent=silent, debug=debug, do_count=do_count)
 
                 if algorithm == "by_build":
                     merge_alone_overlapping_traces(traces, shift=get_max_shift(), allow_force_merge=allow_force_merge, guided=guided,
@@ -603,7 +606,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
                 if show_all_plots:
                     scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
                 traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge,
-                                                    guided=not is_first_run, silent=silent, debug=debug)
+                                                    guided=guided, silent=silent, debug=debug)
                 if show_all_plots:
                     scatter_detection(traces, subtitle="After putting gaping traces together.")
                 after_number_of_traces = len(traces)

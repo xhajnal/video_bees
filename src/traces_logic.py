@@ -485,7 +485,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, interpolate_gap=None
 
 
 def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, trace1_index, trace2_index, overlap_range,
-                                          shift=False, show=False, silent=False, debug=False):
+                                          shift=False, guided=False, silent=False, debug=False):
     """ Check whether to merge given two overlapping traces or not.
 
     :arg traces: (list): list of traces
@@ -495,12 +495,13 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
     :arg trace2_index: (int): auxiliary information of index in list of traces of the second
     :arg overlap_range: (pair of ints): range of the overlap
     :arg shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
-    :arg show: (bool): flag whether to show the plots and video of the overlap
+    :arg guided: (bool): iff True user-guided section will be used
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :arg input_video: (str or bool): if set, path to the input video
     :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
-    :returns: to _merge: (bool): flag whether to merge the traces or not
+
+    :returns: to_merge: (bool, bool): flag whether to merge the traces or not, whether
     """
 
     if is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range):
@@ -543,8 +544,7 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
         # print(trace1.locations)
         # print(trace1.get_locations_from_frame_range(overlap_range))
 
-        from analyse import curr_csv_file_path
-        print(f"{Path(curr_csv_file_path).stem} {len(distances)}, {math.trunc(max(distances))}, {math.trunc(min(distances))}")
+        print(f"{Path(analyse.curr_csv_file_path).stem} {len(distances)}, {math.trunc(max(distances))}, {math.trunc(min(distances))}")
 
         print(colored(f"len distances {len(distances)}", "blue"))
         print(colored(f"distances {distances[25:]}", "blue"))
@@ -560,15 +560,17 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
             print(colored(f"  min distance {min(not_shifted_distances)}", "blue"))
 
         ## TO ASK USER
-        # decision = ask_to_merge_two_traces(traces, [trace1, trace2], input_video, video_params=video_params, silent=silent, overlapping=True)
-        decision = True
+        if guided:
+            to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, silent=silent, overlapping=True)
+        else:
+            to_merge = True
 
         if debug:
-            if decision:
+            if to_merge:
                 print(colored(f"Will merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "blue"))
             else:
                 print(colored(f"Will NOT merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "blue"))
-        return decision, shift
+        return to_merge, shift
     else:
         if debug:
             # print(colored(f"Will NOT merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "yellow"))
@@ -882,6 +884,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, trace_ids_to_skip=(), s
             traces_to_show = order_traces(all_traces, [trace1, trace2])
             show_video(input_video=analyse.video_file, traces=traces_to_show,
                        video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=2)
+            to_merge_by_user = input("Merge these traces now? (yes or no)")
         elif "b" in to_merge_by_user.lower():
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15))
             show_video(input_video=analyse.video_file, traces=traces_to_show,
@@ -1089,7 +1092,10 @@ def delete_traces_from_saved_decisions(traces, debug=False):
                 # else:
                 #     i = i + 1
             except IndexError:
-                print(f"Could not find deleted trace in saved decisions.")
+                try:
+                    print(f"Could not find deleted trace {traces[j].trace_id} in saved decisions.")
+                except IndexError:
+                    pass
                 break
 
     if indices_to_delete:

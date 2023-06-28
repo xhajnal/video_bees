@@ -209,7 +209,8 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
 
                 to_delete_trace = True
                 if guided:
-                    print(f"At some point this trace is {round(math.sqrt((location[0] - mid_x) ** 2 + (location[1] - mid_y) ** 2), 2)} > {round((diam/2 + get_distance_from_calculated_arena()), 2)} far from center [{mid_x}, {mid_y}]")
+                    print(f"At {location_index}th location, this trace is {round(math.sqrt((location[0] - mid_x) ** 2 + (location[1] - mid_y) ** 2), 2)} > {round((diam/2 + get_distance_from_calculated_arena()), 2)} far from center [{mid_x}, {mid_y}]")
+                    print("The white dot represents the center of the arena.")
                     show_video(input_video=analyse.video_file, traces=[trace], frame_range=margin_range(trace.frame_range, 15),
                                video_speed=0.02, wait=True, video_params=analyse.video_params, points=[(mid_x, mid_y)], fix_x_first_colors=2)
 

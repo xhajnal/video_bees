@@ -714,7 +714,7 @@ def cross_trace_analyse(traces, silent=False, debug=False):
     print()
 
 
-def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=False, debug=False, do_count=False):
+def merge_alone_overlapping_traces_by_partition(traces, shift=False, guided=False, silent=False, debug=False, do_count=False):
     """ Merges traces which have the only overlap at given time
         # Puts traces together such that all the agents but two are being tracked.
 
@@ -722,6 +722,7 @@ def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=Fals
 
         :arg traces: (list): list of traces
         :arg shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
+        :arg guided: (bool): iff True user-guided section will be used
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg do_count: (bool): flag whether to count the numbers of events occurring
@@ -793,7 +794,7 @@ def merge_alone_overlapping_traces_by_partition(traces, shift=False, silent=Fals
         overlap_range = get_overlap(trace1.frame_range, trace2.frame_range)
 
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
-                                                                    overlap_range, shift=shift, show=False,
+                                                                    overlap_range, shift=shift, guided=guided,
                                                                     silent=silent, debug=debug)
 
         if to_merge is None:
@@ -949,7 +950,7 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
 
             seen_pairs.add(picked_key)
             to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
-                                                                        overlap_range, shift=shift, show=False,
+                                                                        overlap_range, shift=shift, guided=guided,
                                                                         silent=silent, debug=debug)
             if allow_force_merge:
                 force_merge = False
@@ -1088,7 +1089,7 @@ def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True,
         seen_pairs.add(picked_key)
         ## ACTUAL DECISION WHETHER TO MERGE
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
-                                                                    overlap_range, shift=shift, show=False,
+                                                                    overlap_range, shift=shift, guided=guided,
                                                                     silent=silent, debug=debug)
         if allow_force_merge:
             force_merge = False

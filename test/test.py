@@ -650,17 +650,15 @@ class MyTestCase(unittest.TestCase):
 
         ## MERGES
         self.assertEqual(check_to_merge_two_overlapping_traces(traces, traces[0], traces[1], 0, 1, [1, 2],
-                                                               shift=False, show=False, silent=False, debug=True,
-                                                               input_video=False, video_params=False), (True, None))
+                                                               shift=False, guided=False, silent=False, debug=True), (True, None))
         ## No MERGES, inside one another
         self.assertEqual(check_to_merge_two_overlapping_traces(traces, traces[2], traces[3], 2, 3, [2, 4],
-                                                               shift=False, show=False, silent=False, debug=False,
-                                                               input_video=False, video_params=False), (None, None))
+                                                               shift=False, guided=False, silent=False, debug=False), (None, None))
 
         ## Exception, premise not holding - not overlapping traces
         with self.assertRaises(Exception) as context:
-            check_to_merge_two_overlapping_traces(traces, traces[2], traces[9], 2, 9, [2, 4], shift=False, show=False,
-                                                  silent=False, debug=False, input_video=False, video_params=False)
+            check_to_merge_two_overlapping_traces(traces, traces[2], traces[9], 2, 9, [2, 4], shift=False, guided=False,
+                                                  silent=False, debug=False)
 
         ## No MERGES, too far
         with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
@@ -670,11 +668,11 @@ class MyTestCase(unittest.TestCase):
             traces.append(Trace(scraped_traces[trace], index))
 
         self.assertEqual(check_to_merge_two_overlapping_traces(traces, traces[0], traces[1], 0, 1, [1, 2],
-                                                               shift=False, show=False, silent=False, debug=False,
-                                                               input_video=False, video_params=False), (False, None))
+                                                               shift=False, guided=False, silent=False, debug=False), (False, None))
 
     def testTrimOut(self):
-        with open('../test/test2.csv', newline='') as csv_file:
+        csv_file_path = '../test/test2.csv'
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -685,7 +683,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
 
-        with open('../test/test2.csv', newline='') as csv_file:
+        csv_file_path = '../test/test2.csv'
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -696,7 +695,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
 
-        with open('../test/test2.csv', newline='') as csv_file:
+        csv_file_path= '../test/test2.csv'
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -708,7 +708,8 @@ class MyTestCase(unittest.TestCase):
 
     def testAloneOverlap_by_partition(self):
         ## NO PAIR
-        with open('../test/test.csv', newline='') as csv_file:
+        csv_file_path = '../test/test.csv'
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -719,7 +720,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(traces), 8)
 
         ## NO OVERLAP
-        with open('../test/test_4overlap.csv', newline='') as csv_file:
+        csv_file_path = '../test/test_4overlap.csv'
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -731,7 +733,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
 
         ## NO OVERLAP
-        with open('../test/test_4overlap_in_single_frame.csv', newline='') as csv_file:
+        csv_file_path = '../test/test_4overlap_in_single_frame.csv'
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -754,19 +757,22 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(traces), 4)
 
         ## 6/6 MERGES
-        with open('../test/test3.csv', newline='') as csv_file:
+        csv_file_path = '../test/test3.csv'
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
 
+        analyse.set_curr_csv_file_path(csv_file_path)
         self.assertEqual(len(traces), 10)
         merge_alone_overlapping_traces_by_partition(traces, silent=False, debug=True)
         self.assertEqual(len(traces), 4)
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 2, 3, 7])
 
         ## 3/6 MERGES
-        with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
+        csv_file_path = '../test/test3_some_distant_traces.csv'
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -780,7 +786,9 @@ class MyTestCase(unittest.TestCase):
 
     def testAloneOverlap_by_build(self):
         ## NO PAIR
-        with open('../test/test.csv', newline='') as csv_file:
+        csv_file_path = '../test/test.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -791,7 +799,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(traces), 8)
 
         ## NO OVERLAP
-        with open('../test/test_4overlap.csv', newline='') as csv_file:
+        csv_file_path = '../test/test_4overlap.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -803,7 +813,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
 
         ## NO OVERLAP
-        with open('../test/test_4overlap_in_single_frame.csv', newline='') as csv_file:
+        csv_file_path = '../test/test_4overlap_in_single_frame.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -815,7 +827,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
 
         ## NO MERGE
-        with open('../test/test2.csv', newline='') as csv_file:
+        csv_file_path = '../test/test2.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -826,7 +840,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(traces), 4)
 
         ## 6/6 MERGES
-        with open('../test/test3.csv', newline='') as csv_file:
+        csv_file_path = '../test/test3.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -838,7 +854,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 6, 7, 8, 9])
 
         ## 3/6 MERGES
-        with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
+        csv_file_path = '../test/test3_some_distant_traces.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -851,7 +869,9 @@ class MyTestCase(unittest.TestCase):
 
     def testOverlap_by_build(self):
         # NO PAIR
-        with open('../test/test.csv', newline='') as csv_file:
+        csv_file_path = '../test/test.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -862,7 +882,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(traces), 8)
 
         ## NO OVERLAP
-        with open('../test/test_4overlap.csv', newline='') as csv_file:
+        csv_file_path = '../test/test_4overlap.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -874,7 +896,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
 
         ## NO OVERLAP
-        with open('../test/test_4overlap_in_single_frame.csv', newline='') as csv_file:
+        csv_file_path = '../test/test_4overlap_in_single_frame.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -886,7 +910,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3])
 
         ## NO MERGE
-        with open('../test/test2.csv', newline='') as csv_file:
+        csv_file_path = '../test/test2.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -897,7 +923,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(traces), 4)
 
         ## 6/6 MERGES
-        with open('../test/test3.csv', newline='') as csv_file:
+        csv_file_path = '../test/test3.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -909,7 +937,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 2, 3, 6, 7, 8, 9])
 
         ## 3/6 MERGES
-        with open('../test/test3_some_distant_traces.csv', newline='') as csv_file:
+        csv_file_path = '../test/test3_some_distant_traces.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
@@ -921,7 +951,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(list(map(lambda x: x.trace_id, traces)), [0, 1, 2, 3, 5, 6, 7, 8, 9])
 
     def testCheckTraces(self):
-        with open('../test/test.csv', newline='') as csv_file:
+        csv_file_path = '../test/test.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
             traces = []
             for index, trace in enumerate(scraped_traces.keys()):
@@ -937,7 +969,9 @@ class MyTestCase(unittest.TestCase):
 
     # TODO HAVE A LOOK HERE
     def testSwaps(self):
-        with open('../test/test2.csv', newline='') as csv_file:
+        csv_file_path = '../test/test2.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
             traces = []
             for index, trace in enumerate(scraped_traces.keys()):
@@ -957,7 +991,9 @@ class MyTestCase(unittest.TestCase):
             # self.assertEqual(removed_traces[1].trace_id, 1)
 
     def testSwapTraces(self):
-        with open('../test/test.csv', newline='') as csv_file:
+        csv_file_path = '../test/test.csv'
+        analyse.set_curr_csv_file_path(csv_file_path)
+        with open(csv_file_path, newline='') as csv_file:
             traces = parse_traces(csv_file)
             traces_lengths = []
             for index, trace in enumerate(traces.keys()):

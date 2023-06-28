@@ -4,14 +4,8 @@ from _socket import gethostname
 from termcolor import colored
 from operator import countOf
 
-from counts import set_single_run_seen_overlaps, set_single_run_allowed_overlaps_count, \
-    set_single_run_seen_overlaps_deleted, get_single_run_seen_overlaps_deleted, set_single_run_overlaps_count
-from fake import get_whole_frame_range
-from config import *
 from misc import delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, flatten, margin_range
 from primal_traces_logic import get_traces_from_range
-from trace import Trace
-
 from traces_logic import merge_two_overlapping_traces, ask_to_delete_a_trace, \
     partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, \
     check_to_merge_two_overlapping_traces, merge_multiple_pairs_of_overlapping_traces, \
@@ -292,10 +286,8 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
             if not guided:
                 to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index,
                                                                             trace2_index,
-                                                                            pair_overlap_range, shift=shift, show=False,
-                                                                            silent=silent, debug=debug,
-                                                                            input_video=input_video,
-                                                                            video_params=video_params)
+                                                                            pair_overlap_range, shift=shift, guided=guided,
+                                                                            silent=silent, debug=debug)
             if user_merging or to_merge:
                 # Merge these two traces
                 merge_two_overlapping_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug)
@@ -323,12 +315,13 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
     return traces, removed_traces
 
 
-def merge_triplets_by_partition(traces, shift=False, silent=False, debug=False, do_count=False, input_video=False, video_params=False):
+def merge_triplets_by_partition(traces, shift=False, guided=False, silent=False, debug=False, do_count=False):
     """ Merges traces triplets
         # Puts traces together such that all the agents but three are being tracked.
 
         :arg traces: (list): list of traces
         :arg shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
+        :arg guided: (bool): iff True user-guided section will be used
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg do_count: (bool): flag whether to count the numbers of events occurring
@@ -412,8 +405,8 @@ def merge_triplets_by_partition(traces, shift=False, silent=False, debug=False, 
 
         ## ACTUAL DECISION WHETHER TO MERGE
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
-                                                                    overlap_range, shift=shift, show=False, silent=silent,
-                                                                    debug=debug, input_video=input_video, video_params=video_params)
+                                                                    overlap_range, shift=shift, guided=guided, silent=silent,
+                                                                    debug=debug)
 
         if to_merge is None:
             # set_single_run_seen_overlaps_deleted(get_single_run_seen_overlaps_deleted() + 1)
@@ -503,7 +496,7 @@ def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_v
 
         ## ACTUAL DECISION WHETHER TO MERGE
         to_merge, use_shift = check_to_merge_two_overlapping_traces(traces, trace1, trace2, trace1_index, trace2_index,
-                                                                    overlap_range, shift=shift, show=False,
+                                                                    overlap_range, shift=shift, guided=guided,
                                                                     silent=silent, debug=debug)
         # Manage the merge event
         if to_merge:
