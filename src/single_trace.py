@@ -42,8 +42,7 @@ def remove_full_traces(traces, removed_traces, population_size, silent=False, de
     deleted = 0
     for index, trace in enumerate(traces):
         if trace.check_whether_is_done(real_whole_frame_range):
-            # print(colored(f"Removing trace {trace.trace_id}", "blue"))
-            print(colored(f"Removing trace {index}({trace.trace_id}))", "blue"))
+            print(colored(f"Removing trace {trace.trace_id})", "blue"))
             removed_traces.append(traces[index])
             indices_to_be_deleted.append(index)
             deleted = deleted + 1
@@ -224,7 +223,7 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
                 if to_delete_trace:
                     traces_to_be_deleted.append(index)
                     if not silent:
-                        print(colored(f"checking trace {index}({trace.trace_id}) of {trace.frame_range_len} frames: location {location} seems to be outside of the arena! Will delete this trace!", "red"))
+                        print(colored(f"checking trace {trace.trace_id} of {trace.frame_range_len} frames: location {location} seems to be outside of the arena! Will delete this trace!", "red"))
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)

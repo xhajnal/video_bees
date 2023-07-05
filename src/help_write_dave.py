@@ -52,11 +52,11 @@ def write_dave(show_first_run_result=False, show_second_run_result=False, get_fo
 
                 original_file = copy.copy(file)
 
-                file2 = os.path.basename(file)
-                # print(file2)
-                file2 = str("_".join(file2.split("_")[:3]))
-                # print(file2)
-                if glob(f"{path}/{folder}/movie*{file2}*.mp4", recursive=False):
+                short_file_name = os.path.basename(file)
+                # print(short_file_name)
+                short_file_name = str("_".join(short_file_name.split("_")[:3]))
+                # print(short_file_name)
+                if glob(f"{path}/{folder}/movie*{short_file_name}*.mp4", recursive=False):
                     if_video = ", has_tracked_video=True, is_first_run=a"
                 else:
                     if_video = ", is_first_run=a"
@@ -92,10 +92,12 @@ def write_dave(show_first_run_result=False, show_second_run_result=False, get_fo
                                     pass
                                 all_final.append(item["after merging overlapping traces"])
 
+                        if len(all_loaded) == 0:
+                            err = f"No loaded results for file {short_file_name} in {which_run}"
+                            raise Exception(err)
                         if len(set(all_loaded)) != 1:
-                            raise Exception(f"{file2} some 'loaded' are not the same")
-                        # if len(set(all_single)) != 1:
-                        #     raise Exception(f"{file2} some after single are not the same")
+                            err = f"In {which_run}, {short_file_name} some 'loaded' are not the same: {all_loaded}"
+                            raise Exception(err)
 
                         if all_final[-1] == min(all_final):
                             is_found = "*"
@@ -146,10 +148,12 @@ def write_dave(show_first_run_result=False, show_second_run_result=False, get_fo
                                     pass
                                 all_final.append(item["after merging overlapping traces"])
 
+                        if len(all_loaded) == 0:
+                            err = f"No loaded results for file {short_file_name} in {which_run}"
+                            raise Exception(err)
                         if len(set(all_loaded)) != 1:
-                            raise Exception(f"{file2} some 'loaded' are not the same")
-                        # if len(set(all_single)) != 1:
-                        #     raise Exception(f"{file2} some after single are not the same")
+                            err = f"In {which_run}, {short_file_name} some 'loaded' are not the same: {all_loaded}"
+                            raise Exception(err)
 
                         if all_final[-1] == min(all_final):
                             is_found = "*"
@@ -182,4 +186,4 @@ def write_dave(show_first_run_result=False, show_second_run_result=False, get_fo
 
 
 if __name__ == "__main__":
-    write_dave(show_first_run_result=True, show_second_run_result=True)
+    write_dave(show_first_run_result=True, show_second_run_result=False)

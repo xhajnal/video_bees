@@ -543,7 +543,7 @@ def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_v
     # Actually merge the pure pairs
     merge_multiple_pairs_of_overlapping_traces(traces, merge_cut_pairs, silent=silent, debug=debug)
 
-    print(colored(f"brut Returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
+    print(colored(f"Merge overlapping triplets by brut returning {len(traces)} traces, {starting_number_of_traces - len(traces)} merged. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     return
 

@@ -95,9 +95,9 @@ def scatter_detection(traces, whole_frame_range=False, from_to_frame=False, subt
         ax1.scatter(x, y, alpha=0.5)
         if show_trace_index or show_trace_id:
             if show_trace_index and show_trace_id:
-                msg = f"{index}({trace.trace_id})"
+                msg = f"{trace.trace_id}"
             elif show_trace_index and not show_trace_id:
-                msg = f"{index}"
+                msg = f"index {index}"
             else:
                 msg = f"({trace.trace_id})"
 
