@@ -155,15 +155,15 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
     set_curr_csv_file_path(csv_file_path)
 
     if just_annotate:
-        print(colored(f"Gonna annotate: {csv_file_path}", "magenta"))
+        print(colored(f"Commencing just annotate: {csv_file_path}", "magenta"))
     elif just_align:
-        print(colored(f"Gonna align: {csv_file_path}", "magenta"))
+        print(colored(f"Commencing just align: {csv_file_path}", "magenta"))
     elif is_first_run is True:
-        print(colored(f"Gonna first run: {csv_file_path}", "magenta"))
+        print(colored(f"Commencing first run: {csv_file_path}", "magenta"))
     elif is_first_run is False:
-        print(colored(f"Gonna second run: {csv_file_path}", "magenta"))
+        print(colored(f"Commencing second run: {csv_file_path}", "magenta"))
     else:
-        print(colored(f"Gonna analyse: {csv_file_path}", "magenta"))
+        print(colored(f"Commencing analyse: {csv_file_path}", "magenta"))
 
     global force_new_video
     global guided
@@ -422,7 +422,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         if not silent:
             print(colored(f"After trimming overlapping redundant traces and putting gaping traces together there are {len(traces)} left:", "yellow"))
             for index, trace in enumerate(traces):
-                print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range} and length {trace.frame_range_len}")
+                print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
             print()
 
         ## ALL TRACES SHOW
@@ -569,7 +569,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
         if not silent:
             print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
             for index, trace in enumerate(traces):
-                print(f"Trace {index}({trace.trace_id}) of range {trace.frame_range} and length {trace.frame_range_len}")
+                print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
             print()
 
         # set_show_plots(True)
@@ -650,7 +650,7 @@ def analyse(csv_file_path, population_size, swaps=False, has_tracked_video=False
             pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run)
         if not is_first_run:
             print(f"gonna pickle traces {csv_file_path}")
-            pickle_traces(all_final_traces, csv_file_path, silent=False, debug=True, is_first_run=is_first_run)
+            pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run)
 
         if is_new:
             convert_results_from_json_to_csv(silent=silent, debug=debug, is_first_run=is_first_run)

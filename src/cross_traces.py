@@ -11,9 +11,8 @@ import analyse
 from counts import *
 from config import *
 from dave_io import load_decisions, save_decisions
-from fake import get_whole_frame_range
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, to_vect, \
-    calculate_cosine_similarity, flatten, has_strict_overlap, margin_range, has_dot_overlap
+    calculate_cosine_similarity, flatten, has_strict_overlap, margin_range, has_dot_overlap, get_gap
 from trace import Trace
 from primal_traces_logic import get_traces_from_range
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
@@ -158,7 +157,7 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
             # distances.append(dist)
             if dist < get_maximal_distance_to_check_for_trace_swapping():
                 if debug:
-                    print(f"In pair {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}), on frame {dictionary[overlapping_pair_of_traces][0]+index}, the distance is {dist}")
+                    print(f"In pair ({trace1.trace_id}, {trace2.trace_id}), on frame {dictionary[overlapping_pair_of_traces][0]+index}, the distance is {dist}")
                 vector1 = to_vect(first_trace_locations[index-2], first_trace_locations[index-1])
                 vector2 = to_vect(second_trace_locations[index-2], second_trace_locations[index-1])
                 vector1_next = to_vect(first_trace_locations[index-1], first_trace_locations[index])
@@ -166,7 +165,7 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
                 if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) \
                         and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next) \
                         and math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
-                    print(colored(f"It seems the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}", "yellow"))
+                    print(colored(f"It seems the traces ({trace1.trace_id}, {trace2.trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}", "yellow"))
                     print(f"first_trace_location {first_trace_locations[index]}")
                     print(f"second_trace_location {second_trace_locations[index]}")
                     print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
@@ -200,7 +199,7 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
 
                             answer = input("Do you want to swap these traces? (yes or no).")
                         if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
-                            print(colored(f"Swapping the traces {trace1_index}({trace1.trace_id}), {trace2_index}({trace2.trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
+                            print(colored(f"Swapping the traces ({trace1.trace_id}, {trace2.trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
                             # SAVE DECISION
                             decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0] + index] = True
                             save_decisions(decisions)
