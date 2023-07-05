@@ -680,15 +680,31 @@ def track_reappearance(traces, show=True, debug=False):
 
 ## CROSS-TRACE ANALYSIS
 # TODO add tests
-def cross_trace_analyse(traces, silent=False, debug=False):
+def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
     """ Checks traces against each other.
 
     :arg traces: (list): a list of Traces
+    :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     """
     print(colored("CROSS-TRACE ANALYSIS", "blue"))
     start_time = time()
+
+    # LOAD DECISIONS
+    decisions = load_decisions()
+    gapping_decisions = {}
+    for key, value in decisions.items():
+        if key[0] == 'merge_gaping_pair':
+            gapping_decisions[key] = value
+
+    overlapping_decisions = {}
+    for key, value in decisions.items():
+        if key[0] == 'merge_overlapping_pair':
+            overlapping_decisions[key] = value
+    del decisions
+
+    # CHECK THE TRACES PAIR BY PAIR
     for index, trace1 in enumerate(traces):
         for index2, trace2 in enumerate(traces):
             if index >= index2:
@@ -696,15 +712,32 @@ def cross_trace_analyse(traces, silent=False, debug=False):
             if abs(trace1.frame_range[1] - trace2.frame_range[0]) < 100:
                 # print(traces[index][str(trace1.frame_range[1])][1])
                 # print(traces[index2][str(trace2.frame_range[0])][1])
+                gap_range = get_gap(trace1.frame_range, trace2.frame_range)
+                overlap_range = get_overlap(trace1.frame_range, trace2.frame_range)
+
                 point_distance = math.dist(list(map(float, (trace1.locations[-1]))),
                                            list(map(float, (trace2.locations[0]))))
-                message = f"The beginning of trace {index}({trace1.trace_id}) is close to end of trace {index2}({trace2.trace_id}) " \
+                message = f"The beginning of trace {trace1.trace_id} {trace1.frame_range} is close to end of trace {trace2.trace_id} {trace2.frame_range} " \
                           f"by {abs(trace1.frame_range[1] - trace2.frame_range[0])} frames while the x,y distance is " \
                           f"{round(point_distance,3)}. Consider joining them."
                 if not silent:
                     if index2 == index + 1:
                         if point_distance < 10:
-                            print(colored(message, "blue"))
+                            if gap_range:
+                                already_there = ("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range)) in gapping_decisions.keys()
+                                ## TODO ACTUALLY MERGE THESE TWO TRACES BUT BY THE END OF THIS LOOP
+                                merge_two_traces_with_gap()
+                                dad
+                            else:
+                                already_there = ("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range)) in overlapping_decisions.keys()
+                                ## TODO ACTUALLY MERGE THESE TWO TRACES BUT BY THE END OF THIS LOOP
+                                merge_two_overlapping_traces()
+
+                            if already_there:
+                                pass
+                            else:
+                                print(colored(message, "blue"))
+                                to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], silent=silent, gaping=bool(gap_range), overlapping=not bool(gap_range))
                         else:
                             print(colored(message, "yellow"))
                     else:
