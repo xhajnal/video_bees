@@ -5,7 +5,7 @@ from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionar
     range_len
 from primal_traces_logic import get_gaps_of_traces
 from traces_logic import ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap, \
-    ask_to_merge_two_traces
+    ask_to_merge_two_traces_and_save_decision
 from visualise import scatter_detection, show_plot_locations
 
 
@@ -80,8 +80,9 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         #                     subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
         #                     silent=True)
 
-        # to_merge = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
-        to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], overlapping=is_overlap, gaping=not is_overlap)
+        # to_merge = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
+        to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], overlapping=is_overlap,
+                                                                              gaping=not is_overlap)
 
         if to_merge is True:
             if is_overlap:

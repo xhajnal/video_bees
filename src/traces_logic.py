@@ -504,9 +504,11 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
     :returns: to_merge: (bool, bool): flag whether to merge the traces or not, whether
     """
 
+    to_merge = None
+
     if is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range):
         if debug:
-            print(colored(f"Traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}) are inside one another. NOT MERGING.", "yellow"))
+            print(colored(f"Traces of ids {trace1.trace_id} and {trace2.trace_id} are inside one another. NOT MERGING.", "yellow"))
         return None, None
 
     # Check the distances of overlap for a big difference
@@ -514,6 +516,7 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
         distances = compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug, show_all_plots=None)
         shift = None
     else:
+        print()
         not_shifted_distances, distances, shift = compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=shift, silent=silent, debug=debug, show_all_plots=None)
 
     maximal_dist_check = all(list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), distances)))
@@ -528,8 +531,52 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
     overlap_movement_check = trace1_avg_distance_per_frame_in_overlap > get_minimal_movement_per_frame() and \
                              trace2_avg_distance_per_frame_in_overlap > get_minimal_movement_per_frame()
 
+    if not maximal_dist_check:
+        reason = f"single huge point distance ({round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()})"
+    elif not minimal_dist_check:
+        reason = f"all big point distance ({round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
+    elif not overlap_movement_check:
+        reason = f"both traces during the overlap too stationary ({trace1_avg_distance_per_frame_in_overlap}, {trace2_avg_distance_per_frame_in_overlap} > {get_minimal_movement_per_frame()})"
+    elif maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check:
+        pass
+    else:
+        raise NotImplemented("Reason not implemented yet.")
+
+    ## FALSE NEGATIVE CHECK
+    if guided and not(maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check):
+        print(colored(reason, "yellow"))
+
+        const = 1.2
+
+        a = all(list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces() * const, distances)))
+        b = any(list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces() * const, distances)))
+        c = len(distances) <= get_max_overlap_len_to_merge_traces() * const
+
+        # print(colored(f"distances {distances[:25]}", "blue"))
+        if shift:
+            print(colored(f"  shift {shift}", "blue"))
+            # print(colored(f"  len distances {len(not_shifted_distances)} < {get_max_overlap_len_to_merge_traces() * const}", "blue"))
+            # print(colored(f"  max distance {max(not_shifted_distances)} < {get_max_step_distance_to_merge_overlapping_traces() * const}", "blue"))
+            # print(colored(f"  min distance {min(not_shifted_distances)} > {get_min_step_distance_to_merge_overlapping_traces() * const}", "blue"))
+            #
+        print(colored(f"len distances {len(distances)} < {get_max_overlap_len_to_merge_traces() * const}", "blue"))
+        print(colored(f"max distance {max(distances)} < {get_max_step_distance_to_merge_overlapping_traces() * const}", "blue"))
+        print(colored(f"min distance {min(distances)} > {get_min_step_distance_to_merge_overlapping_traces() * const}", "blue"))
+        print(colored(f"path lens per frame {trace1.calculate_path_len_from_range(overlap_range) / len(distances)},"
+                      f" {trace2.calculate_path_len_from_range(overlap_range) / len(distances)}", "blue"))
+
+        if a and b and c:
+            try:
+                to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], silent=silent,
+                                                                                      overlapping=True)
+                # if video_was_shown is True:
+                #     print()
+            except TypeError as err:
+                print()
+                raise err
+
     # TO MERGE CHECK
-    if maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check:
+    if to_merge or (maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check):
         # if shift:
         #     maximal_dist_check = all(
         #         list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), not_shifted_distances)))
@@ -561,28 +608,19 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
 
         ## TO ASK USER
         if guided:
-            to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, silent=silent, overlapping=True)
+            to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], analyse.video_file,
+                                                                                  silent=silent, overlapping=True)
         else:
             to_merge = True
 
         if debug:
             if to_merge:
-                print(colored(f"Will merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "blue"))
+                print(colored(f"Will merge overlapping traces of ids {trace1.trace_id} and {trace2.trace_id}.", "blue"))
             else:
-                print(colored(f"Will NOT merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "blue"))
+                print(colored(f"Will NOT merge overlapping traces of ids {trace1.trace_id} and {trace2.trace_id}.", "blue"))
         return to_merge, shift
     else:
         if debug:
-            # print(colored(f"Will NOT merge overlapping traces {trace1_index}({trace1.trace_id}) and {trace2_index}({trace2.trace_id}).", "yellow"))
-            if not maximal_dist_check:
-                reason = f"single huge point distance ({round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()})"
-            elif not minimal_dist_check:
-                reason = f"all big point distance ({round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
-            elif not overlap_movement_check:
-                reason = f"both traces during the overlap too stationary ({trace1_avg_distance_per_frame_in_overlap}, {trace2_avg_distance_per_frame_in_overlap} > {get_minimal_movement_per_frame()})"
-            else:
-                raise NotImplemented("Reason not implemented yet.")
-
             print(colored(f"NOT MERGING THE OVERLAPPING TRACES as {reason}", "yellow"))
             print()
 
@@ -679,9 +717,9 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
         trace1.locations = trace1.locations[:index1_overlap_start]
     else:
         # Cutting trace2
-        # trim
         if not silent:
             print(colored(f"Cutting SECOND trace of the pair {trace2_index} of id {trace2.trace_id}.", "green"))
+        # trim
         trace2.frames_list = trace2.frames_list[index2_overlap_end + 1:]
         trace2.locations = trace2.locations[index2_overlap_end + 1:]
 

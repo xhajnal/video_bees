@@ -18,7 +18,7 @@ from primal_traces_logic import get_traces_from_range
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
     compute_whole_frame_range, get_video_whole_frame_range, partition_frame_range_by_number_of_traces, \
     reverse_partition_frame_range_by_number_of_traces, check_to_merge_two_overlapping_traces, \
-    merge_multiple_pairs_of_overlapping_traces, ask_to_merge_two_traces
+    merge_multiple_pairs_of_overlapping_traces, ask_to_merge_two_traces_and_save_decision
 from video import show_video
 from visualise import scatter_detection, show_plot_locations
 
@@ -588,8 +588,9 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                         #     print(f"short gap: {dist_of_traces_in_xy} < {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()}")
 
                         try:
-                            to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], silent=silent, gaping=True,
-                                                                                trace_ids_to_skip=trace_ids_to_delete)
+                            to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2],
+                                                                                                  trace_ids_to_skip=trace_ids_to_delete,
+                                                                                                  silent=silent, gaping=True)
                             # if video_was_shown is True:
                             #     print()
                         except TypeError as err:
@@ -617,7 +618,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     ### Check for FalsePositives
                     to_merge_by_user = None
 
-                    # to_merge_by_user = ask_to_merge_two_traces(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
+                    # to_merge_by_user = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
                     if to_merge_by_user is False:
                         break
 
@@ -717,6 +718,10 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
     print(colored("CROSS-TRACE ANALYSIS", "blue"))
     start_time = time()
 
+    # INNER STRUCTURES
+    gaping_trace_pairs_to_be_merged = []
+    overlaping_trace_pairs_to_be_merged = []
+
     # LOAD DECISIONS
     decisions = load_decisions()
     gapping_decisions = {}
@@ -728,7 +733,6 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
     for key, value in decisions.items():
         if key[0] == 'merge_overlapping_pair':
             overlapping_decisions[key] = value
-    del decisions
 
     # CHECK THE TRACES PAIR BY PAIR
     for index, trace1 in enumerate(traces):
@@ -751,23 +755,41 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
                         if point_distance < 10:
                             if gap_range:
                                 already_there = ("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range)) in gapping_decisions.keys()
-                                ## TODO ACTUALLY MERGE THESE TWO TRACES BUT BY THE END OF THIS LOOP
-                                merge_two_traces_with_gap()
-                                dad
+                                if already_there:
+                                    gaping_trace_pairs_to_be_merged.append((trace1, trace2))
                             else:
                                 already_there = ("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range)) in overlapping_decisions.keys()
-                                ## TODO ACTUALLY MERGE THESE TWO TRACES BUT BY THE END OF THIS LOOP
-                                merge_two_overlapping_traces()
-
+                                if already_there:
+                                    overlaping_trace_pairs_to_be_merged.append((trace1, index, trace2, index2))
                             if already_there:
                                 pass
                             else:
                                 print(colored(message, "blue"))
-                                to_merge, video_was_shown = ask_to_merge_two_traces(traces, [trace1, trace2], silent=silent, gaping=bool(gap_range), overlapping=not bool(gap_range))
+                                # ASK USER AND SAVE DECISION
+                                to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2],
+                                                                                                      silent=silent,
+                                                                                                      overlapping=not bool(gap_range),
+                                                                                                      gaping=bool(gap_range))
                         else:
                             print(colored(message, "yellow"))
                     else:
                         print(message)
+
+    ## MERGE THE TRACES
+    for pair in gaping_trace_pairs_to_be_merged:
+        trace1, trace2 = pair
+        if trace1.trace_id == 18 or trace2.trace_id == 18:
+            print()
+        merge_two_traces_with_gap(trace1, trace2)
+        if trace1.trace_id == 18 or trace2.trace_id == 18:
+            print()
+    for pair in overlaping_trace_pairs_to_be_merged:
+        trace1, trace1_index, trace2, trace2_index = pair
+        if trace1.trace_id == 18 or trace2.trace_id == 18:
+            print()
+        merge_two_overlapping_traces(trace1, trace2, trace1_index, trace2_index)
+        if trace1.trace_id == 18 or trace2.trace_id == 18:
+            print()
     print(colored(f"Cross_trace analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "green"))
     print()
 
@@ -776,7 +798,7 @@ def merge_alone_overlapping_traces_by_partition(traces, shift=False, guided=Fals
     """ Merges traces which have the only overlap at given time
         # Puts traces together such that all the agents but two are being tracked.
 
-        by_partition - partions the frame range by the number of overlapping pairs in each partitions
+        by_partition - partitions the frame range by the number of overlapping pairs in each partitions
 
         :arg traces: (list): list of traces
         :arg shift: (False ir int): if False, no shift is used, else shift upto the given value is used to compare the traces
