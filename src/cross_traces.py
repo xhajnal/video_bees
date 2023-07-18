@@ -116,9 +116,6 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
     """
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
 
-    # Obtained variables
-    # whole_frame_range = get_whole_frame_range()
-
     # LOAD DECISIONS
     decisions = load_decisions()
 
@@ -165,17 +162,19 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
                 if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) \
                         and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next) \
                         and math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
-                    print(colored(f"It seems the traces ({trace1.trace_id}, {trace2.trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}", "yellow"))
-                    print(f"first_trace_location {first_trace_locations[index]}")
-                    print(f"second_trace_location {second_trace_locations[index]}")
-                    print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
-                    print(f"cosine_similarity(vector2, vector1_next) > cosine_similarity(vector2, vector2_next): {calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
-                    print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
+                    if not silent:
+                        print(colored(f"It seems the traces ({trace1.trace_id}, {trace2.trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}", "yellow"))
+                        print(f"first_trace_location {first_trace_locations[index]}")
+                        print(f"second_trace_location {second_trace_locations[index]}")
+                        print(f"cosine_similarity(vector1, vector2_next) > cosine_similarity(vector1, vector1_next): {calculate_cosine_similarity(vector1, vector2_next)} > {calculate_cosine_similarity(vector1, vector1_next)}")
+                        print(f"cosine_similarity(vector2, vector1_next) > cosine_similarity(vector2, vector2_next): {calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
+                        print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
 
-                    scatter_detection([trace1, trace2],
-                                      get_video_whole_frame_range([trace1, trace2]),
-                                      subtitle="Traces to be swapped.")
                     if not guided:
+                        scatter_detection([trace1, trace2],
+                                          get_video_whole_frame_range([trace1, trace2]),
+                                          subtitle="Traces to be swapped.")
+
                         show_plot_locations([trace1, trace2], whole_frame_range=[0, 0],
                                             from_to_frame=[dictionary[overlapping_pair_of_traces][0] + index - 30,
                                                            dictionary[overlapping_pair_of_traces][0] + index + 30],
@@ -602,17 +601,18 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     else:
                         distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
 
-                msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES {'' if to_merge else '('+reason+') '}{index_to_go}({trace1.trace_id}) {trace1.frame_range} " \
-                      f"of {trace1.frame_range_len} frames and " \
-                      f"trace {index2}({trace2.trace_id}) {trace2.frame_range} of " \
-                      f"{int(trace2.frame_range_len)} frames| " \
-                      f"{dist_of_traces_in_frames} frames apart, x,y-distance {round(dist_of_traces_in_xy, 3)} which is " \
-                      f"{round(distance_per_frame, 3) if distance_per_frame is not None else None}/frame. " \
-                      f"Last point position: {trace1.locations[-1]} " \
-                      f"the extrapolated point is {extrapolated_point} " \
-                      f"the distance of extrapolated point to the second trace {round(dist_of_trace2_and_extrapolation, 3)} "
-                if not silent:
-                    print(colored(msg, "yellow" if to_merge else "red"))
+                if not by_user:
+                    msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES {'' if to_merge else '('+reason+') '}{index_to_go}({trace1.trace_id}) {trace1.frame_range} " \
+                          f"of {trace1.frame_range_len} frames and " \
+                          f"trace {index2}({trace2.trace_id}) {trace2.frame_range} of " \
+                          f"{int(trace2.frame_range_len)} frames| " \
+                          f"{dist_of_traces_in_frames} frames apart, x,y-distance {round(dist_of_traces_in_xy, 3)} which is " \
+                          f"{round(distance_per_frame, 3) if distance_per_frame is not None else None}/frame. " \
+                          f"Last point position: {trace1.locations[-1]} " \
+                          f"the extrapolated point is {extrapolated_point} " \
+                          f"the distance of extrapolated point to the second trace {round(dist_of_trace2_and_extrapolation, 3)} "
+                    if not silent:
+                        print(colored(msg, "yellow" if to_merge else "red"))
 
                 if to_merge and not by_user:
                     ### Check for FalsePositives
@@ -716,6 +716,14 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
     :arg debug: (bool): if True extensive output is shown
     """
     print(colored("CROSS-TRACE ANALYSIS", "blue"))
+
+    # TODO tell the use what does the color mean
+    # check whether to use consecutive traces or use some other constrain
+    print("The colour of the lines mean the following: ")
+    print("White - distance of two traces is below 100")
+    print(colored("Distance of two consecutive traces is below 100", "yellow"))
+    print(colored("Distance of two consecutive traces is below 10", "blue"))
+
     start_time = time()
 
     # INNER STRUCTURES
@@ -760,7 +768,7 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
                             else:
                                 already_there = ("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range)) in overlapping_decisions.keys()
                                 if already_there:
-                                    overlaping_trace_pairs_to_be_merged.append((trace1, index, trace2, index2))
+                                    overlaping_trace_pairs_to_be_merged.append((index, index2))
                             if already_there:
                                 pass
                             else:
@@ -769,7 +777,7 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
                                 to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2],
                                                                                                       silent=silent,
                                                                                                       overlapping=not bool(gap_range),
-                                                                                                      gaping=bool(gap_range))
+                                                                                                      gaping=bool(gap_range), default_decision=True)
                         else:
                             print(colored(message, "yellow"))
                     else:
@@ -783,13 +791,9 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
         merge_two_traces_with_gap(trace1, trace2)
         if trace1.trace_id == 18 or trace2.trace_id == 18:
             print()
-    for pair in overlaping_trace_pairs_to_be_merged:
-        trace1, trace1_index, trace2, trace2_index = pair
-        if trace1.trace_id == 18 or trace2.trace_id == 18:
-            print()
-        merge_two_overlapping_traces(trace1, trace2, trace1_index, trace2_index)
-        if trace1.trace_id == 18 or trace2.trace_id == 18:
-            print()
+
+    merge_multiple_pairs_of_overlapping_traces(traces, overlaping_trace_pairs_to_be_merged, silent=False, debug=False)
+
     print(colored(f"Cross_trace analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.", "green"))
     print()
 
@@ -812,6 +816,11 @@ def merge_alone_overlapping_traces_by_partition(traces, shift=False, guided=Fals
     """
     print(colored("MERGE ALONE OVERLAPPING TRACES - using partitioning", "blue"))
     start_time = time()
+
+    if len(traces) <= 1:
+        print(colored(f"There is no pair of traces, skipping the analysis."
+                      f" It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
+        return [], []
 
     starting_number_of_traces = len(traces)
     pairs_of_traces_indices_to_merge = []

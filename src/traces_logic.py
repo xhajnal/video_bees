@@ -287,7 +287,10 @@ def partition_frame_range_by_number_of_traces(traces):
 
     :arg traces: (list): list of Traces
     """
-    # Get the starts and ends:
+    if len(traces) == 0:
+        raise Exception("No trace to analyse!")
+
+    # Get the starts and ends of traces
     starts = []
     ends = []
     for trace in traces:
@@ -535,6 +538,8 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
         reason = f"single huge point distance ({round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()})"
     elif not minimal_dist_check:
         reason = f"all big point distance ({round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
+    elif not overlap_len_check:
+        reason = f"overlap too long {len(distances)} > {get_max_overlap_len_to_merge_traces()}"
     elif not overlap_movement_check:
         reason = f"both traces during the overlap too stationary ({trace1_avg_distance_per_frame_in_overlap}, {trace2_avg_distance_per_frame_in_overlap} > {get_minimal_movement_per_frame()})"
     elif maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check:
@@ -700,7 +705,14 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
     try:
         dist2 = math.dist(trace1.locations[-1], trace2.locations[index2_overlap_end + 1])
     except IndexError:
-        pass
+        # IF THE SECOND TRACE ENDS AS THE OVERLAPS END
+        index1_overlap_end = trace1.get_frame_list().index(overlap[1])
+        # DIST 1 is to go to trace 2 and go back
+        dist1 = dist1 + math.dist(trace2.locations[index2_overlap_end], trace1.locations[index1_overlap_end + 1])
+        # while dist 2 is ommiting the trace2
+        dist2 = math.dist(trace1.locations[index1_overlap_start - 1], trace1.locations[index1_overlap_start]) + math.dist(trace1.locations[index1_overlap_end], trace1.locations[index1_overlap_end + 1])
+        if dist1 > dist2:
+            return trace1
 
     if debug:
         print("dist1", dist1)
@@ -856,7 +868,7 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
 
 
 # TODO make tests
-def ask_to_merge_two_traces(all_traces, selected_traces, trace_ids_to_skip=(), silent=False, overlapping=False, gaping=False):
+def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace_ids_to_skip=(), silent=False, overlapping=False, gaping=False, default_decision=None):
     """ Creates a user dialogue to ask whether to merge selected pair of traces while showing video of the traces
 
         :arg all_traces: (list): a list of all Traces (to be shown in the video)
@@ -867,6 +879,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, trace_ids_to_skip=(), s
         :arg silent: (bool): if True minimal output is shown
         :arg overlapping: (bool): if True selected traces have an overlap
         :arg gaping: (bool): if True selected traces have a gap
+        :arg default_decision: (bool): default decision if the result not loaded, use None for no default decision
 
         :returns: to_merge, video_was_shown
     """
@@ -895,6 +908,10 @@ def ask_to_merge_two_traces(all_traces, selected_traces, trace_ids_to_skip=(), s
         return decision, False
 
     except KeyError:
+        # MANAGE DEFAULT DECISION
+        if default_decision is not None:
+            return default_decision, False
+
         # Compute which part of the traces to show
         show_range = get_overlap(trace1.frame_range, trace2.frame_range)
         # if the two traces got no overlap
@@ -950,7 +967,7 @@ def ask_to_merge_two_traces(all_traces, selected_traces, trace_ids_to_skip=(), s
             return False, True
 
         # # if the answer was neither yes nor no
-        # return ask_to_merge_two_traces(all_traces, selected_traces, input_video, video_params=video_params)
+        # return ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, input_video, video_params=video_params)
 
 
 # TODO add tests
@@ -1082,6 +1099,7 @@ def delete_traces_from_saved_decisions(traces, debug=False):
     :arg traces: (list): a list of all Traces
     """
     # debug=True
+    print(colored("DELETE TRACES FROM DECISIONS", "blue"))
 
     indices_to_delete = []
 
@@ -1105,18 +1123,27 @@ def delete_traces_from_saved_decisions(traces, debug=False):
 
     i = 0
     j = 0
-
+    # print(list(map(lambda x: x.trace_id, traces)))
     while i < len(new_decisions):
         if debug:
             print("i", i)
+
+        # CHECK IF WE WENT THROUGH ALL TRACES
+        try:
+            a = traces[j]
+        except IndexError:
+            break
+
+        # GO THROUGH THE DECISIONS AND TRACES MOVING 1 STEP FORWARD IN ONE OF THE LIST
         while j < len(traces):
             if debug:
                 print("j", j)
-            # if the trace.id to be deleted is further, move the traces index
             try:
+                # if the trace.id to be deleted is further, move to next trace
                 if new_decisions[i][1] > traces[j].trace_id:
                     j = j + 1
-                if new_decisions[i][1] < traces[j].trace_id:
+                # if the trace.id to be deleted is before, the trace had been already deleted, move to the next decision
+                elif new_decisions[i][1] < traces[j].trace_id:
                     i = i + 1
                 # if the trace.id is equal to the one to be deleted
                 elif new_decisions[i][1] == traces[j].trace_id:
@@ -1127,14 +1154,27 @@ def delete_traces_from_saved_decisions(traces, debug=False):
                         print(f"trace hash {traces[j].get_hash()}")
 
                     i = i + 1
-                # else:
-                #     i = i + 1
+                else:
+                    raise NotImplemented("How did we get here?")
             except IndexError:
                 try:
-                    print(f"Could not find deleted trace {traces[j].trace_id} in saved decisions.")
+                    a = new_decisions[i]
                 except IndexError:
-                    pass
-                break
+                    # We have moved through all decisions
+                    break
+
+                try:
+                    a = traces[j]
+                except IndexError:
+                    # We have moved through all traces
+                    try:
+                        b = new_decisions[i]
+                        raise Exception("There is still a decision to be made but we went through all traces")
+                    except IndexError:
+                        # We have moved through all decisions as well
+                        pass
+                    i = len(new_decisions)
+                    break
 
     if indices_to_delete:
         delete_indices(indices_to_delete, traces)
@@ -1202,6 +1242,8 @@ def smoothen_traces_from_saved_decisions(traces, debug=False):
 
     :arg traces: (list): a list of all Traces
     """
+    print(colored("SMOOTHEN TRACES FROM DECISIONS", "blue"))
+
     indices_to_smoothen = []
     decisions = load_decisions()
 

@@ -274,25 +274,27 @@ def save_current_result(counts, file_name, population_size, is_guided, is_force_
                  # 'after second gaps and redundant': counts[7],
                  'population_size': population_size}
 
+    #####################
     ## UPDATE THE RESULTS
+    #####################
+
+    # ADD THIS FILE IF NOT PRESENT
     if file_name not in results.keys():
         results[file_name] = {}
 
-    ## CHECK WHETHER THERE IS this config
+    # ADD THIS CONFIG IF NOT PRESENT
     try:
         a = results[file_name][this_config_hash]
     except KeyError:
         results[file_name][this_config_hash] = {}
 
-    ## Check whether there is no replicate
+    ## Check whether there is replicate
     for timestamp in results[file_name][this_config_hash]:
         result = results[file_name][this_config_hash][timestamp]
         if debug:
             print("possibly same result", result)
         if result == new_entry:
-            print(colored(
-                f"Already found the same result - not saving it. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n",
-                "yellow"))
+            print(colored(f"Already found the same result - not saving it. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
             return False
 
     results[file_name][this_config_hash][now] = new_entry
