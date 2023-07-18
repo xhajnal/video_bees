@@ -28,6 +28,8 @@ def write_dave(show_first_run_result=False, show_second_run_result=False, get_fo
     # Get current hash
     if get_for_current_hash:
         my_hash = str(hash_config())
+    else:
+        my_hash = None
 
     # RUN
     print("a = is_first_run")
@@ -64,126 +66,85 @@ def write_dave(show_first_run_result=False, show_second_run_result=False, get_fo
                 # print("#")
                 # print("#")
                 if show_first_run_result:
-                    which_run = "1stRun"
-                    try:
-                        ## TODO pick
-                        file_results = load_result(file_name=f"{original_file}", is_first_run=True)
-                        all_loaded = []
-                        all_single = []
-                        all_final = []
-
-                        for hash in file_results.keys():
-                            if get_for_current_hash:
-                                if hash != my_hash:
-                                    continue
-                            for time_stamp in file_results[hash].keys():
-                                item = file_results[hash][time_stamp]
-                                # print(item)
-
-                                ## TODO hotfix
-                                if all_loaded:
-                                    if item["loaded"] not in all_loaded:
-                                        continue
-
-                                all_loaded.append(item["loaded"])
-                                try:
-                                    all_single.append(item["zero length"])
-                                except KeyError:
-                                    pass
-                                all_final.append(item["after merging overlapping traces"])
-
-                        if len(all_loaded) == 0:
-                            err = f"No loaded results for file {short_file_name} in {which_run}"
-                            raise Exception(err)
-                        if len(set(all_loaded)) != 1:
-                            err = f"In {which_run}, {short_file_name} some 'loaded' are not the same: {all_loaded}"
-                            raise Exception(err)
-
-                        if all_final[-1] == min(all_final):
-                            is_found = "*"
-                        else:
-                            is_found = ""
-                    except KeyError:
-                        all_loaded = [""]
-                        all_single = [""]
-                        all_final = [""]
-                        is_found = ""
-
-                    try:
-                        print(f"# # {which_run} {all_loaded[0]} -> {all_single[0]} -> {all_final[-1]} {is_found}")
-                    except IndexError:
-                        try:
-                            print(f"# # {which_run} {all_loaded[0]} -> {all_single[0]} -> ")
-                        except IndexError:
-                            try:
-                                print(f"# # {which_run} {all_loaded[0]} -> -> ")
-                            except IndexError:
-                                print(f"# # {which_run} -> -> ")
+                    print_result(original_file, True, get_for_current_hash, my_hash, short_file_name)
 
                 if show_second_run_result:
-                    which_run = "finalRun"
-                    try:
-                        file_results = load_result(file_name=f"{original_file}", is_first_run=False)
-                        all_loaded = []
-                        all_single = []
-                        all_final = []
+                    print_result(original_file, False, get_for_current_hash, my_hash, short_file_name)
 
-                        for hash in file_results.keys():
-                            if get_for_current_hash:
-                                if hash != my_hash:
-                                    continue
-                            for time_stamp in file_results[hash].keys():
-                                item = file_results[hash][time_stamp]
-                                # print(item)
+                print(f"# analyse('{file}', {population_size}{if_video})")
+                print("#")
 
-                                ## TODO hotfix
-                                if all_loaded:
-                                    if item["loaded"] not in all_loaded:
-                                        continue
 
-                                all_loaded.append(item["loaded"])
-                                try:
-                                    all_single.append(item["zero length"])
-                                except KeyError:
-                                    pass
-                                all_final.append(item["after merging overlapping traces"])
+def print_result(original_file, is_first_run, get_for_current_hash, my_hash, short_file_name):
+    if is_first_run:
+        which_run = "1stRun"
+    else:
+        which_run = "finalRun"
 
-                        if len(all_loaded) == 0:
-                            err = f"No loaded results for file {short_file_name} in {which_run}"
-                            raise Exception(err)
-                        if len(set(all_loaded)) != 1:
-                            err = f"In {which_run}, {short_file_name} some 'loaded' are not the same: {all_loaded}"
-                            raise Exception(err)
+    try:
+        file_results = load_result(file_name=f"{original_file}", is_first_run=is_first_run)
+        all_loaded = []
+        all_single = []
+        all_final = []
 
-                        if all_final[-1] == min(all_final):
-                            is_found = "*"
-                        else:
-                            is_found = ""
-                    except KeyError:
-                        all_loaded = [""]
-                        all_single = [""]
-                        all_final = [""]
-                        is_found = ""
-                    except FileNotFoundError:
-                        all_loaded = [""]
-                        all_single = [""]
-                        all_final = [""]
-                        is_found = ""
+        for hash in file_results.keys():
+            if get_for_current_hash:
+                if hash != my_hash:
+                    continue
+            for time_stamp in file_results[hash].keys():
+                item = file_results[hash][time_stamp]
+                # print(item)
 
-                    try:
-                        print(f"# # {which_run} {all_loaded[0]} -> {all_single[0]} -> {all_final[-1]} {is_found}")
-                    except IndexError:
-                        try:
-                            print(f"# # {which_run} {all_loaded[0]} -> {all_single[0]} -> ")
-                        except IndexError:
-                            try:
-                                print(f"# # {which_run} {all_loaded[0]} -> -> ")
-                            except IndexError:
-                                print(f"# # {which_run} -> -> ")
+                ## TODO hotfix
+                if all_loaded:
+                    if item["loaded"] not in all_loaded:
+                        continue
 
-                    print(f"# analyse('{file}', {population_size}{if_video})")
-                    print("#")
+                all_loaded.append(item["loaded"])
+                try:
+                    all_single.append(item["zero length"])
+                except KeyError:
+                    pass
+                all_final.append(item["after merging overlapping traces"])
+
+        if len(all_loaded) == 0:
+            err = f"No loaded results for file {short_file_name} in {which_run}"
+            raise LookupError(err)
+        if len(set(all_loaded)) != 1:
+            err = f"In {which_run}, {short_file_name} some 'loaded' are not the same: {all_loaded}"
+            raise Exception(err)
+
+        if all_final[-1] == min(all_final):
+            is_found = "*"
+        else:
+            is_found = ""
+    except KeyError:
+        all_loaded = [""]
+        all_single = [""]
+        all_final = [""]
+        is_found = ""
+    except FileNotFoundError:
+        all_loaded = [""]
+        all_single = [""]
+        all_final = [""]
+        is_found = ""
+    except LookupError:
+        all_loaded = [""]
+        all_single = [""]
+        all_final = [""]
+        is_found = ""
+
+    try:
+        print(f"# # {which_run} {all_loaded[0]} -> {all_single[0]} -> {all_final[-1]} {is_found}")
+    except IndexError:
+        try:
+            print(f"# # {which_run} {all_loaded[0]} -> {all_single[0]} -> ")
+        except IndexError:
+            try:
+                print(f"# # {which_run} {all_loaded[0]} -> -> ")
+            except IndexError:
+                print(f"# # {which_run} -> -> ")
 
 
 if __name__ == "__main__":
-    write_dave(show_first_run_result=True, show_second_run_result=False)
+    write_dave(show_first_run_result=True, show_second_run_result=True, get_for_current_hash=True)
