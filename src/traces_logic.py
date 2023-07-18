@@ -44,7 +44,7 @@ def compare_two_traces(trace1, trace2, trace1_index, trace2_index, allow_inside=
         show = True
 
     if not silent:
-        print(colored(f"COMPARE TWO TRACES - traces {trace1.trace_id},{trace2.trace_id}", "blue"))
+        print(colored(f"COMPARE TWO TRACES - traces {trace1.trace_id}, {trace2.trace_id}", "blue"))
     start_time = time()
 
     if show_all_plots:
@@ -166,7 +166,7 @@ def compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, sh
         show = True
 
     if not silent:
-        print(colored(f"COMPARE TWO TRACES WITH SHIFT - traces {trace1.trace_id},{trace2.trace_id}", "blue"))
+        print(colored(f"COMPARE TWO TRACES WITH SHIFT - traces {trace1.trace_id}, {trace2.trace_id}", "blue"))
     start_time = time()
 
     if show_all_plots:

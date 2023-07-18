@@ -68,7 +68,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             show_range = margin_range(show_range, max(100, 0.2*range_len(show_range)))
             show_range = list(map(round, show_range))
         print()
-        print(colored(f"We have found a pair of {'overlapping' if is_overlap else 'gaping'} traces {key[0]}({trace1.trace_id}),{key[1]}({trace2.trace_id}).", "blue"))
+        print(colored(f"We have found a pair of {'overlapping' if is_overlap else 'gaping'} traces {key[0]}({trace1.trace_id}), {key[1]}({trace2.trace_id}).", "blue"))
 
         # frame_range = overlaps_and_gaps[key]
 
@@ -77,7 +77,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         # scatter_detection([trace1, trace2], whole_frame_range=[min_range - 200, max_range + 200], show_trace_index=False,
         #                   subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue, {trace2_index}({trace2.trace_id}) orange.")
         # show_plot_locations([trace1, trace2], whole_frame_range=[0, 0], from_to_frame=show_range,
-        #                     subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue,{trace2_index}({trace2.trace_id}) orange.",
+        #                     subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue, {trace2_index}({trace2.trace_id}) orange.",
         #                     silent=True)
 
         # to_merge = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
@@ -93,12 +93,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             removed_traces.append(traces[key[1]])
             last_edited_index = key[1]
         elif video_was_shown:
-            spam = ask_to_delete_a_trace(traces, input_video, key, video_params=video_params)
-            if spam:
-                traces_indices_to_be_removed.extend(spam)
-                last_edited_index = spam[0]
-            else:
-                to_skip_tuples.append([trace1.trace_id, trace2.trace_id])
+            to_skip_tuples.append([trace1.trace_id, trace2.trace_id])
 
     # Actually delete the given traces now
     delete_indices(traces_indices_to_be_removed, traces, debug=False)

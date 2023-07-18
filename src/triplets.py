@@ -161,7 +161,7 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
                 trace_index_to_omit = get_index_shortest_trace_out_of_three(trace1, trace2, trace3)
             else:
                 ## Version where these three traces would be shown so that user can handpick which to delete
-                print(colored(f"We have found a triplet of overlapping traces {picked_key[0]}({trace1.trace_id}),{picked_key[1]}({trace2.trace_id}),{picked_key[2]}({trace3.trace_id}). Please select a pair to merge.", "blue"))
+                print(colored(f"We have found a triplet of overlapping traces {picked_key[0]}({trace1.trace_id}), {picked_key[1]}({trace2.trace_id}), {picked_key[2]}({trace3.trace_id}). Please select a pair to merge.", "blue"))
 
                 ## Compute the ranges
                 min_trace_range = min([trace1.frame_range[0], trace2.frame_range[0], trace3.frame_range[0]])
@@ -186,7 +186,7 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
                     ## show position
                     # show_plot_locations([trace1, trace2, trace3], whole_frame_range=[0, 0], from_to_frame=[min_overlap_range - round(at_least_one_overlap_range_len*0.1), max_overlap_range + round(at_least_one_overlap_range_len*0.1)],
                     show_plot_locations([trace1, trace2, trace3], whole_frame_range=[0, 0], from_to_frame=[min_overlap_range-15, max_overlap_range+15],
-                                        subtitle=f"Triplet {picked_key[0]}({trace1.trace_id}) blue,{picked_key[1]}({trace2.trace_id}) orange,{picked_key[2]}({trace3.trace_id}) green.",
+                                        subtitle=f"Triplet {picked_key[0]}({trace1.trace_id}) blue, {picked_key[1]}({trace2.trace_id}) orange, {picked_key[2]}({trace3.trace_id}) green.",
                                         silent=True)
                     # check that there are traces in the frame range
                     ## TODO maybe comment the following plot
@@ -200,7 +200,7 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
                     ## show the overlap
                     ## TODO maybe comment the following plot
                     if not input_video and show_all_plots:
-                        show_overlaps([trace1, trace2, trace3], from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {picked_key[0]}({trace1.trace_id}),{picked_key[1]}({trace2.trace_id}),{picked_key[2]}({trace3.trace_id}).")
+                        show_overlaps([trace1, trace2, trace3], from_to_frame=True, show_overlap_indices=False, subtitle=f"Triplet {picked_key[0]}({trace1.trace_id}), {picked_key[1]}({trace2.trace_id}), {picked_key[2]}({trace3.trace_id}).")
 
                 ## show frames of the video
                 if input_video:
@@ -253,21 +253,21 @@ def merge_overlapping_triplets_of_traces(traces, shift=False, guided=False, inpu
                     print(colored("Not merging this triplet.", "red"))
 
                 # Ask to delete a trace
-                spam = ask_to_delete_a_trace(traces, input_video, picked_key, video_params=video_params)
-                if spam:
-                    # add the traces to be deleted
-                    traces_indices_to_be_removed.extend(spam)
-
-                    if not user_merging:
-                        # Actually delete the given traces now
-                        for index in traces_indices_to_be_removed:
-                            removed_traces.append(traces[index])
-                        delete_indices(traces_indices_to_be_removed, traces, debug=False)
-                        traces_indices_to_be_removed = []
-
-                        # Continue searching for triplets
-                        continue
-                elif user_merging is False:
+                # spam = ask_to_delete_a_trace(traces, input_video, picked_key, video_params=video_params)
+                # if spam:
+                #     # add the traces to be deleted
+                #     traces_indices_to_be_removed.extend(spam)
+                #
+                #     if not user_merging:
+                #         # Actually delete the given traces now
+                #         for index in traces_indices_to_be_removed:
+                #             removed_traces.append(traces[index])
+                #         delete_indices(traces_indices_to_be_removed, traces, debug=False)
+                #         traces_indices_to_be_removed = []
+                #
+                #         # Continue searching for triplets
+                #         continue
+                if user_merging is False:
                     skipped_triplets_indices.append(picked_key)
                     if all(f in skipped_triplets_indices for f in dictionary.keys()):
                         go_next = False
