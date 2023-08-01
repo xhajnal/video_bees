@@ -783,14 +783,14 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
                     else:
                         print(message)
 
-    ## MERGE THE TRACES
-    for pair in gaping_trace_pairs_to_be_merged:
-        trace1, trace2 = pair
-        if trace1.trace_id == 18 or trace2.trace_id == 18:
-            print()
-        merge_two_traces_with_gap(trace1, trace2)
-        if trace1.trace_id == 18 or trace2.trace_id == 18:
-            print()
+    # ## MERGE THE TRACES
+    # for pair in gaping_trace_pairs_to_be_merged:
+    #     trace1, trace2 = pair
+    #     if trace1.trace_id == 18 or trace2.trace_id == 18:
+    #         print()
+    #     merge_two_traces_with_gap(trace1, trace2)
+    #     if trace1.trace_id == 18 or trace2.trace_id == 18:
+    #         print()
 
     merge_multiple_pairs_of_overlapping_traces(traces, overlaping_trace_pairs_to_be_merged, silent=False, debug=False)
 
