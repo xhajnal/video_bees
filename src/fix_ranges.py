@@ -57,12 +57,12 @@ if __name__ == "__main__":
 
     # now using glob - all folders with original files
     from glob import glob
-    path = '../data/Video_tracking/'
+    data_path = '../data/Video_tracking/'
     # get all folder names
-    folders = list(os.walk(path))[0][1]
+    folders = list(os.walk(data_path))[0][1]
 
     for folder in folders:
-        path1 = os.path.join(path, folder, 'original')
+        path1 = os.path.join(data_path, folder, 'original')
         # print(path1)
         # print(glob(str(path1)+"/*_nn.csv", recursive=False))
 
