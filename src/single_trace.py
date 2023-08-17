@@ -330,11 +330,31 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, guided=False
                     # Show the jump in video
                     if guided:
                         decisions = load_decisions()
+                        show_range = jump_range
                         print(f"Smoothening jump in trace {trace.trace_id}")
                         show_video(input_video=analyse.video_file, traces=[trace],
-                                   frame_range=margin_range(jump_range, 0),
+                                   frame_range=margin_range(show_range, 0),
                                    video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=1)
-                        to_smoothen = input("Should we smoothen this trace? (yes or no):")
+                        to_smoothen = input(
+                            "Smoothen this trace? (Yes or No or Dunno - not saving) (press l to see a longer video before, b to see full trace (whole range), f to see full video):")
+                        if "l" in to_smoothen.lower():
+                            show_video(input_video=analyse.video_file, traces=[trace],
+                                       frame_range=margin_range(show_range, 15),
+                                       video_speed=0.02, wait=True, video_params=analyse.video_params,
+                                       fix_x_first_colors=1)
+                            to_smoothen = input("Should we smoothen this trace? (yes or no):")
+                        if "b" in to_smoothen.lower():
+                            show_video(input_video=analyse.video_file, traces=[trace],
+                                       frame_range=margin_range(trace.frame_range, 15),
+                                       video_speed=0.02, wait=True, video_params=analyse.video_params,
+                                       fix_x_first_colors=1)
+                            to_smoothen = input("Should we smoothen this trace? (yes or no):")
+                        if "f" in to_smoothen.lower():
+                            show_video(input_video=analyse.video_file, traces=[trace],
+                                       video_speed=0.02, wait=True, video_params=analyse.video_params,
+                                       fix_x_first_colors=1)
+                            to_smoothen = input("Should we smoothen this trace? (yes or no):")
+
                         to_smoothen = True if "y" in to_smoothen.lower() else False
 
                         # SAVE DECISIONS

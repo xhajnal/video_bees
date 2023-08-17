@@ -60,6 +60,8 @@ if __name__ == "__main__":
     data_path = '../data/Video_tracking/'
     # get all folder names
     folders = list(os.walk(data_path))[0][1]
+    if len(folders) == 0:
+        raise Exception(f"No valid folders found in {data_path}")
 
     for folder in folders:
         path1 = os.path.join(data_path, folder, 'original')

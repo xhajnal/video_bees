@@ -508,6 +508,8 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
     """
 
     to_merge = None
+    false_positive_check = True
+    false_negative_check = False
 
     if is_in(trace1.frame_range, trace2.frame_range) or is_in(trace2.frame_range, trace1.frame_range):
         if debug:
@@ -519,13 +521,12 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
         distances = compare_two_traces(trace1, trace2, trace1_index, trace2_index, silent=silent, debug=debug, show_all_plots=None)
         shift = None
     else:
-        print()
+        if not silent:
+            print()
         not_shifted_distances, distances, shift = compare_two_traces_with_shift(trace1, trace2, trace1_index, trace2_index, shift_up_to=shift, silent=silent, debug=debug, show_all_plots=None)
 
     maximal_dist_check = all(list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), distances)))
-    # old_maximal_dist_check = all(list(map(lambda x: x < 120, distances)))
     minimal_dist_check = any(list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces(), distances)))
-    # old_minimal_dist_check = any(list(map(lambda x: x < 50, distances)))
     overlap_len_check = len(distances) <= get_max_overlap_len_to_merge_traces()
 
     trace1_avg_distance_per_frame_in_overlap = trace1.calculate_path_len_from_range(overlap_range) / len(distances)
@@ -534,28 +535,50 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
     overlap_movement_check = trace1_avg_distance_per_frame_in_overlap > get_minimal_movement_per_frame() and \
                              trace2_avg_distance_per_frame_in_overlap > get_minimal_movement_per_frame()
 
+    reason = ""
     if not maximal_dist_check:
-        reason = f"single huge point distance ({round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()})"
-    elif not minimal_dist_check:
-        reason = f"all big point distance ({round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
-    elif not overlap_len_check:
-        reason = f"overlap too long {len(distances)} > {get_max_overlap_len_to_merge_traces()}"
-    elif not overlap_movement_check:
+        reason = reason + f"single huge point distance ({round(max(distances))} > {get_max_step_distance_to_merge_overlapping_traces()})"
+    if not minimal_dist_check:
+        reason = reason + f"all big point distance ({round(min(distances))} > {get_min_step_distance_to_merge_overlapping_traces()})"
+    if not overlap_len_check:
+        reason = reason + f"overlap too long {len(distances)} > {get_max_overlap_len_to_merge_traces()}"
+    if not overlap_movement_check:
         reason = f"both traces during the overlap too stationary ({trace1_avg_distance_per_frame_in_overlap}, {trace2_avg_distance_per_frame_in_overlap} > {get_minimal_movement_per_frame()})"
-    elif maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check:
-        pass
-    else:
-        raise NotImplemented("Reason not implemented yet.")
+
+    # if maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check:
+    #     pass
+    # else:
+    #     raise NotImplemented("Reason not implemented yet.")
+
+    ## SUMMARISE CHECK
+    to_merge = maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check
+
+    const = analyse.check_multiplicative_boundary
+    ## FALSE POSITIVE CHECK
+    if guided and to_merge and false_positive_check:
+        a = all(list(map(lambda x: x > get_max_step_distance_to_merge_overlapping_traces() / const, distances)))
+        b = any(list(map(lambda x: x > get_min_step_distance_to_merge_overlapping_traces() / const, distances)))
+        c = len(distances) >= get_max_overlap_len_to_merge_traces() / const
+        d = (trace1_avg_distance_per_frame_in_overlap < get_minimal_movement_per_frame() * const and
+             trace2_avg_distance_per_frame_in_overlap < get_minimal_movement_per_frame() * const)
+
+        if a and b and c and d:
+            print(colored("False positive check", "yellow"))
+            try:
+                to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], silent=silent, overlapping=True)
+            except TypeError as err:
+                print()
+                raise err
 
     ## FALSE NEGATIVE CHECK
-    if guided and not(maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check):
+    if guided and not(to_merge) and false_negative_check:
         print(colored(reason, "yellow"))
-
-        const = 1.2
 
         a = all(list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces() * const, distances)))
         b = any(list(map(lambda x: x < get_min_step_distance_to_merge_overlapping_traces() * const, distances)))
         c = len(distances) <= get_max_overlap_len_to_merge_traces() * const
+        d = (trace1_avg_distance_per_frame_in_overlap < get_minimal_movement_per_frame() / const and
+             trace2_avg_distance_per_frame_in_overlap < get_minimal_movement_per_frame() / const)
 
         # print(colored(f"distances {distances[:25]}", "blue"))
         if shift:
@@ -570,18 +593,15 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
         print(colored(f"path lens per frame {trace1.calculate_path_len_from_range(overlap_range) / len(distances)},"
                       f" {trace2.calculate_path_len_from_range(overlap_range) / len(distances)}", "blue"))
 
-        if a and b and c:
+        if a and b and c and d:
             try:
-                to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], silent=silent,
-                                                                                      overlapping=True)
-                # if video_was_shown is True:
-                #     print()
+                to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], silent=silent, overlapping=True)
             except TypeError as err:
                 print()
                 raise err
 
     # TO MERGE CHECK
-    if to_merge or (maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check):
+    if to_merge:
         # if shift:
         #     maximal_dist_check = all(
         #         list(map(lambda x: x < get_max_step_distance_to_merge_overlapping_traces(), not_shifted_distances)))
@@ -1093,10 +1113,12 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
 
 
 # TODO make test
-def delete_traces_from_saved_decisions(traces, debug=False):
+def delete_traces_from_saved_decisions(traces, silent=False, debug=False):
     """ Deletes the traces which have been previously selected to be deleted.
 
     :arg traces: (list): a list of all Traces
+    :arg silent: (bool): if True minimal output is shown
+    :arg debug: (bool): if True extensive output is shown
     """
     # debug=True
     print(colored("DELETE TRACES FROM DECISIONS", "blue"))
@@ -1119,7 +1141,7 @@ def delete_traces_from_saved_decisions(traces, debug=False):
     # delete_decisions = {key: value for key, value in decisions.items() if key[0] == "delete_trace"}
     # delete_decisions = list(filter(lambda x: x[0] == "delete_trace", decisions))
     new_decisions = list(sorted(new_decisions))
-    print(new_decisions)
+    # print(new_decisions)
 
     i = 0
     j = 0
@@ -1178,8 +1200,9 @@ def delete_traces_from_saved_decisions(traces, debug=False):
 
     if indices_to_delete:
         delete_indices(indices_to_delete, traces)
-        print(f"Just deleted the traces with the following indices {indices_to_delete} by loading the saved decisions.")
-        print()
+        if not silent:
+            print(f"Just deleted the traces with the following indices {indices_to_delete} by loading the saved decisions.")
+            print()
 
     # print(f"Could not find deleted trace in saved decisions.")
     return traces
@@ -1237,10 +1260,12 @@ def compute_arena(traces, debug=False):
     return center, diam
 
 
-def smoothen_traces_from_saved_decisions(traces, debug=False):
+def smoothen_traces_from_saved_decisions(traces, silent=False, debug=False):
     """ Smoothens the traces which have been previously selected to be smoothened.
 
     :arg traces: (list): a list of all Traces
+    :arg silent: (bool): if True minimal output is shown
+    :arg debug: (bool): if True extensive output is shown
     """
     print(colored("SMOOTHEN TRACES FROM DECISIONS", "blue"))
 
@@ -1253,7 +1278,7 @@ def smoothen_traces_from_saved_decisions(traces, debug=False):
             new_decisions[key] = value
 
     new_decisions = list(sorted(new_decisions))
-    print(new_decisions)
+    # print(new_decisions)
 
     i = 0
     j = 0

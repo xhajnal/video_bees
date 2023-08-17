@@ -30,6 +30,9 @@ global video_file
 global video_params
 global deleted_traces
 
+global check_multiplicative_boundary  # multiplicative boundary alternation in False positive/negative checks
+check_multiplicative_boundary = 1.2
+
 # global batch_run
 # global silent
 # global debug
@@ -46,17 +49,17 @@ just_align = False
 force_new_video = False
 traces = []
 
-# USER - please set up the following 8 flags
-batch_run = False               # sets silent, not debug, not show_plots, not guided, rerun
-guided = False                  # human guided version
+# USER - please set up the following 10 flags
+batch_run = False               # sets 5 following flags: silent, not debug, not show_plots, not guided, rerun
+guided = False                  # human guided version - a video following
 silent = True                   # minimal print
 debug = False                   # maximal print
-show_plots = True               # showing plots
+show_plots = False               # showing plots
 show_all_plots = False          # showing all plots - also those in the loops
-allow_force_merge = False       # allows force merge gaps and overlaps
+allow_force_merge = False       # allows force merge gaps and overlaps - overpassing the threshold requirements by another condition - usually the proximity of other traces
 rerun = True                    # will execute also files with a setting which is already in the results
 save_parsed_as_pickle = True    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
-fast_run = True                 # will skip the least prominent parts
+fast_run = True                 # will skip the least prominent parts - Second Gaping traces analysis
 
 
 # def get_traces():
@@ -196,19 +199,20 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         set_rerun(True)
         set_guided(False)
 
-    if guided:
+        if guided:
+            set_rerun(True)
+            # set_show_plots(True)
+            # set_silent(False)
+
+        if show_plots is False:
+            set_show_all_plots(False)
+
+        # set_show_plots(False)
+
         set_rerun(True)
-        set_show_plots(True)
-        set_silent(False)
 
-    if show_plots is False:
-        set_show_all_plots(False)
-
-    # set_show_plots(False)
-
-    set_rerun(True)
-    # set_silent(True)
-    # set_debug(True)
+        # set_silent(True)
+        # set_debug(True)
 
     #################
     # Internal params
@@ -292,16 +296,16 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         if just_align:
             return
 
-        ####################################
-        # DELETE TRACES FROM SAVED DECISIONS
-        ####################################
-        traces = delete_traces_from_saved_decisions(traces, debug=debug)
+            ####################################
+            # DELETE TRACES FROM SAVED DECISIONS
+            ####################################
+            traces = delete_traces_from_saved_decisions(traces, silent=silent, debug=debug)
 
-        # fix_decisions()
-        traces = smoothen_traces_from_saved_decisions(traces, debug=debug)
+            # fix_decisions()
+            traces = smoothen_traces_from_saved_decisions(traces, silent=silent, debug=debug)
 
-        #################
-        ## SHOW THE VIDEO
+            #################
+            ## SHOW THE VIDEO
         #################
         # simple show
         # show_video(input_video=video_file, traces=(), frame_range=(), wait=True, points=(), video_params=True)
@@ -388,13 +392,13 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         # TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
         ##################################################################
         before_number_of_traces = len(traces)
-        after_number_of_traces = 0
-        while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
-            before_number_of_traces = len(traces)
-            traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, silent=silent, debug=debug)
+            after_number_of_traces = 0
+            while (not before_number_of_traces == after_number_of_traces) and (len(traces) > population_size):
+                before_number_of_traces = len(traces)
+                traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, guided=False, silent=silent, debug=debug)
 
-            # show_video(input_video=video_file, traces=traces, frame_range=(9530, 9989), wait=True, points=(),
-            #            video_params=video_params, fix_x_first_colors=2)
+                # show_video(input_video=video_file, traces=traces, frame_range=(9530, 9989), wait=True, points=(),
+                #            video_params=video_params, fix_x_first_colors=2)
 
             # if before_number_of_traces != len(traces):
             # with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
@@ -547,13 +551,13 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         if len(traces) >= 2:
             if not silent:
                 print(colored(f"Pairs of overlapping traces after merging overlapping traces: {dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda x: x.frame_range, traces)), skip_whole_in=False)}", "yellow"))
-        else:
-            pass
+            else:
+                pass
 
-        if not silent:
-            print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
-            for index, trace in enumerate(traces):
-                print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
+            if debug:
+                print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
+                for index, trace in enumerate(traces):
+                    print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
             print()
 
         # Storing the number of traces after MERGE OVERLAPPING TRACES and OVERLAPPING TRIPLETS

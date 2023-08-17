@@ -170,7 +170,7 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
                         print(f"cosine_similarity(vector2, vector1_next) > cosine_similarity(vector2, vector2_next): {calculate_cosine_similarity(vector2, vector1_next)} > {calculate_cosine_similarity(vector2, vector2_next)}")
                         print(f"dist(trace1.location_before, trace1.this_location) > dist(trace1.location_before, TRACE2.this_point): {math.dist(first_trace_locations[index-1], first_trace_locations[index])} > {math.dist(first_trace_locations[index-1], second_trace_locations[index])}")
 
-                    if not guided:
+                    if not guided and analyse.show_plots:
                         scatter_detection([trace1, trace2],
                                           get_video_whole_frame_range([trace1, trace2]),
                                           subtitle="Traces to be swapped.")
@@ -226,7 +226,7 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
     return False
 
 
-def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, silent=False, debug=False):
+def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback(traces, population_size, guided=True, silent=False, debug=False):
     """ Trims out additional appearance of an agent over a longer trace.
         This version is using partition_frame_range_by_number_of_traces.
         Fallbacks the False negative cases of trimming to be solved with iterative build of overlaps of the traces
@@ -235,6 +235,7 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
         :arg traces: (list): list of traces
         :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg population_size: (int): expected number of agents
+        :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns: traces: (list): list of concatenated Traces
@@ -274,6 +275,12 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
             to_delete_in_this_segment = []
             for trace_index in traces_subset_indices:
                 if is_in(traces[trace_index].frame_range, interval):
+
+                    if guided:
+                        print("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES")
+                        show_video(analyse.video_file, traces=[traces[trace_index]],
+                                   frame_range=margin_range(interval, 30),
+                                   video_speed=0.1, wait=True, video_params=analyse.video_params)
                     to_delete_in_this_segment.append(trace_index)
                     if debug:
                         print(colored(f"Adding trace n. {trace_index} id {traces[trace_index].trace_id} of frame range {traces[trace_index].frame_range} to be deleted.", "yellow"))
@@ -323,23 +330,6 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
 
             trace_indices_to_delete.extend(to_delete_in_this_segment)
             ids_of_traces_to_be_deleted.extend(list(map(lambda x: traces[x].trace_id, to_delete_in_this_segment)))
-
-            ## TODO have a look over here
-            # # Fix the structures
-            # interval_to_traces_count[interval] = interval_to_traces_count[interval] - 1
-            # for index, spam in traces_count_to_intervals[count]:
-            #     if spam == interval:
-            #         del traces_count_to_intervals[count][index]
-            # try:
-            #     traces_count_to_intervals[count-1].append(interval)
-            # except KeyError:
-            #     traces_count_to_intervals[count - 1] = [interval]
-            #
-            # if debug:
-            #     print(colored(interval_to_traces_count, "red"))
-            #     print()
-            #     print(colored(traces_count_to_intervals, "red"))
-            #     print()
 
     if debug:
         print(colored(f"trace_indices_to_delete {trace_indices_to_delete}", "blue"))
@@ -502,10 +492,9 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                 except KeyError:
                     pass
 
-                if trace1.trace_id == 0 or trace2.trace_id == 0:
-                    pass
-
-                if to_merge is None:
+                # If no decision loaded make the decision
+                ## TODO CHANGE THIS BACK TO is None
+                if to_merge is None or True:
                     # COMPUTE DISTANCES AND REST
                     dist_of_traces_in_frames = trace2.frame_range[0] - trace1.frame_range[-1]
                     dist_of_traces_in_xy = math.dist(trace1.locations[-1], trace2.locations[0])
@@ -540,45 +529,71 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     else:
                         force_merge = False
 
-                    const = 1.2
+                    const = analyse.check_multiplicative_boundary
 
-                    if not force_merge:
+                    if not force_merge and to_merge is None:
                         # the gap is wider than max_trace_gap (50 set as default)
                         if trace2.frame_range[0] - step_to > get_max_trace_gap():
                             to_merge = False
                             reason = f"gap too long ({trace2.frame_range[0] - step_to} > {get_max_trace_gap()})"
                         # length of the second trace is longer than a given number (100 set as default)
-                        if trace2.frame_range_len < get_min_trace_length_to_merge():
+                        elif trace2.frame_range_len < get_min_trace_length_to_merge():
                             to_merge = False
                             reason = f"2nd trace too short ({trace2.frame_range_len} < {get_min_trace_length_to_merge()})"
                         # CHECK FOR DISTANCE OF TRACES IN X,Y
                         # if the distance of traces in frames is high
-                        if to_merge:
-                            ## TODO add comment here
-                            if trace1.trace_id == 0 or trace2.trace_id == 0:
-                                pass
-
-                            # If traces are far apart in FRAME RANGE, do NOT MERGE
-                            if dist_of_traces_in_frames > get_max_trace_gap()/10:
-                                if dist_of_traces_in_xy > get_bee_max_step_len()*3:
-                                    reason = f"long gap too distant ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3})"
-                                    # print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
+                        # If traces are far apart in FRAME RANGE, do NOT MERGE
+                        elif dist_of_traces_in_frames > get_max_trace_gap()/10:
+                            if dist_of_traces_in_xy > get_bee_max_step_len()*3:
+                                reason = f"long gap too distant ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3})"
+                                # print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
                                     to_merge = False
                             else:
                                 # If traces are far apart in SPACE, do NOT MERGE
                                 if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
-                                    reason = f"short gap too distant ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()})"
-                                    # print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
-                                    to_merge = False
+                                reason = f"short gap too distant ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()})"
+                                # print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
+                                to_merge = False
+                        if to_merge is None:
+                            to_merge = True
+
+                    ## Check for False Positives
+                    # if NOT to be merged ask whether to merge actually
+                    # if gap range is smaller AND second trace long
+                    if guided and to_merge and by_user is not True:
+                        print()
+                        if (trace2.frame_range[0] - step_to > get_max_trace_gap() / const or
+                                trace2.frame_range_len < get_min_trace_length_to_merge() * const or
+                                (dist_of_traces_in_xy > get_bee_max_step_len() * 3 / const if dist_of_traces_in_frames > get_max_trace_gap() / 10 else dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame() / const)):
+                        # if (get_max_trace_gap() > trace2.frame_range[0] - step_to > get_max_trace_gap() / const and
+                        #         get_min_trace_length_to_merge() < trace2.frame_range_len < get_min_trace_length_to_merge() * const and
+                        #         (get_bee_max_step_len()*3 > dist_of_traces_in_xy > get_bee_max_step_len()*3 / const if dist_of_traces_in_frames > get_max_trace_gap() / 10 else dist_of_traces_in_frames * get_bee_max_step_len_per_frame() > dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame() / const)):
+                            print("CHECK FOR False Positives")
+                            print("trace2.frame_range[0] - step_to > get_max_trace_gap() / const", trace2.frame_range[0] - step_to > get_max_trace_gap() / const)
+                            print("trace2.frame_range_len < get_min_trace_length_to_merge() * const", trace2.frame_range_len < get_min_trace_length_to_merge() * const)
+                            if dist_of_traces_in_frames > get_max_trace_gap() / 10:
+                                print("dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame() / const", dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame() / const)
+                            try:
+                                print(colored(f"to_merge, {to_merge}", "magenta"))
+                                print(colored(f"by_user, {by_user}", "magenta"))
+
+                                to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2],
+                                                                                                      trace_ids_to_skip=trace_ids_to_delete,
+                                                                                                      silent=silent, gaping=True)
+                            except TypeError as err:
+                                print()
+                                raise err
 
                     ## Check for False Negatives
-                    # if to be merged ask whether to merge actually
+                    # if NOT to be merged ask whether to merge actually
                     # if gap range is smaller AND second trace long
                     if guided and trace2.frame_range[0] - step_to < get_max_trace_gap() * const and trace2.frame_range_len > get_min_trace_length_to_merge() / const and \
                             (False if dist_of_traces_in_frames > get_max_trace_gap()/10 else
                             dist_of_traces_in_xy < dist_of_traces_in_frames * get_bee_max_step_len_per_frame() * const) and not to_merge:
-                        print()
-                        print(reason)
+                        if not silent:
+                            print()
+                            print("CHECK for False Negatives")
+                            print(reason)
                         # print(f"max_trace_gap: {trace2.frame_range[0] - step_to} < {get_max_trace_gap()} * {const}")
                         # print(f"min_trace_length_to_merge: {trace2.frame_range_len} > {get_min_trace_length_to_merge()} / {const}")
                         # if dist_of_traces_in_xy > get_bee_max_step_len()*3:
@@ -719,9 +734,10 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
 
     # TODO tell the use what does the color mean
     # check whether to use consecutive traces or use some other constrain
-    print("The colour of the lines mean the following: ")
-    print("White - distance of two traces is below 100")
-    print(colored("Distance of two consecutive traces is below 100", "yellow"))
+    if not silent:
+        print("The colour of the lines mean the following: ")
+        print("White - distance of two traces is below 100")
+        print(colored("Distance of two consecutive traces is below 100", "yellow"))
     print(colored("Distance of two consecutive traces is below 10", "blue"))
 
     start_time = time()
