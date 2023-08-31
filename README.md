@@ -1,7 +1,7 @@
 # Dave
 Post-processing of faulty tracking from a 2D video (with batch mode).
 
-Fixing video tracking of the bees made by [loopy](http://loopbio.com/loopy/). 
+Fixing video tracking of the bees made by [Loopy](http://loopbio.com/loopy/). 
 Dave is designed to fix tracking from other sources, however, the parser needs to be adjusted to comply with your tracking format.
 
 It provides an automatic solver based on given parameters and a user-guided process based on video snippets accompanied by GUI and prompt decisions.
@@ -28,7 +28,7 @@ As we use only Python, simply:
 `>> pip install -r requirements`
 
 ## DATA DOCUMENTATION
-There are 2 main file types as a result of the [loopy](http://loopbio.com/loopy/) analysis - a table in `.csv` format and tracked video. 
+There are 2 main file types as a result of the [Loopy](http://loopbio.com/loopy/) analysis - a table in `.csv` format and tracked video. 
 
 ### CSV FILE
 `.csv` file which tracks the position of the individual agent in each tracked frame line by line.
@@ -62,9 +62,18 @@ Dave can use this original video to overlay the fixed tracking.
 If you trimmed or cropped the video, a one-time user-guided process will save the cropping and trimming parameters of each file (see FIXING VIDEO TRIMMING AND CROPPING section).
 
 
+## FOLDER STRUCTURE
+Here we show the folder structure we have used, and this will be used during this README. 
+![image](https://github.com/xhajnal/video_bees/assets/23458520/0e54f99a-8c45-4905-aa69-bf801a83883b)
+
+In our analysis, we had video tracking in multiple folders enclosed in a single folder `Video_tracking` which is located in the `data` folder as shown in the picture. 
+The source code is located in `src` folder, you will be asked to edit some files according to your data.
+The `Output` folder will be used to output the final result of the analysis, while `auxiliary` folder will be used to output partial results and decisions of the analysis.
+
+
 ## HOW AND WHERE TO STORE INPUT
 Create a folder such as `data` in the repo. 
-Get your tracking `*_nn.csv` and video `*.mp4` files, the results of loopy analysis, into this folder with/without your folder structure. 
+Get your tracking `*_nn.csv` and video `*.mp4` files, the results of Loopy analysis, into this folder with/without your folder structure. 
 
 Now, edit `dave.py` (located in `src` folder) or use automatic dave generation `help_write_dave.py`.
 `dave.py` contains lines for each file you would like to analyse.
@@ -72,7 +81,7 @@ In each line, function `analyse` calls the given file e.g.:
 
 `analyse('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv', population_size=2, has_tracked_video=True, is_first_run=a)`
 
-where the first parameter is the path to the `.csv` file, the second is `population_size` (number of objects tracked in the video), flag has_tracked_video whether there is a video as a result of loopy tracking and last flag, `is_first_run`, you do not need to set as this is a part of two-run setting (see more in TWO RUNS DAVE section).
+where the first parameter is the path to the `.csv` file, the second is `population_size` (number of objects tracked in the video), flag has_tracked_video whether there is a video as a result of Loopy tracking and last flag, `is_first_run`, you do not need to set as this is a part of two-run setting (see more in TWO RUNS DAVE section).
 
 
 ### (OPTIONAL) FIXING FRAME RANGES
@@ -146,13 +155,13 @@ run(is_first_run=True)
 ### (OPTIONAL) FIXING VIDEO TRIMMING AND CROPPING
 In the case you do not use a video source which is a result of the Loopy and you either cropped or trimmed the video, for each of such files please select `has_tracked_video=False` or simply omit this parameter in the respective line in `dave.py`.
 
-Simply put, the files with a video same as those used for the loopy analysis the line for such files will look something like this:
+Simply put, the files with a video same as those used for the Loopy analysis the line for such files will look something like this:
 
 ```
 analyse('../data/Video_tracking/{file_name}.csv', {population_size}, has_tracked_video=True, is_first_run=a)
 ```
 
-and for the videos that have been either trimmed or cropped for the loopy use this instead:
+and for the videos that have been either trimmed or cropped for the Loopy use this instead:
 
 ```
 analyse('../data/Video_tracking/{file_name}.csv', {population_size},  is_first_run=a)
@@ -229,5 +238,5 @@ Currently, to change the saved decision, the only way is to find the auxiliary f
 ### DAVE's AUXILARY FUNCTIONS
 1. Config file to save analysis parameters in one place
 2. Automatically generate 'dave.py' from the content of the 'data' folder, adding each '.csv' to be analysed.
-3. Saving trimming and cropping factors for alternative video used for loopy (if applies)
+3. Saving trimming and cropping factors for alternative video used for Loopy (if applies)
 4. Saving partial results of the 'first_run' as a pickled file with a respective hash based on the config settings
