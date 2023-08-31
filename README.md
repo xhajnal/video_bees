@@ -64,7 +64,8 @@ If you trimmed or cropped the video, a one-time user-guided process will save th
 
 ## FOLDER STRUCTURE
 Here we show the folder structure we have used, and this will be used during this README, hence we strongly recommend having it as similar as we do. 
-![image](https://github.com/xhajnal/video_bees/assets/23458520/3783e3a0-f6cc-49be-92be-f286f10b054b)
+![image](https://github.com/xhajnal/video_bees/assets/23458520/6480ce50-9f45-4977-952d-a366f7443982)
+
 
 
 - In our analysis, we had video tracking in multiple folders enclosed in a single folder `Video_tracking` which is located in the `data` folder as shown in the picture. 
