@@ -67,9 +67,10 @@ Here we show the folder structure we have used, and this will be used during thi
 ![image](https://github.com/xhajnal/video_bees/assets/23458520/3783e3a0-f6cc-49be-92be-f286f10b054b)
 
 
-In our analysis, we had video tracking in multiple folders enclosed in a single folder `Video_tracking` which is located in the `data` folder as shown in the picture. 
-The source code is located in `src` folder, you will be asked to edit some files according to your data.
-The `Output` folder will be used to output the final result of the analysis, while `auxiliary` folder will be used to output partial results and decisions of the analysis.
+- In our analysis, we had video tracking in multiple folders enclosed in a single folder `Video_tracking` which is located in the `data` folder as shown in the picture. 
+- The source code is located in `src` folder, you will be asked to edit some files according to your data.
+- The `Output` folder will be used to output the final result of the analysis - tracking in the form of `csv` files and annotated videos,
+- While `auxiliary` folder will be used to output partial results and decisions of the analysis.
 
 
 ## HOW AND WHERE TO STORE INPUT
