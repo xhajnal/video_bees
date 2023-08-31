@@ -63,7 +63,7 @@ If you trimmed or cropped the video, a one-time user-guided process will save th
 
 
 ## FOLDER STRUCTURE
-Here we show the folder structure we have used, and this will be used during this README. 
+Here we show the folder structure we have used, and this will be used during this README, hence we strongly recommend having it as similar as we do. 
 ![image](https://github.com/xhajnal/video_bees/assets/23458520/3783e3a0-f6cc-49be-92be-f286f10b054b)
 
 
@@ -88,14 +88,15 @@ where the first parameter is the path to the `.csv` file, the second is `populat
 
 ### (OPTIONAL) FIXING FRAME RANGES
 In our case studies, the videos were trimmed and hence the first frame of the video was not recognised by Loopy as the first. 
-The script simply edits `frame_number` column to offset it so it starts with zero while keeping info of the original frame in column `frame_count`.
-If you want to overcome this problem, move the `.csv` files in one folder deeper and name it `original` and edit the main of `fix_ranges.py` in a similar way as `dave.py` e.g:
+The script `fix_ranges.py` simply edits `frame_number` column to offset it so it starts with zero while keeping info of the original frame in column `frame_count`.
+If you want to overcome this problem, move the `.csv` files in one folder deeper and name it `original` and edit the main of `fix_ranges.py` in a similar way as you edited `dave.py` e.g:
 
 `fix_ranges('../data/Video_tracking/190822/20190822_112842909_2BEE_generated_20210503_074806_nn.csv')`
 
-for each file to be fixed or use the recursive call to fix ranges of all the `_nn.csv` files by accommodating your folder structure.  
+- using the call for each file to be fixed
+- (ADVANCED) or use the recursive call to fix ranges of all the `_nn.csv` files. (line data_path = '../data/Video_tracking/') - this assumes the folder structure similar to ours.
 
-TBD - set the folder structure and use the figure by Morgane, and set an option for a single folder in Video_tracking. 
+If you use a different folder structure in comparison to the one we use (Figure in ## FOLDER STRUCTURE section) edit the `fix_ranges.py` accordingly.
 
 Now run file `fix_ranges.py`
 ```
