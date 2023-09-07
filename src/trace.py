@@ -5,7 +5,8 @@ from matplotlib import rcParams
 
 from config import *
 from fake import get_whole_frame_range
-from misc import has_overlap, take
+from misc import has_overlap
+from misc import take
 
 
 class Trace:
