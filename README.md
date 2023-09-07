@@ -25,7 +25,7 @@ As we use only Python, simply:
 2. (Optional) We recommend using a virtual environment (e.g. [conda](https://docs.conda.io/en/latest/), [pyenv](https://github.com/pyenv/pyenv)) before the following step.
 3. Get non-standard libraries, which you can simply install with the command:
 
-`>> pip install -r requirements`
+`>> pip install -r requirements.txt`
 
 ## DATA DOCUMENTATION
 There are 2 main file types as a result of the [Loopy](http://loopbio.com/loopy/) analysis - a table in `.csv` format and tracked video. 
