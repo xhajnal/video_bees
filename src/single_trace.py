@@ -2,6 +2,7 @@ import csv
 import json
 import math
 import os
+import warnings
 from time import time
 import numpy as np
 from _socket import gethostname
@@ -153,7 +154,11 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
         print(f"calculated arena_boundaries: mid [{mid_x, mid_y}], diam {diam}")
 
     ## ALIGN THE ARENA ACCORDING TO VIDEO
-    trim, crop = analyse.video_params
+    try:
+        trim, crop = analyse.video_params
+    except TypeError:
+        warnings.warn("Video file not loaded properly. Check whether the file is located and named properly.")
+        warnings.warn("Check inside of arena could not be run properly.")
     # LOAD ARENA BOUNDARIES FROM FILE
     try:
         try:

@@ -341,7 +341,7 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
 
 
 # TODO add tests
-def put_gaping_traces_together(traces, population_size, allow_force_merge=True, guided=True, silent=False, debug=False):
+def merge_gaping_traces(traces, population_size, allow_force_merge=True, guided=True, silent=False, debug=False, check_for_fp=False, check_for_fn=False):
     """ Puts gaping traces together iff all the agents but one is being tracked.
 
         :arg traces: (list): list of traces
@@ -350,6 +350,8 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
         :arg guided: (bool): iff True user-guided section will be used
         :arg silent: (bool): iff True minimal output is shown
         :arg debug: (bool): iff True extensive output is shown
+        :arg check_for_fp: (bool): flagg for checking far False Positive Cases
+        :arg check_for_fn: (bool): flagg for checking far False Negative Cases
 
         :returns: traces: (list): list of concatenated Traces
     """
@@ -547,10 +549,10 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                             if dist_of_traces_in_xy > get_bee_max_step_len()*3:
                                 reason = f"long gap too distant ({dist_of_traces_in_xy} > {get_bee_max_step_len() * 3})"
                                 # print(f" hell, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as LONG gap has big xy distance ({dist_of_traces_in_xy} > {get_bee_max_step_len()*3}).")
-                                    to_merge = False
-                            else:
-                                # If traces are far apart in SPACE, do NOT MERGE
-                                if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
+                                to_merge = False
+                        else:
+                            # If traces are far apart in SPACE, do NOT MERGE
+                            if dist_of_traces_in_xy > dist_of_traces_in_frames * get_bee_max_step_len_per_frame():
                                 reason = f"short gap too distant ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()})"
                                 # print(f" hell2, we do not merge traces {trace1.trace_id} and {trace2.trace_id} as SHORT gap has big xy distance ({dist_of_traces_in_xy} > {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()} ).")
                                 to_merge = False
@@ -560,7 +562,7 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     ## Check for False Positives
                     # if NOT to be merged ask whether to merge actually
                     # if gap range is smaller AND second trace long
-                    if guided and to_merge and by_user is not True:
+                    if check_for_fp and guided and to_merge and by_user is not True:
                         print()
                         if (trace2.frame_range[0] - step_to > get_max_trace_gap() / const or
                                 trace2.frame_range_len < get_min_trace_length_to_merge() * const or
@@ -587,29 +589,29 @@ def put_gaping_traces_together(traces, population_size, allow_force_merge=True, 
                     ## Check for False Negatives
                     # if NOT to be merged ask whether to merge actually
                     # if gap range is smaller AND second trace long
-                    if guided and trace2.frame_range[0] - step_to < get_max_trace_gap() * const and trace2.frame_range_len > get_min_trace_length_to_merge() / const and \
-                            (False if dist_of_traces_in_frames > get_max_trace_gap()/10 else
-                            dist_of_traces_in_xy < dist_of_traces_in_frames * get_bee_max_step_len_per_frame() * const) and not to_merge:
-                        if not silent:
-                            print()
-                            print("CHECK for False Negatives")
-                            print(reason)
-                        # print(f"max_trace_gap: {trace2.frame_range[0] - step_to} < {get_max_trace_gap()} * {const}")
-                        # print(f"min_trace_length_to_merge: {trace2.frame_range_len} > {get_min_trace_length_to_merge()} / {const}")
-                        # if dist_of_traces_in_xy > get_bee_max_step_len()*3:
-                        #     print(f"long gap: {dist_of_traces_in_xy} < {get_bee_max_step_len()*3} ")
-                        # else:
-                        #     print(f"short gap: {dist_of_traces_in_xy} < {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()}")
+                    if check_for_fn and guided and not to_merge:
+                        if (trace2.frame_range[0] - step_to < get_max_trace_gap() * const and trace2.frame_range_len > get_min_trace_length_to_merge() / const and
+                                (False if dist_of_traces_in_frames > get_max_trace_gap()/10 else dist_of_traces_in_xy < dist_of_traces_in_frames * get_bee_max_step_len_per_frame() * const)) :
+                            if not silent:
+                                print()
+                                print("CHECK for False Negatives")
+                                print(reason)
+                            # print(f"max_trace_gap: {trace2.frame_range[0] - step_to} < {get_max_trace_gap()} * {const}")
+                            # print(f"min_trace_length_to_merge: {trace2.frame_range_len} > {get_min_trace_length_to_merge()} / {const}")
+                            # if dist_of_traces_in_xy > get_bee_max_step_len()*3:
+                            #     print(f"long gap: {dist_of_traces_in_xy} < {get_bee_max_step_len()*3} ")
+                            # else:
+                            #     print(f"short gap: {dist_of_traces_in_xy} < {dist_of_traces_in_frames * get_bee_max_step_len_per_frame()}")
 
-                        try:
-                            to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2],
-                                                                                                  trace_ids_to_skip=trace_ids_to_delete,
-                                                                                                  silent=silent, gaping=True)
-                            # if video_was_shown is True:
-                            #     print()
-                        except TypeError as err:
-                            print()
-                            raise err
+                            try:
+                                to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2],
+                                                                                                      trace_ids_to_skip=trace_ids_to_delete,
+                                                                                                      silent=silent, gaping=True)
+                                if video_was_shown is True:
+                                    print()
+                            except TypeError as err:
+                                print()
+                                raise err
 
                     if trace2.frame_range[0] - trace1.frame_range[-1] == 0:  # fix distance of zero len gap
                         distance_per_frame = None
@@ -738,7 +740,7 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
         print("The colour of the lines mean the following: ")
         print("White - distance of two traces is below 100")
         print(colored("Distance of two consecutive traces is below 100", "yellow"))
-    print(colored("Distance of two consecutive traces is below 10", "blue"))
+        print(colored("Distance of two consecutive traces is below 10", "blue"))
 
     start_time = time()
 

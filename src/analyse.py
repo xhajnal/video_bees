@@ -1,4 +1,5 @@
 import os.path
+import warnings
 from time import time
 from _socket import gethostname
 from termcolor import colored
@@ -12,7 +13,7 @@ from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config,
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
 from single_trace import single_trace_checker, check_inside_of_arena, track_jump_back_and_forth, remove_full_traces
-from cross_traces import put_gaping_traces_together, track_reappearance, cross_trace_analyse, \
+from cross_traces import merge_gaping_traces, track_reappearance, cross_trace_analyse, \
     merge_alone_overlapping_traces, track_swapping_loop
 from traces_logic import compute_whole_frame_range, get_video_whole_frame_range, delete_traces_from_saved_decisions, \
     smoothen_traces_from_saved_decisions, fix_decisions
@@ -288,12 +289,14 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
 
         ## OBTAIN VIDEO PARAMETERS
         # VECT - to move the locations according the cropping the video
-        # trace_offset - number of first frames of the video to skip
-        crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
-        video_params = [trim_offset, crop_offset] if crop_offset is not None else True
-        # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
+            # trace_offset - number of first frames of the video to skip
+            crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
+            video_params = [trim_offset, crop_offset] if crop_offset is not None else True
+            if video_params is True:
+                warnings.warn("Video file not loaded properly. Check whether the file is located and named properly.")
+            # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
 
-        if just_align:
+            if just_align:
             return
 
             ####################################
@@ -402,13 +405,13 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
 
             # if before_number_of_traces != len(traces):
             # with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
-            #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
-            if show_all_plots:
-                scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
-            traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge, guided=guided, silent=silent, debug=debug)
-            if show_all_plots:
-                scatter_detection(traces, subtitle="After putting gaping traces together.")
-            after_number_of_traces = len(traces)
+                #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
+                if show_all_plots:
+                    scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
+                traces = merge_gaping_traces(traces, population_size, allow_force_merge=allow_force_merge, guided=guided, silent=silent, debug=debug, check_for_fp=True, check_for_fn=False)
+                if show_all_plots:
+                    scatter_detection(traces, subtitle="After putting gaping traces together.")
+                after_number_of_traces = len(traces)
 
             # show_video(input_video=video_file, traces=traces, frame_range=(9530, 9989), wait=True, points=(),
             #            video_params=video_params, fix_x_first_colors=2)
@@ -418,12 +421,15 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         if not silent:
             print(colored(f"After trimming overlapping redundant traces and putting gaping traces together there are {len(traces)} left:", "yellow"))
             for index, trace in enumerate(traces):
-                print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
-            print()
+                    print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
+                print()
 
-        ## ALL TRACES SHOW
-        if show_all_plots:
-            # scatter_detection(traces, whole_frame_range)
+            if is_first_run is False:
+                return
+
+            ## ALL TRACES SHOW
+            if show_all_plots:
+                # scatter_detection(traces, whole_frame_range)
             show_gaps(traces, silent=silent, debug=debug, subtitle="After Cross analysis phase 1.")
             show_overlaps(traces, silent=silent, debug=debug, subtitle="After Cross analysis phase 1.")
             show_plot_locations(traces, subtitle="After Cross analysis phase 1.")
@@ -587,13 +593,13 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
 
                 # if before_number_of_traces != len(traces):
                 # with open("../auxiliary/first_count_of_trimming.txt", "a") as file:
-                #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
-                if show_all_plots:
-                    scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
-                traces = put_gaping_traces_together(traces, population_size, allow_force_merge=allow_force_merge,
-                                                    guided=guided, silent=silent, debug=debug)
-                if show_all_plots:
-                    scatter_detection(traces, subtitle="After putting gaping traces together.")
+                    #     file.write(f"{csv_file_path}: {before_number_of_traces}, {len(traces)} \n")
+                    if show_all_plots:
+                        scatter_detection(traces, subtitle="After trimming redundant overlapping traces.")
+                    traces = merge_gaping_traces(traces, population_size, allow_force_merge=allow_force_merge,
+                                                 guided=guided, silent=silent, debug=debug)
+                    if show_all_plots:
+                        scatter_detection(traces, subtitle="After putting gaping traces together.")
                 after_number_of_traces = len(traces)
 
             ## WRITE TRACES COUNT AFTER THIS SECOND LOOP
@@ -607,12 +613,14 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
             # # Storing the number of traces after second TRIM REDUNDANT OVERLAPPING TRACES AND PUT GAPING TRACES TOGETHER
             # counts.append(len(traces) + len(removed_traces))
 
-        ##############
-        ## FULL GUIDED
-        ##############
-        if do_full_guided:
-            if len(traces)+len(removed_full_traces) > original_population_size and guided:
-                full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params, has_tracked_video=has_tracked_video)
+            ##############
+            ## FULL GUIDED
+            ##############
+            if is_first_run is False:
+                return
+            if do_full_guided:
+                if len(traces)+len(removed_full_traces) > original_population_size and guided:
+                    full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params, has_tracked_video=has_tracked_video)
 
             ## VISUALISATIONS
             if show_all_plots:

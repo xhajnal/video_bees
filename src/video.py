@@ -1,5 +1,6 @@
 import json
 import os
+import warnings
 from _socket import gethostname
 from multiprocessing import Process
 from os.path import exists
@@ -611,8 +612,14 @@ def parse_video_info(video_file, traces, csv_file_path):
             vector of shift to assign to the locations so that align with the not cropped video,
             number of first frames of the video to be skipped
     """
-    # there is no video file
+    # There is no video file
     if not video_file:
+        warnings.warn("No video file given.")
+        return None, None
+
+    # There is video file given but the files does not exist
+    if os.path.isfile(video_file) is not True:
+        warnings.warn("Video file does not exist.")
         return None, None
 
     # If a trimmed and cropped video is used

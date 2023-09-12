@@ -700,9 +700,11 @@ def load_decisions():
 
 
 def save_decisions(content, silent=False):
-    """ Saves decisions for the first run as a pickled file.
+    """ Saves decisions as a pickled file.
+        Uses the name of the csv input file.
 
-    :arg csv_file: (file): input file
+    :arg content: (dictionary): decisions
+    :arg silent: (bool): if True minimal output is shown
     """
     csv_file_path = analyse.get_curr_csv_file_path()
     csv_file = Path(csv_file_path).stem

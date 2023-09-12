@@ -428,7 +428,7 @@ def merge_triplets_by_partition(traces, shift=False, guided=False, silent=False,
 
 
 def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_video=False, silent=False, debug=False,
-                                      show=False, video_params=False):
+                                      show=False, video_params=False, check_for_fp=False, check_for_fn=False):
     """ Merges traces with only a single overlap.
         # Puts traces together such that all the agents but one is being tracked.
 
@@ -441,11 +441,17 @@ def merge_overlapping_triplets_brutto(traces, shift=False, guided=False, input_v
         :arg debug: (bool): if True extensive output is shown
         :arg show: (bool): if True plots are shown
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+        :arg check_for_fp: (bool): flagg for checking far False Positive Cases
+        :arg check_for_fn: (bool): flagg for checking far False Negative Cases
+
         :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE OVERLAPPING TRIPLETS BRUTTO - using build", "blue"))
     start_time = time()
     starting_number_of_traces = len(traces)
+
+    if check_for_fp or check_for_fn:
+        raise NotImplemented("Checking for False Positives")
 
     merge_pairs = []
 
