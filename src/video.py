@@ -41,7 +41,7 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
 
     if points:
-        print("Press WASD keys to move point(s) to respective direction, press q to save the alignment and close the window.")
+        print("Press WASD keys to move point(s) to respective direction, use +/- keys to enlarge/decrease the circle size and press q to save the alignment and close the window.")
     else:
         print("Press q (while video window) to stop the video and continue to question, press r to restart, a to rewind, d to forward, - to slow down, + to speed up")
 
