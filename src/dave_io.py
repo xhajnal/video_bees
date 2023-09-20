@@ -474,7 +474,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
     print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(results_csv_file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
 
-def save_traces_as_csv(traces, file_name, silent=False, debug=False, is_first_run=None):
+def save_traces_as_csv(traces, file_name, silent=False, debug=False, is_first_run=None, overwrite_file=False):
     """ Saves the traces as csv file in loopy manner.
 
         :arg traces (list) list of traces
@@ -482,6 +482,7 @@ def save_traces_as_csv(traces, file_name, silent=False, debug=False, is_first_ru
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg is_first_run: (bool): iff True, does not store the traces
+        :arg overwrite_file: (bool): whether to overwrite existing file
     """
 
     if is_first_run is True:
@@ -529,36 +530,43 @@ def save_traces_as_csv(traces, file_name, silent=False, debug=False, is_first_ru
         # print("trackings", trackings)
         print("frames_tracked", frames_tracked)
 
-    # with open(f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}", "w") as file:
-    with open(f"../output/traces/{hash_config()}/{file_name}", "w") as file:
-        file.write(",date,err,frame_count,frame_number,frame_timestamp,name,oid,type,x,y\n")
-        for index, frame in enumerate(trackings):
-            # obtain the ids of traces with the given frame
-            indices = tracking_to_trace_index[frame]
-            # save the first index
-            trace_index = indices[0]
-            # delete the taken id
-            tracking_to_trace_index[frame] = tracking_to_trace_index[frame][1:]
-            # obtain the specific trace
-            trace = traces[trace_index]
-            # obtain the index of the frame
-            frame_index = trace.frames_list.index(frame)
-            location = trace.locations[frame_index]
-            my_id = trace.trace_id
-            message = f"{index},,,{frame},{frame},,object_{my_id},{my_id},BVIEW_tracked_object,{location[0]},{location[1]}\n"
-            file.write(message)
+    # file_path = f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}"
+    file_path = f"../output/traces/{hash_config()}/{file_name}"
 
-        print(colored(f"Saving {len(traces)} traces as csv in {os.path.abspath(f'../output/{file_name}')}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    if not os.path.isfile(file_path) or overwrite_file:
+        with open(file_path, "w") as file:
+            file.write(",date,err,frame_count,frame_number,frame_timestamp,name,oid,type,x,y\n")
+            for index, frame in enumerate(trackings):
+                # obtain the ids of traces with the given frame
+                indices = tracking_to_trace_index[frame]
+                # save the first index
+                trace_index = indices[0]
+                # delete the taken id
+                tracking_to_trace_index[frame] = tracking_to_trace_index[frame][1:]
+                # obtain the specific trace
+                trace = traces[trace_index]
+                # obtain the index of the frame
+                frame_index = trace.frames_list.index(frame)
+                location = trace.locations[frame_index]
+                my_id = trace.trace_id
+                message = f"{index},,,{frame},{frame},,object_{my_id},{my_id},BVIEW_tracked_object,{location[0]},{location[1]}\n"
+                file.write(message)
+
+            print(colored(f"Saving {len(traces)} traces as csv in {file_path}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    else:
+        print(colored(f"Csv file {file_path} already exists. Not gonna overwrite it. \n", "yellow"))
 
 
-def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run=None, just_parsed=False):
+def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run=None, just_parsed=False, overwrite_file=False):
     """ Saves the traces as pickle.
 
         :arg traces: (list): list of traces
         :arg csv_file_path: (string): path to the file to be pickled in "output" folder
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
-        :arg is_first_run: (bool): iff True, traces are stored in 'after_first_run' folder next to the input file
+        :arg is_first_run: (bool): iff True, traces are stored in 'after_first_run' folder next to the input file, otherwise in 'output' folder
+        :arg just_parsed: (bool):  iff True, the pickle is only parsed file - gonna store it 'parsed' folder instead
+        :arg overwrite_file: (bool): whether to overwrite existing file
     """
     print(colored("SAVE TRACES AS PICKLE", "blue"))
     start_time = time()
@@ -570,12 +578,12 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
     if is_first_run is True:
         try:
             os.mkdir(os.path.join(os.path.dirname(csv_file_path), "after_first_run"))
-        except OSError:
+        except OSError as err:
             pass
 
         try:
             os.mkdir(os.path.join(os.path.dirname(csv_file_path), "after_first_run", my_hash))
-        except OSError:
+        except OSError as err:
             pass
 
         file_path = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", my_hash, file_name))
@@ -615,10 +623,13 @@ def pickle_traces(traces, csv_file_path, silent=False, debug=False, is_first_run
 
     if debug:
         print("file", file_path)
-    with open(file_path, 'wb') as file:
-        pickle.dump(traces, file)
 
-    print(colored(f"Saving pickled {len(traces)} traces in {os.path.abspath(file_path)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    if not os.path.isfile(file_path) or overwrite_file:
+        with open(file_path, 'wb') as file:
+            pickle.dump(traces, file)
+        print(colored(f"Saving pickled {len(traces)} traces in {os.path.abspath(file_path)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+    else:
+        print(colored(f"Pickled file {file_path} already exists. Not gonna overwrite it. \n", "yellow"))
 
 
 def load_traces(file):
@@ -642,6 +653,7 @@ def pickle_load(file_path):
     """
 
     filename, file_extension = os.path.splitext(file_path)
+    file_path = Path(file_path)
 
     if file_extension == ".p":
         with open(file_path, "rb") as f:

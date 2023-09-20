@@ -270,7 +270,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
                             pickle_traces(traces, csv_file_path, silent=silent, debug=debug, just_parsed=True)
 
             except FileNotFoundError:
-                print(colored(f"File not found!", "magenta"))
+                print(colored(f"Traces .csv file not found!", "magenta"))
                 return
 
         # Storing the number of loaded traces
@@ -291,8 +291,8 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         # VECT - to move the locations according the cropping the video
         # trace_offset - number of first frames of the video to skip
         crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
-        video_params = [trim_offset, crop_offset] if crop_offset is not None else True
-        if video_params is True:
+        video_params = [trim_offset, crop_offset] if crop_offset is not None else None
+        if video_params is None:
             warnings.warn("Video file not loaded properly. Check whether the file is located and named properly.")
         # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
 
@@ -641,11 +641,14 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         is_new_result = save_current_result(counts, file_name=csv_file_path, population_size=original_population_size, is_first_run=is_first_run,
                                             is_guided=guided, is_force_merge_allowed=allow_force_merge, video_available=has_tracked_video, silent=silent, debug=debug)
         if is_new_result:
+            overwrite_file = True
             convert_results_from_json_to_csv(silent=silent, debug=debug, is_first_run=is_first_run)
-            if do_save_traces:
-                if not is_first_run:
-                    save_traces_as_csv(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug, is_first_run=is_first_run)
-                pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run)
+        else:
+            overwrite_file = False
+        if do_save_traces:
+            if not is_first_run:
+                save_traces_as_csv(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug, is_first_run=is_first_run, overwrite_file=overwrite_file)
+            pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run, overwrite_file=overwrite_file)
     else:
         # Just_annotate
         all_final_traces = load_result_traces(csv_file_path)

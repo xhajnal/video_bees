@@ -141,13 +141,13 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
     ## LOAD SAVED DECISIONS
     decisions = load_decisions()
 
-    ## FILTER OUTSIDE ARENA DECISIONS
+    ## FILTER OUT TRACES OUTSIDE ARENA DECISIONS
     outside_arena_decisions = {}
     for key, value in decisions.items():
         if key[0] == 'outside_arena':
             outside_arena_decisions[key] = value
 
-    ## COMPUTE THE ARENA SIZE
+    ## COMPUTE THE ARENA SIZE SOLELY FROM TRACES
     center, diam = compute_arena(traces, debug)
     mid_x, mid_y = center
     if debug:
@@ -157,8 +157,8 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
     try:
         trim, crop = analyse.video_params
     except TypeError:
-        warnings.warn("Video file not loaded properly. Check whether the file is located and named properly.")
-        warnings.warn("Check inside of arena could not be run properly.")
+        warnings.warn("Check inside of arena could not be run properly as the video file not loaded properly. Check whether the file is located and named properly.")
+
     # LOAD ARENA BOUNDARIES FROM FILE
     try:
         try:
@@ -180,7 +180,7 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
             print(f"arena_boundaries loaded: mid [{mid_x, mid_y}], diam {diam}")
 
     except KeyError:
-        if guided:
+        if guided and analyse.video_params is not None:
             # OBTAIN ARENA BOUNDARIES FROM VIDEO
             # recalculate arena according to crop
 
@@ -191,7 +191,7 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
             center, diam = obtain_arena_boundaries(analyse.video_file, csv_file_path, [video_mid_x, video_mid_y], diam)
             mid_x, mid_y = center
 
-    ## CHECK FOR THE BEES OUTSIDE OF THE COMPUTED ARENA
+    ## CHECK FOR THE TRACES WITH BEES OUTSIDE OF THE COMPUTED ARENA
     traces_to_be_deleted = []
     for index, trace in enumerate(traces):
         ## CHECK FOR THE DECISIONS

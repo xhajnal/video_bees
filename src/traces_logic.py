@@ -1209,7 +1209,7 @@ def delete_traces_from_saved_decisions(traces, silent=False, debug=False):
 
 
 def compute_arena(traces, debug=False):
-    """ Computes the arena population_size - center and diameter
+    """ Computes the arena population_size - center and diameter from traces
 
         :arg traces: (list): a list of Traces
         :arg debug: (bool): if True extensive output is shown
