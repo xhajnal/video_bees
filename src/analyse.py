@@ -61,7 +61,7 @@ allow_force_merge = False       # allows force merge gaps and overlaps - overpas
 rerun = True                    # will execute also files with a setting which is already in the results
 save_parsed_as_pickle = True    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
 fast_run = True                 # will skip the least prominent parts - Second Gaping traces analysis
-
+do_full_guided = True          # full-guided regim on/off - when the analysis is finished but there are still more traces than it should be
 
 # def get_traces():
 #     global traces
@@ -138,7 +138,7 @@ def get_curr_csv_file_path():
     return curr_csv_file_path
 
 
-def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, do_save_traces=True, do_full_guided=False):
+def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, do_save_traces=True, do_full_guided=do_full_guided):
     """ Runs the whole file analysis.
 
         :arg csv_file_path: (str): path to csv file
@@ -250,6 +250,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
                     #################
                     if not rerun:
                         if not is_new_config(file_name=csv_file_path, is_guided=guided, is_force_merge_allowed=allow_force_merge, video_available=has_tracked_video, is_first_run=is_first_run):
+                            print(colored("Rerun set False and this config already in the results. Gonna skip this file", "green"))
                             return
                     # Check whether this csv was already parsed, used the parsed file, if yes
                     if save_parsed_as_pickle and pickled_exist(csv_file_path, parsed=True):
@@ -423,9 +424,6 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
             for index, trace in enumerate(traces):
                 print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
             print()
-
-        if is_first_run is False:
-            return
 
         ## ALL TRACES SHOW
         if show_all_plots:
@@ -616,8 +614,6 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         ##############
         ## FULL GUIDED
         ##############
-        if is_first_run is False:
-            return
         if do_full_guided:
             if len(traces)+len(removed_full_traces) > original_population_size and guided:
                 full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params, has_tracked_video=has_tracked_video)

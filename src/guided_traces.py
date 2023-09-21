@@ -25,7 +25,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
     """
     print(colored("VIDEO-GUIDED SOLVER", "blue"))
     if not input_video:
-        print(colored("No video given, skipping this analysis. \n"))
+        print(colored("No video given, skipping this analysis. \n", "red"))
         return
 
     removed_traces = []
