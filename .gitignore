@@ -147,6 +147,11 @@ auxiliary/*
 !auxiliary/transpositions.txt
 !auxiliary/arena_boundaries.txt
 
+# local backup
+my_personal_backup/*
+# txt reports to Morgane 
+reports/*
+
 src/asdf.py
 
 src/axcv.py

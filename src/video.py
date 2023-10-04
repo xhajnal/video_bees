@@ -259,6 +259,8 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     global show_number
     show_single = False
 
+    qt_working = None  ## Flag whether qt support is working
+
     if traces_to_show and not show:
         print(colored("ANNOTATES THE VIDEO WITH NEW TRACES", "blue"))
 
@@ -303,14 +305,24 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     else:
         cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
 
-    cv2.createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
+    try:
+        cv2.createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
+        qt_working = True
+    except cv2.error as err:
+        qt_working = False
+        print(colored("QT support not working, GUI showing traces is not shown. We are working on this.", "red"))
+        # TODO createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
 
-    for indexx, trace in enumerate(traces_to_show):
-        spam = indexx
-        cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [indexx], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
-        cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, [traces_to_show[indexx].trace_id, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
-        cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[indexx].trace_id, indexx, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
-        cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", go_to_start_frame, [video, spam, traces_to_show, trim_offset], cv2.QT_PUSH_BUTTON, 1, )
+    if qt_working is True:
+        for indexx, trace in enumerate(traces_to_show):
+            spam = indexx
+            cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [indexx], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
+            cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, [traces_to_show[indexx].trace_id, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
+            cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[indexx].trace_id, indexx, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
+            cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", go_to_start_frame, [video, spam, traces_to_show, trim_offset], cv2.QT_PUSH_BUTTON, 1, )
+    else:
+        pass
+        # TODO  create those Buttons
 
     if str(gethostname()) == "Skadi":
         cv2.moveWindow("video", 0, 0)
@@ -322,7 +334,8 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         if show:
             print("Press q (while video window) to stop the video and continue to question. \nPress r to restart, a to rewind, d to forward, - to slow down, + to speed up.")
             # print("Press 0-9 to show only respective trace, Enter to start the video when the trace starts, or . to show all traces")
-            print("Press Ctrl+P to show trace management - deleting, undeleting and showing the traces.")
+            if qt_working:
+                print("Press Ctrl+P to show trace management - deleting, undeleting and showing the traces.")
 
         fps = video.get(5)
         if debug:
