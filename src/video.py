@@ -11,6 +11,7 @@ from termcolor import colored
 
 import analyse
 import video_windows
+import video_windows_tkinter
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit, \
     modulo, get_colour
 from trace import Trace
@@ -217,7 +218,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         p.join()
 
 
-def show_all_traces(spam, egg):
+def show_all_traces():
     """ Shows all traces in the video. """
     global show_single
     show_single = False
@@ -314,9 +315,10 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
         spamewqrt = traces_to_show
 
-        thread1 = video_windows.Gui_video_thread(traces_to_show, video, trim_offset)
+        ## Following line creates the gui but the rest of the program is paused wil gui is running
+        # video_windows_tkinter.create_main_window(traces_to_show, video, trim_offset)
+        thread1 = video_windows_tkinter.Gui_video_thread(traces_to_show, video, trim_offset)
         thread1.start()
-        # thread1.show_buttons()
 
         print(colored("QT support not working, GUI showing traces is not shown. We are working on this.", "red"))
         # TODO createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
@@ -360,6 +362,8 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
         # if debug:
         print('Ranges of Traces: ', trace_ranges)
+        print('Traces to show ids: ', list(map(lambda x: x.trace_id, traces_to_show)))
+        # print('All Traces ids: ', list(map(lambda x: x.trace_id, analyse.traces)))
 
     # Obtain frame population_size information using get() method
     frame_width = int(video.get(3))

@@ -14,8 +14,7 @@ if __name__ == "__main__":
     #         is_first_run=False)
 
     analyse('../data/Video_tracking/test/test_20190930_112905317_1BEE_generated_20211019_103540_nn.csv', 2, is_first_run=True)
-    analyse('../data/Video_tracking/test/test_20190930_112905317_1BEE_generated_20211019_103540_nn.csv', 2,
-            is_first_run=False)
+    analyse('../data/Video_tracking/test/test_20190930_112905317_1BEE_generated_20211019_103540_nn.csv', 2, is_first_run=False)
 
 
 
