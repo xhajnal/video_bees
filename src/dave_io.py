@@ -697,8 +697,6 @@ def parse_traces(csv_file):
 
 def load_decisions():
     """ Loads and returns the pickled file of the saved decisions for the first run.
-
-    :arg csv_file: (file): input file
     """
 
     csv_file_path = analyse.get_curr_csv_file_path()

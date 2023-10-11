@@ -10,6 +10,7 @@ import cv2
 from termcolor import colored
 
 import analyse
+import video_windows
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit, \
     modulo, get_colour
 from trace import Trace
@@ -223,18 +224,17 @@ def show_all_traces(spam, egg):
     print("Showing all traces.")
 
 
-def show_single_trace(spam, number):
+def show_single_trace(number):
     """ Shows single trace in the video. """
     global show_single
     global show_number
     show_single = True
     print("Showing single trace", number)
-    show_number = number[0]
+    show_number = number
 
 
-def go_to_start_frame(spam, egg):
+def go_to_start_frame(video, index, traces_to_show, trim_offset):
     """ In the video, goes to the beginning of the given trace. """
-    video, index, traces_to_show, trim_offset = egg
     start = traces_to_show[index].frame_range[0]
     video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + start)
 
@@ -257,6 +257,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     from traces_logic import delete_trace_with_id, undelete_trace_with_id
     global show_single
     global show_number
+    global spamewqrt
     show_single = False
 
     qt_working = None  ## Flag whether qt support is working
@@ -310,15 +311,24 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         qt_working = True
     except cv2.error as err:
         qt_working = False
+
+        spamewqrt = traces_to_show
+
+        thread1 = video_windows.Gui_video_thread(traces_to_show, video, trim_offset)
+        thread1.start()
+        # thread1.show_buttons()
+
         print(colored("QT support not working, GUI showing traces is not shown. We are working on this.", "red"))
         # TODO createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
 
     if qt_working is True:
         for indexx, trace in enumerate(traces_to_show):
             spam = indexx
+            if trace.trace_id != traces_to_show[indexx].trace_id:
+                raise Exception("indexing problem")
             cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [indexx], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
-            cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, [traces_to_show[indexx].trace_id, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
-            cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [traces_to_show[indexx].trace_id, indexx, traces_to_show], cv2.QT_PUSH_BUTTON, 1)
+            cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, [trace.trace_id], cv2.QT_PUSH_BUTTON, 1)
+            cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [trace.trace_id, indexx], cv2.QT_PUSH_BUTTON, 1)
             cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", go_to_start_frame, [video, spam, traces_to_show, trim_offset], cv2.QT_PUSH_BUTTON, 1, )
     else:
         pass
@@ -532,6 +542,11 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
     # Release the objects
     video.release()
+    try:
+        thread1.join()
+    except Exception:
+        pass
+
     if output_video:
         output.release()
         print(colored("Annotation done.", "yellow"))
@@ -812,6 +827,7 @@ def obtain_arena_boundaries(video_file, csv_file_path, center, diameter):
         file.write(json.dumps(transpositions))
 
     return new_center, new_diameter
+
 
 if __name__ == "__main__":
     # make_help_video()

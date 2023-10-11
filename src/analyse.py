@@ -30,6 +30,8 @@ global whole_frame_range
 global video_file
 global video_params
 global deleted_traces
+global crop_offset
+global trim_offset
 
 global check_multiplicative_boundary  # multiplicative boundary alternation in False positive/negative checks
 check_multiplicative_boundary = 1.2
@@ -155,6 +157,8 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     global video_file
     global video_params
     global deleted_traces
+    global crop_offset
+    global trim_offset
     deleted_traces = {}
 
     set_curr_csv_file_path(csv_file_path)
@@ -291,6 +295,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         ## OBTAIN VIDEO PARAMETERS
         # VECT - to move the locations according the cropping the video
         # trace_offset - number of first frames of the video to skip
+
         crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
         video_params = [trim_offset, crop_offset] if crop_offset is not None else None
         if video_params is None:

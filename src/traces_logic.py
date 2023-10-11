@@ -991,12 +991,11 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
 
 
 # TODO add tests
-def delete_trace_with_id(spam, egg):
+def delete_trace_with_id(trace_id):
     """ Deletes a trace with a trace_id from the list of traces + save decisions.
 
-    :arg trace_id (int): trace id of the trace to be deleted
+    :arg trace_id: (int): trace id of the trace to be deleted
     """
-    trace_id, traces_to_show = egg
 
     ## BEES-SPECIFIC
     for index, trace in enumerate(analyse.traces[:trace_id+1]):
@@ -1026,13 +1025,12 @@ def delete_trace_with_id(spam, egg):
     print(colored(f"Trace with id {trace_id} not found.", "red"))
 
 
-def undelete_trace_with_id(spam, egg):
+def undelete_trace_with_id(trace_id, index):
     """ Undeletes a trace with a trace_id from the list of traces + unsave decision.
 
-    :arg egg (list): [trace id of the trace to be deleted, former index in the list of traces]
+    :arg trace_id: (int): trace id of the trace to be deleted
+    :arg index: (int): former index in the list of traces
     """
-
-    trace_id, index, traces_to_show = egg
 
     # Remove trace from saved deleted traces
     decisions = load_decisions()
