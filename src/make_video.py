@@ -3,7 +3,7 @@ import os
 import threading
 import warnings
 from _socket import gethostname
-from multiprocessing import Process
+# from multiprocessing import Process
 from os.path import exists
 from sys import platform
 import cv2
@@ -22,26 +22,26 @@ global goto
 goto = None
 
 
-def play_opencv(input_video, frame_range, speed, points, align_traces, align_arena):
+def play_opencv(input_video, frame_range, speed, points, align_traces, align_arena_boundaries):
     """ Plays the given video in a new window.
 
     :arg input_video: (Path or str): path to the input video
     :arg frame_range: (list or tuple): if set shows only given frame range of the video
     :arg speed: ratio of rate, hence default speed is 1
     :arg points: (tuple of points): points to be shown over the video (TO ALIGN THE VIDEO)
-    :return:
+    :arg align_traces: (bool): flag whether to align traces (one time alignment of the traces to the video)
+    :arg align_arena_boundaries: (bool): flag whether to align arena (one time alignment of the arena boundaries to the video)
+    :return: points: list of pairs - points obtained by alignment
     """
     global video
     global goto
     video = cv2.VideoCapture(input_video)
-    # window name and size
+
+    # Window name and size
     if "lin" in platform:
         cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
     else:
         cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
-
-    # TODO ONLY FOR SKADI
-    #cv2.resizeWindow("video", 15, 600)
 
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
@@ -62,13 +62,6 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     # while video.isOpened():
     while True:
         frame_number = int(video.get(1))
-        # print(frame_number)
-        # ## TODO delete this
-        # if frame_range:
-        #     if frame_number < frame_range[0]:
-        #         # print("setting the frame", frame_range[0])
-        #         video.set(1, frame_range[0])
-        #         # print("frame set to", int(video.get(1)))
 
         # Read video capture
         ret, frame = video.read()
@@ -86,7 +79,6 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
                 cv2.circle(frame, point, 4, color=colors[modulo(len(colors), index)], thickness=-1, lineType=cv2.LINE_AA)
 
         # Display each frame
-
         if str(gethostname()) == "Skadi":
             frame = cv2.resize(frame, [1736, 864], interpolation=cv2.INTER_AREA)
 
@@ -103,6 +95,7 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
             first = False
 
         if goto is not None:
+            assert isinstance(goto, tuple)
             go_to_trace_start(*goto)
             goto = None
 
@@ -169,7 +162,7 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
                 file.write(f"video file: {input_video})\n")
                 file.write(f"frame: {frame_range[0]}\n")
                 file.write(f"points assigned: {points}\n")
-        if align_arena:
+        if align_arena_boundaries:
             with open("../auxiliary/arena.txt", "w") as file:
                 file.write(f"video file: {input_video})\n")
                 file.write(f"frame: {frame_range[0]}\n")
@@ -213,7 +206,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
 
     if align_traces or align_arena:
         # to show points
-        # p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena))
+        # p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena_boundaries))
         # p.start()
         thread = threading.Thread(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena))
         thread.start()
@@ -223,13 +216,11 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         except AssertionError:
             video_params = (0, (0, 0))
         # show traces over
+        # p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
+        # p.start()
         # annotate_video(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True)
         thread = threading.Thread(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
         thread.start()
-        # thread1 = video_windows_tkinter.Gui_video_thread(traces, analyse.trim_offset)
-        # thread1.start()
-        # p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
-        # p.start()
 
 
 def show_all_traces():
@@ -252,7 +243,12 @@ def show_single_trace(index):
 
 
 def go_to_trace_start(index, traces_to_show, trim_offset):
-    """ In the video, goes to the beginning of the given trace. """
+    """ In the video, goes to the beginning of the given trace.
+
+    :arg index: (int): index of the trace to be shown from traces_to_show
+    :arg traces_to_show: (list): the list of traces to be shown in the video
+    :arg trim_offset: (int): offset of the trimmed video
+    """
     start = traces_to_show[index].frame_range[0]
     global video
     video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + start)
@@ -263,7 +259,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
     :arg input_video: (Path or str): path to the input video
     :arg output_video: (Path or str): path to the input video
-    :arg traces: (list): a list of Traces to be shown
+    :arg traces_to_show: (list): a list of Traces to be shown
     :arg frame_range: (list or tuple): if set shows only given frame range of the video
     :arg speed: ratio of rate, hence default speed is 1
     :arg trace_offset: (int): number of the first frames where there is no trace
@@ -496,6 +492,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
                 key = cv2.waitKey(round(2 * (100 / fps) / speed))
 
                 if goto is not None:
+                    assert isinstance(goto, tuple)
                     go_to_trace_start(*goto)
                     goto = None
 
@@ -578,6 +575,8 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
 def make_help_video(debug=False):
     """ Annotates given video with the tracked position of individual bees.
+
+    :arg debug: (bool): if True extensive output is shown
     """
     print(colored("MAKE HELP VIDEO", "blue"))
 
@@ -749,7 +748,11 @@ def align_the_video(traces, video_file, csv_file_path):
         # if "frame:" in line:
         #     offset_frame = int(line.split(":")[1])
 
-    assigned_points = json.loads(assigned_points)
+    try:
+        assigned_points = json.loads(assigned_points)
+    except NameError:
+        raise Exception("Loading the point from the auxiliary/point.txt failed, please check the file.")
+    
     leftmost_point, a = get_leftmost_point(points)
     leftmost_assigned_point, b = get_leftmost_point(assigned_points)
     leftmost_assigned_point = list(map(float, leftmost_assigned_point))
