@@ -19,7 +19,7 @@ from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap,
     compute_whole_frame_range, get_video_whole_frame_range, partition_frame_range_by_number_of_traces, \
     reverse_partition_frame_range_by_number_of_traces, check_to_merge_two_overlapping_traces, \
     merge_multiple_pairs_of_overlapping_traces, ask_to_merge_two_traces_and_save_decision
-from video import show_video
+from make_video import show_video
 from visualise import scatter_detection, show_plot_locations
 
 

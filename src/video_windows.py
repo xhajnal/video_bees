@@ -5,7 +5,7 @@ import wx
 from termcolor import colored
 
 import analyse
-import video
+import make_video
 import traces_logic
 from dave_io import load_decisions, save_decisions
 
@@ -52,6 +52,7 @@ class Traces_edit_frame(wx.Frame):
                 raise Exception("internal indexing problem")
 
             button_1 = wx.Button(pnl, label=f"Highlight Trace {trace.trace_id}", pos=(0*115, (index + 1) * 25))
+            button_1.index = index
             button_1.trace_id = trace.trace_id
             button_1.Bind(wx.EVT_BUTTON, self.OnButton_Handler_highlight_trace)
 
@@ -95,7 +96,7 @@ class Traces_edit_frame(wx.Frame):
     def OnButton_Handler_highlight_trace(self, event):
         # The button that generated this event:
         btn = event.GetEventObject()
-        video.show_single_trace(btn.trace_id)
+        video.show_single_trace(btn.index)
 
     def OnButton_Handler_delete_trace(self, event):
         # The button that generated this event:
@@ -110,7 +111,7 @@ class Traces_edit_frame(wx.Frame):
     def OnButton_Handler_go_to_frame(self, event):
         # The button that generated this event:
         btn = event.GetEventObject()
-        video.go_to_start_frame(video_file, btn.index, self.traces_to_show, self.trim_offset)
+        make_video.goto = (video_file, btn.index, self.traces_to_show, self.trim_offset)
 
     def show_all_traces(self, event):
         """ Shows all traces in the video. """

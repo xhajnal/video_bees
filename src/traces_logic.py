@@ -17,7 +17,7 @@ from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_o
     delete_indices, range_len
 from primal_traces_logic import get_traces_from_range
 from trace import Trace
-from video import show_video
+from make_video import show_video
 from visualise import show_overlap_distances, show_plot_locations, scatter_detection
 import analyse
 
@@ -1051,9 +1051,9 @@ def undelete_trace_with_id(trace_id, index):
     try:
         analyse.traces = analyse.traces[:index] + [analyse.deleted_traces[trace_id]] + analyse.traces[index:]
         del analyse.deleted_traces[trace_id]
-        print(f" Undeleting trace {trace_id}.")
+        print(f"Undeleting trace {trace_id}.")
     except KeyError:
-        print(f" Trying to undelete trace {trace_id} failed, not found")
+        print(f"Trying to undelete trace {trace_id} failed, not found")
         return
 
 

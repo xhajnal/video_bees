@@ -1,16 +1,15 @@
 import json
 import os
+import threading
 import warnings
 from _socket import gethostname
 from multiprocessing import Process
 from os.path import exists
 from sys import platform
-# from tkinter import *
 import cv2
 from termcolor import colored
 
 import analyse
-import video_windows
 import video_windows_tkinter
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit, \
     modulo, get_colour
@@ -18,6 +17,9 @@ from trace import Trace
 
 global show_single
 global show_number
+global video
+global goto
+goto = None
 
 
 def play_opencv(input_video, frame_range, speed, points, align_traces, align_arena):
@@ -29,6 +31,8 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     :arg points: (tuple of points): points to be shown over the video (TO ALIGN THE VIDEO)
     :return:
     """
+    global video
+    global goto
     video = cv2.VideoCapture(input_video)
     # window name and size
     if "lin" in platform:
@@ -97,6 +101,10 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
         if first:
             # time.sleep(3)
             first = False
+
+        if goto is not None:
+            go_to_trace_start(*goto)
+            goto = None
 
         if key == ord('q') or key == ord('Q'):
             break
@@ -205,17 +213,23 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
 
     if align_traces or align_arena:
         # to show points
-        p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena))
+        # p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena))
+        # p.start()
+        thread = threading.Thread(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena))
+        thread.start()
     else:
         try:
             assert isinstance(video_params, tuple) or isinstance(video_params, list)
         except AssertionError:
             video_params = (0, (0, 0))
         # show traces over
-        p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
-    p.start()
-    if wait:
-        p.join()
+        # annotate_video(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True)
+        thread = threading.Thread(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
+        thread.start()
+        # thread1 = video_windows_tkinter.Gui_video_thread(traces, analyse.trim_offset)
+        # thread1.start()
+        # p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
+        # p.start()
 
 
 def show_all_traces():
@@ -225,18 +239,22 @@ def show_all_traces():
     print("Showing all traces.")
 
 
-def show_single_trace(number):
-    """ Shows single trace in the video. """
+def show_single_trace(index):
+    """ Shows single trace in the video.
+
+    :arg index: (int): showing only trace with the given index
+    """
     global show_single
     global show_number
     show_single = True
-    print("Showing single trace", number)
-    show_number = number
+    print("Showing single trace of index", index)
+    show_number = index
 
 
-def go_to_start_frame(video, index, traces_to_show, trim_offset):
+def go_to_trace_start(index, traces_to_show, trim_offset):
     """ In the video, goes to the beginning of the given trace. """
     start = traces_to_show[index].frame_range[0]
+    global video
     video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + start)
 
 
@@ -259,6 +277,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     global show_single
     global show_number
     global spamewqrt
+    global goto
     show_single = False
 
     qt_working = None  ## Flag whether qt support is working
@@ -301,6 +320,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     len_of_trace_shown_behind = 30  # number of frames the path is shown behind
 
     # Create a video capture object, in this case we are reading the video from a file
+    global video
     video = cv2.VideoCapture(input_video)
     if "lin" in platform:
         cv2.namedWindow("video", cv2.WINDOW_NORMAL)
@@ -316,8 +336,8 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         spamewqrt = traces_to_show
 
         ## Following line creates the gui but the rest of the program is paused wil gui is running
-        # video_windows_tkinter.create_main_window(traces_to_show, video, trim_offset)
-        thread1 = video_windows_tkinter.Gui_video_thread(traces_to_show, video, trim_offset)
+        # video_windows_tkinter.create_main_window(traces_to_show, trim_offset)
+        thread1 = video_windows_tkinter.Gui_video_thread(traces_to_show, trim_offset)
         thread1.start()
 
         print(colored("QT support not working, GUI showing traces is not shown. We are working on this.", "red"))
@@ -331,7 +351,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
             cv2.createButton(f"Highlight Trace {trace.trace_id}", show_single_trace, [indexx], cv2.QT_PUSH_BUTTON | cv2.QT_NEW_BUTTONBAR, 1)
             cv2.createButton(f"Delete Trace {trace.trace_id}", delete_trace_with_id, [trace.trace_id], cv2.QT_PUSH_BUTTON, 1)
             cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [trace.trace_id, indexx], cv2.QT_PUSH_BUTTON, 1)
-            cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", go_to_start_frame, [video, spam, traces_to_show, trim_offset], cv2.QT_PUSH_BUTTON, 1, )
+            cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", go_to_trace_start, [video, spam, traces_to_show, trim_offset], cv2.QT_PUSH_BUTTON, 1, )
     else:
         pass
         # TODO  create those Buttons
@@ -475,6 +495,10 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
                 key = cv2.waitKey(round(2 * (100 / fps) / speed))
 
+                if goto is not None:
+                    go_to_trace_start(*goto)
+                    goto = None
+
                 if key == ord('q') or key == ord('Q'):
                     break
                 if key == ord('r') or key == ord('R'):
@@ -546,10 +570,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
     # Release the objects
     video.release()
-    try:
-        thread1.join()
-    except Exception:
-        pass
 
     if output_video:
         output.release()

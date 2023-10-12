@@ -4,11 +4,12 @@ from time import time
 from _socket import gethostname
 from termcolor import colored
 
+import video_windows_tkinter
 from counts import *
 from cross_traces import trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
     merge_alone_overlapping_traces_by_partition, merge_overlapping_traces_brutto
 from guided_traces import full_guided
-from video import annotate_video, parse_video_info, show_video
+from make_video import annotate_video, parse_video_info, show_video
 from config import get_min_trace_len, get_vicinity_of_short_traces, hash_config, get_max_shift
 from trace import Trace
 from misc import dictionary_of_m_overlaps_of_n_intervals
@@ -619,6 +620,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         ##############
         ## FULL GUIDED
         ##############
+        # video_windows_tkinter.create_main_window(traces, None, trim_offset)
         if do_full_guided:
             if len(traces)+len(removed_full_traces) > original_population_size and guided:
                 full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params, has_tracked_video=has_tracked_video)
@@ -665,8 +667,8 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         updated_output_video_file = f"{spam[0]}_{str(len(all_final_traces))}_traces.m{spam[1]}"
         # print(updated_output_video_file)
         if has_tracked_video is True:
-            # annotate_video(input_video, output_video,              traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
+            # annotate_video(input_video, output_video,        traces_to_show, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
             annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), force_new_video=force_new_video)
         else:
-            # annotate_video(input_video, output_video,               traces, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
+            # annotate_video(input_video, output_video,        traces_to_show, frame_range, speed=1, trace_offset=0, trim_offset=0, crop_offset=(0, 0), show=False)
             annotate_video(video_file, updated_output_video_file, all_final_traces, False, 1, min(traces[0].frame_range[0], removed_full_traces[0].frame_range[0]), trim_offset, crop_offset, force_new_video=force_new_video)

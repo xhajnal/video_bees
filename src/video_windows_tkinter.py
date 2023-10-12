@@ -1,9 +1,10 @@
+import analyse
 import threading
 import tkinter as tk
 from tkinter import TclError, ttk
 
 # My imports
-import video
+import make_video
 import traces_logic
 
 global video_file
@@ -12,21 +13,19 @@ global traces_to_show
 
 
 class Gui_video_thread(threading.Thread):
-    def __init__(self, a, b, c):
+    def __init__(self, a, c):
         threading.Thread.__init__(self)
         global traces_to_show
         traces_to_show = a
-        global video_file
-        video_file = b
         global trim_offset
         trim_offset = c
 
     def run(self):
-        create_main_window(traces_to_show, video_file, trim_offset)
+        create_main_window(traces_to_show, trim_offset)
 
 
 # TODO clean up video_file, trim_offset - maybe create a class
-def create_main_window(traces_to_show, video_file, trim_offset):
+def create_main_window(traces_to_show, trim_offset):
     """ A Frame that shows GUI to edit the traces shown in the video """
     root = tk.Tk()
     root.title('Traces Editor')
@@ -41,7 +40,7 @@ def create_main_window(traces_to_show, video_file, trim_offset):
     root.columnconfigure(0, weight=4)
     root.columnconfigure(1, weight=1)
 
-    button_frame = create_button_frame(root)
+    button_frame = create_button_frame(root, traces_to_show)
     button_frame.grid(column=1, row=0)
 
     root.bind("<KeyPress>", keydown)
@@ -49,7 +48,7 @@ def create_main_window(traces_to_show, video_file, trim_offset):
     root.mainloop()
 
 
-def create_button_frame(container):
+def create_button_frame(container, traces_to_show):
     frame = ttk.Frame(container)
     frame.columnconfigure(0, weight=1)
 
@@ -63,6 +62,7 @@ def create_button_frame(container):
 
         button_1 = ttk.Button(frame, text=f"Highlight Trace {trace.trace_id}")
         button_1.grid(column=0, row=1 + index)
+        button_1.index = index
         button_1.trace_id = trace.trace_id
         button_1.bind('<Button-1>', onButton_Handler_highlight_trace)
 
@@ -116,15 +116,15 @@ def keydown(event):
 
 ## Button handlers
 def show_all_traces(event):
-    video.show_all_traces()
+    make_video.show_all_traces()
 
 
-def show_single_trace(event):
-    video.show_single_trace(event.widget.trace_id)
+# def show_single_trace(event):
+#     make_video.show_single_trace(event.widget.index)
 
 
 def onButton_Handler_highlight_trace(event):
-    video.show_single_trace(event.widget.trace_id)
+    make_video.show_single_trace(event.widget.index)
 
 
 def OnButton_Handler_delete_trace(event):
@@ -138,4 +138,4 @@ def OnButton_Handler_undelete_trace(event):
 def OnButton_Handler_go_to_frame(event):
     global traces_to_show
     global trim_offset
-    video.go_to_start_frame(video_file, event.widget.index, traces_to_show, trim_offset)
+    make_video.goto = (event.widget.index, traces_to_show, trim_offset)

@@ -15,7 +15,7 @@ from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices, has_strict_overlap, margin_range
 from trace import Trace
 from traces_logic import compute_arena, compute_whole_frame_range
-from video import show_video, obtain_arena_boundaries
+from make_video import show_video, obtain_arena_boundaries
 
 
 def remove_full_traces(traces, removed_traces, population_size, silent=False, debug=False):

@@ -11,7 +11,7 @@ from traces_logic import merge_two_overlapping_traces, ask_to_delete_a_trace, \
     check_to_merge_two_overlapping_traces, merge_multiple_pairs_of_overlapping_traces, \
     get_index_shortest_trace_out_of_three, remove_shortest_trace_out_of_three, remove_a_trace_out_of_three, \
     is_there_full_overlap
-from video import show_video
+from make_video import show_video
 from visualise import scatter_detection, show_plot_locations, show_overlaps
 
 
