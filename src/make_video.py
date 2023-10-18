@@ -684,16 +684,16 @@ def parse_video_info(video_file, traces, csv_file_path):
                 # transpositions.txt not found
                 raise KeyError
             # load video record
-            vect, frame_offset = transpositions[video_file]
+            crop_vect, frame_offset = transpositions[video_file]
 
         except KeyError:
             # transposition or the file not found, align the video
-            vect, frame_offset = align_the_video(traces, video_file, csv_file_path)
+            crop_vect, frame_offset = align_the_video(traces, video_file, csv_file_path)
 
-        return vect, frame_offset
+        return frame_offset, crop_vect
 
     else:
-        return None, None
+        return 0, [0, 0]
 
 
 def align_the_video(traces, video_file, csv_file_path):

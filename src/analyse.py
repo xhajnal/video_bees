@@ -297,10 +297,10 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         # VECT - to move the locations according the cropping the video
         # trace_offset - number of first frames of the video to skip
 
-        crop_offset, trim_offset = parse_video_info(video_file, traces, csv_file_path)
+        trim_offset, crop_offset = parse_video_info(video_file, traces, csv_file_path)
         video_params = [trim_offset, crop_offset] if crop_offset is not None else None
         if video_params is None:
-            warnings.warn("Video file not loaded properly. Check whether the file is located and named properly.")
+            warnings.warn(f"Video file {video_file} not loaded properly. Check whether the file is located and named properly.")
         # video_params = [crop_offset, trim_offset] if crop_offset is not None else [0, [0, 0]]
 
         if just_align:
