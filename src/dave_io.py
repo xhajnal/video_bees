@@ -17,35 +17,42 @@ from trace import Trace
 from config import *
 
 
+## TRIMMING AND CROPPING SPECIFIC
 def get_video_path(file_path):
     """ Obtain the path of the video files. This may be case specific.
 
     :arg file_path: (str): filepath of the analysed file (csv)
+
+    :returns video_file: (Path): path to input video
+    :returns output_video_file: (Path): path to output video
+    :returns is_video_original: (bool):  True if original, not cropped, not trimmed video is in used
     """
     # get the name of the file without suffix
-    video_file = Path(file_path).stem
+    video_name = Path(file_path).stem
     # get the stem of the filename - digital identifier
-    video_file = video_file.split("_")[:2]
-    video_file = "_".join(video_file)
+    video_name = video_name.split("_")[:2]
+    video_name = "_".join(video_name)
     # print(video_file)
 
     folder = os.path.dirname(Path(file_path))
+    is_video_original = None
     # print(folder)
 
-    video_file = glob.glob(os.path.join(folder, f'*{video_file}*.mp4'))
+    video_files = glob.glob(os.path.join(folder, f'*{video_name}*.mp4'))
     # Remove file with "movie_from"
-    if len(video_file) >= 2:
-        for index, file in enumerate(video_file):
+    if len(video_files) >= 2:
+        for index, file in enumerate(video_files):
             if "movie_from_" in file:
-                del video_file[index]
+                is_video_original = False
+                del video_files[index]
 
-    if len(video_file) > 1:
-        raise Exception(f"There are more input videos with given identifier: {video_file}. We do not know which to pick.")
-    elif len(video_file) == 0:
+    if len(video_files) > 1:
+        raise Exception(f"There are more input videos with given identifier: {video_files}. We do not know which to pick.")
+    elif len(video_files) == 0:
         video_file = ""
         output_video_file = ""
     else:
-        video_file = video_file[0]
+        video_file = video_files[0]
         try:
             os.mkdir("../output")
         except OSError:
@@ -57,13 +64,13 @@ def get_video_path(file_path):
         output_video_file = os.path.join("..", "output", "video", os.path.basename(video_file))
         # print("default output_video_file:", output_video_file)
 
-    return video_file, output_video_file
+    return video_file, output_video_file, is_video_original
 
 
 def pickled_exist(csv_file_path, is_first_run=None, parsed=False):
     """ Return whether the pickled file of the current config exists.
 
-    :arg csv_file_name: (str): filename of the original csv file
+    :arg csv_file_path: (str): filename of the original csv file
     :arg is_first_run: (bool): iff True, "results_after_first_run.txt" will be used instead of standard "results.txt"
     :arg parsed: (bool): iff True, checking for only parsed file
     """

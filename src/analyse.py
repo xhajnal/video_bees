@@ -4,7 +4,6 @@ from time import time
 from _socket import gethostname
 from termcolor import colored
 
-import video_windows_tkinter
 from counts import *
 from cross_traces import trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
     merge_alone_overlapping_traces_by_partition, merge_overlapping_traces_brutto
@@ -34,6 +33,11 @@ global deleted_traces
 global crop_offset
 global trim_offset
 
+global curr_csv_file_path
+global is_video_original
+
+
+## FALSE POSITIVE/NEGATIVE checking only
 global check_multiplicative_boundary  # multiplicative boundary alternation in False positive/negative checks
 check_multiplicative_boundary = 1.2
 
@@ -51,7 +55,6 @@ just_annotate = False
 just_align = False
 # global force_new_video
 force_new_video = False
-traces = []
 
 # USER - please set up the following 10 flags
 batch_run = False               # sets 5 following flags: silent, not debug, not show_plots, not guided, rerun
@@ -69,6 +72,7 @@ do_full_guided = True          # full-guided regim on/off - when the analysis is
 # def get_traces():
 #     global traces
 #     return traces
+
 
 def set_batch_run(do_batch_run):
     global batch_run
@@ -124,13 +128,6 @@ def set_force_new_video(do_force_new_video):
     global force_new_video
     force_new_video = do_force_new_video
 
-
-global real_whole_frame_range
-global whole_frame_range
-
-global curr_csv_file_path
-
-
 def set_curr_csv_file_path(file_path):
     global curr_csv_file_path
     curr_csv_file_path = file_path
@@ -141,6 +138,16 @@ def get_curr_csv_file_path():
     return curr_csv_file_path
 
 
+def get_is_video_original():
+    global is_video_original
+    return is_video_original
+
+
+def set_is_video_original(is_original):
+    global is_video_original
+    is_video_original = is_original
+
+
 def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, to_purge=False, do_save_traces=True, do_full_guided=do_full_guided):
     """ Runs the whole file analysis.
 
@@ -148,9 +155,9 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         :arg population_size: (int): expected number of agents
         :arg has_tracked_video: (bool): flag whether a video with tracking is available
         :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
+        :arg to_purge: (bool): iff True, will only purge current results of respective file and config setting
         :arg do_save_traces: (bool): iff True will save the traces
         :arg do_full_guided: (bool): iff True will run full_guided part
-        ##:arg force_new_video: (bool): iff True, a new video will be created, even a video with the same amount of traces is there
     """
     global just_annotate
     global just_align
@@ -160,6 +167,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     global deleted_traces
     global crop_offset
     global trim_offset
+    global is_video_original
     deleted_traces = {}
 
     set_curr_csv_file_path(csv_file_path)
@@ -195,7 +203,10 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         set_batch_run(False)
         set_guided(True)
     else:
-        pass
+        traces_file = str(os.path.join(os.path.dirname(csv_file_path), "parsed", os.path.basename(csv_file_path).replace(".csv", ".p")))
+        set_show_all_plots(False)
+        set_batch_run(False)
+        set_guided(True)
 
     if batch_run:  # sets silent, not debug, not show_plots, not guided, rerun
         set_silent(True)
@@ -232,7 +243,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     ############
     # I/O stuff
     ############
-    video_file, output_video_file = get_video_path(csv_file_path)
+    video_file, output_video_file, is_video_original = get_video_path(csv_file_path)
     has_video = True if output_video_file else False
     # print(output_video_file)
 

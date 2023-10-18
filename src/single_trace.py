@@ -28,7 +28,7 @@ def remove_full_traces(traces, removed_traces, population_size, silent=False, de
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :returns traces: (list): a list of truncated Traces
-        :returns traces: (list): a list of old Traces
+        :returns removed_traces: (list): a list of removed Traces
         :returns new_population_size: (int): population population_size of new traces
         """
     try:
@@ -112,7 +112,7 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
         #     del removed_short_traces_indices[index]
         #     del removed_short_traces[index]
 
-    # Actually delete the races
+    # Actually delete the traces
     delete_indices(traces_with_zero_len_in_xy + removed_short_traces_indices, traces)
 
     print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. "
