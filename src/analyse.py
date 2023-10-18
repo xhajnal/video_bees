@@ -20,7 +20,7 @@ from traces_logic import compute_whole_frame_range, get_video_whole_frame_range,
     smoothen_traces_from_saved_decisions, fix_decisions
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist, save_traces_as_csv, load_traces, \
-    load_decisions
+    load_decisions, purge_result
 from triplets import merge_overlapping_triplets_of_traces, merge_overlapping_triplets_brutto, \
     merge_triplets_by_partition
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
@@ -141,14 +141,14 @@ def get_curr_csv_file_path():
     return curr_csv_file_path
 
 
-def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, do_save_traces=True, do_full_guided=do_full_guided):
+def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, to_purge=False, do_save_traces=True, do_full_guided=do_full_guided):
     """ Runs the whole file analysis.
 
         :arg csv_file_path: (str): path to csv file
         :arg population_size: (int): expected number of agents
         :arg has_tracked_video: (bool): flag whether a video with tracking is available
         :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
-        :arg do_save_pickle: (bool): iff True will save the traces
+        :arg do_save_traces: (bool): iff True will save the traces
         :arg do_full_guided: (bool): iff True will run full_guided part
         ##:arg force_new_video: (bool): iff True, a new video will be created, even a video with the same amount of traces is there
     """
@@ -235,6 +235,21 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     video_file, output_video_file = get_video_path(csv_file_path)
     has_video = True if output_video_file else False
     # print(output_video_file)
+
+    ###################
+    # PURGE THE RESULTS
+    ###################
+
+    if to_purge:
+        save_current_result([0] * 7, file_name=csv_file_path, population_size=original_population_size,
+                            is_first_run=is_first_run, is_guided=guided, is_force_merge_allowed=allow_force_merge,
+                            video_available=has_tracked_video, silent=silent, debug=debug, purge_the_result=True)
+        save_current_result([0] * 7, file_name=csv_file_path, population_size=original_population_size,
+                            is_first_run=not is_first_run, is_guided=guided, is_force_merge_allowed=allow_force_merge,
+                            video_available=has_tracked_video, silent=silent, debug=debug, purge_the_result=True)
+        purge_result(csv_file_path, population_size, purge_parsed=False, purge_decisions=True, purge_first_run=True,
+                     purge_transposition=False, purge_final=True)
+        return
 
     if not just_annotate:
         #########################

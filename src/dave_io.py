@@ -195,7 +195,7 @@ def load_result(file_name=None, hashed_config=None, time_stamp=None, is_first_ru
     return results
 
 
-def save_current_result(counts, file_name, population_size, is_guided, is_force_merge_allowed, video_available, silent=False, debug=False, is_first_run=None):
+def save_current_result(counts, file_name, population_size, is_guided, is_force_merge_allowed, video_available, purge_the_result=False, silent=False, debug=False, is_first_run=None):
     """ Loads, Updates, and Saves the results as dictionary in a "../output/results.txt" json file.
      file_path -> time stamp -> {config params, traces len and number of swapped traces/ jumps back and forth detected}
 
@@ -208,7 +208,8 @@ def save_current_result(counts, file_name, population_size, is_guided, is_force_
     :arg population_size: (int): number of agents tracked
     :arg is_guided: (bool): whether guided flag was on
     :arg is_force_merge_allowed: (bool): whether allow_force_merge was on
-    :arg video_available: (bool) whether video was available
+    :arg video_available: (bool): whether video was available
+    :arg purge_the_result: (bool): flag to delete this result
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
     :returns is_new: (bool): flag whether this result is new
@@ -288,23 +289,28 @@ def save_current_result(counts, file_name, population_size, is_guided, is_force_
     except KeyError:
         results[file_name][this_config_hash] = {}
 
-    ## Check whether there is replicate
-    for timestamp in results[file_name][this_config_hash]:
-        result = results[file_name][this_config_hash][timestamp]
-        if debug:
-            print("possibly same result", result)
-        if result == new_entry:
-            print(colored(f"Already found the same result - not saving it. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
-            return False
+    if purge_the_result:
+        results[file_name][this_config_hash] = {}
 
-    results[file_name][this_config_hash][now] = new_entry
+    else:
+        ## Check whether there is replicate
+        for timestamp in results[file_name][this_config_hash]:
+            result = results[file_name][this_config_hash][timestamp]
+            if debug:
+                print("possibly same result", result)
+            if result == new_entry:
+                print(colored(f"Already found the same result - not saving it. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
+                return False
+
+        results[file_name][this_config_hash][now] = new_entry
 
     ## SAVE THE RESULTS
     # with open("../output/results.p", 'wb') as file:
     #     pickle.dump(results, file)
 
     with open(results_txt_file, 'w') as file:
-        file.write(json.dumps(results))
+        a = json.dumps(results)
+        file.write(a)
 
     # if debug:
     #     print(results)
@@ -730,6 +736,60 @@ def save_decisions(content, silent=False):
 
     if not silent:
         print(colored(f"Saving decisions in {os.path.abspath(path)}", "yellow"))
+
+
+def purge_result(csv_file_path, original_population_size, purge_parsed=False, purge_decisions=True, purge_first_run=True,  purge_transposition=True, purge_final=True):
+    """ Purges result on the given file"""
+
+    csv_file_path = Path(csv_file_path)
+    csv_file_name = Path(csv_file_path).stem
+
+    my_hash = str(hash_config())
+    path = Path(os.path.dirname(csv_file_path))
+    file_name = Path(os.path.basename(csv_file_path)).stem
+
+    if purge_parsed:
+        file = os.path.join(path, "parsed", file_name + ".p")
+        file = os.path.abspath(file)
+        if os.path.isfile(file):
+            os.remove(file)
+        else:
+            print(f"Could not find the parsed csv file: {file}")
+
+    if purge_decisions:
+        file = f"../output/partial/{csv_file_name}.p"
+        file = os.path.abspath(file)
+        if os.path.isfile(file):
+            os.remove(file)
+        else:
+            print(f"Could not find the decision file: {file}")
+
+    if purge_final:
+        file = os.path.join("../output/traces/", my_hash, file_name + ".p")
+        file = os.path.abspath(file)
+        if os.path.isfile(file):
+            os.remove(file)
+        else:
+            print(f"Could not find the second run result file: {file}.p")
+
+        file = os.path.join("../output/traces/", my_hash, file_name + ".csv")
+        file = os.path.abspath(file)
+        if os.path.isfile(file):
+            os.remove(file)
+        else:
+            print(f"Could not find the second run result file: {file}.csv")
+
+    if purge_first_run:
+        file = os.path.join(path, "after_first_run", my_hash, file_name + ".p")
+        file = os.path.abspath(file)
+        if os.path.isfile(file):
+            os.remove(file)
+        else:
+            print(f"Could not find the first run result file: {file}")
+
+    if purge_transposition:
+        # TODO
+        raise NotImplementedError("We are sorry, purge_transposition not implemented yet")
 
 
 if __name__ == "__main__":

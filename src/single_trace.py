@@ -204,6 +204,7 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
         ## CHECK THE ARENA
         for location_index, location in enumerate(trace.locations):
             try:
+                ## This is special location used for currently untracked traces, hence we do not delete a trace with such location
                 if list(location) == [-1, -1]:
                     continue
             except ValueError as err:
@@ -232,6 +233,9 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
                 break
 
     delete_indices(traces_to_be_deleted, traces, debug=debug)
+    if not silent:
+        print("The deleted traces are:", traces_to_be_deleted)
+
     print(colored(f"Returning {len(traces)} traces, {number_of_traces - len(traces)} deleted. "
                   f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
     return traces
