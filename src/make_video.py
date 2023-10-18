@@ -336,9 +336,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         thread1 = video_windows_tkinter.Gui_video_thread(traces_to_show, trim_offset)
         thread1.start()
 
-        print(colored("QT support not working, GUI showing traces is not shown. We are working on this.", "red"))
-        # TODO createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
-
     if qt_working is True:
         for indexx, trace in enumerate(traces_to_show):
             spam = indexx
@@ -376,10 +373,10 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         if frame_range and debug:
             print('Show frames: ', frame_range)
 
-        # if debug:
-        print('Ranges of Traces: ', trace_ranges)
-        print('Traces to show ids: ', list(map(lambda x: x.trace_id, traces_to_show)))
-        # print('All Traces ids: ', list(map(lambda x: x.trace_id, analyse.traces)))
+        if debug:
+            print('Ranges of Traces: ', trace_ranges)
+            print('Traces to show: ', list(map(lambda x: x.trace_id, traces_to_show)))
+        # print('All Traces: ', list(map(lambda x: x.trace_id, analyse.traces)))
 
     # Obtain frame population_size information using get() method
     frame_width = int(video.get(3))
@@ -752,7 +749,7 @@ def align_the_video(traces, video_file, csv_file_path):
         assigned_points = json.loads(assigned_points)
     except NameError:
         raise Exception("Loading the point from the auxiliary/point.txt failed, please check the file.")
-    
+
     leftmost_point, a = get_leftmost_point(points)
     leftmost_assigned_point, b = get_leftmost_point(assigned_points)
     leftmost_assigned_point = list(map(float, leftmost_assigned_point))

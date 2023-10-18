@@ -469,7 +469,7 @@ def merge_gaping_traces(traces, population_size, allow_force_merge=True, guided=
                 if trace2.frame_range[0] <= step_to:
                     if debug:
                         # print(colored(f"skipping trace {index2} with id {trace2.trace_id} which starts in {trace2.frame_range[0]}", "green"))
-                        print(colored(f"skipping trace {index2} which starts in {trace2.frame_range[0]}", "green"))
+                        print(colored(f"skipping trace {trace2.trace_id} which starts in {trace2.frame_range[0]}", "green"))
                     continue
 
                 trace1 = traces[index_to_go]
@@ -619,10 +619,9 @@ def merge_gaping_traces(traces, population_size, allow_force_merge=True, guided=
                         distance_per_frame = dist_of_traces_in_xy / (trace2.frame_range[0] - trace1.frame_range[-1])
 
                 if not by_user:
-                    msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES {'' if to_merge else '('+reason+') '}{index_to_go}({trace1.trace_id}) {trace1.frame_range} " \
+                    msg = f"{'' if to_merge else 'NOT '}MERGING GAPING TRACES {'' if to_merge else '('+reason+') '} {trace1.trace_id} {trace1.frame_range} " \
                           f"of {trace1.frame_range_len} frames and " \
-                          f"trace {index2}({trace2.trace_id}) {trace2.frame_range} of " \
-                          f"{int(trace2.frame_range_len)} frames| " \
+                          f"trace {trace2.trace_id} {trace2.frame_range} of {int(trace2.frame_range_len)} frames| " \
                           f"{dist_of_traces_in_frames} frames apart, x,y-distance {round(dist_of_traces_in_xy, 3)} which is " \
                           f"{round(distance_per_frame, 3) if distance_per_frame is not None else None}/frame. " \
                           f"Last point position: {trace1.locations[-1]} " \
@@ -643,7 +642,7 @@ def merge_gaping_traces(traces, population_size, allow_force_merge=True, guided=
                     trace = merge_two_traces_with_gap(trace1, trace2, interpolate_gap=to_merge_by_user)
                     if debug:
                         print(trace)
-                        print(colored(f"adding trace index {index2} with id {trace2.trace_id} to be deleted", "magenta"))
+                        print(colored(f"adding trace {trace2.trace_id} to be deleted", "magenta"))
 
                     merged_trace_indices_to_delete.append(index2)
                     trace_ids_to_delete.append(trace2.trace_id)

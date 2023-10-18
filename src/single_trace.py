@@ -73,7 +73,7 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
 
     for index, trace in enumerate(traces):
         if not silent:
-            print(colored(f"trace index:{index} {trace}", "blue"))
+            print(colored(f"trace {trace}", "blue"))
         if trace.trace_length == 0:
             if not silent:
                 print(colored("Trace length of 0 in x,y. Will delete trace of this agent!", "red"))  ## this can be FP

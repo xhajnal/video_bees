@@ -3,7 +3,7 @@ import math
 import sys
 from _socket import gethostname
 from pathlib import Path
-from time import time
+from time import time, sleep
 
 import numpy as np
 from termcolor import colored
@@ -948,7 +948,8 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
         # if trace1.trace_id in analyse.deleted_traces.keys() or trace2.trace_id in analyse.deleted_traces.keys():
         #     return False, True
 
-        to_merge_by_user = input("Merge these traces? (Yes or No or Dunno - not saving) (press l to see a longer video before, b to see both traces (whole range), f to see full video):")
+        sleep(0.25)
+        to_merge_by_user = input("Merge these traces? (answer 'y' for Yes, 'n' for No or 'd' for Dunno - not saving) (answer 'l' to see a longer video before, 'b' to see both traces (whole range), 'f' to see full video):")
         if "l" in to_merge_by_user.lower():
             selected_range = (max(show_range[0] - 100, trace1.frame_range[0] - 15), min(show_range[1] + 100, trace2.frame_range[1] + 15))
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=selected_range, trace_ids_to_skip=trace_ids_to_skip)
