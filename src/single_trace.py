@@ -163,10 +163,10 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
     try:
         try:
             # if arena_boundaries empty
-            if os.stat("../auxiliary/arena_boundaries.txt").st_size == 0:
+            if os.stat(analyse.arena_boundaries_file).st_size == 0:
                 raise KeyError
             # load arena_boundaries
-            with open("../auxiliary/arena_boundaries.txt") as file:
+            with open(analyse.arena_boundaries_file) as file:
                 transpositions = json.load(file)
         except FileNotFoundError as err:
             if debug:

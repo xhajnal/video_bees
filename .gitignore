@@ -146,6 +146,7 @@ src/merge_result_dicts.py
 auxiliary/*
 !auxiliary/transpositions.txt
 !auxiliary/arena_boundaries.txt
+!auxiliary/arena_boundaries_not_original_video.txt
 
 # local backup
 my_personal_backup/*

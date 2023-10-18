@@ -158,12 +158,12 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     cv2.destroyAllWindows()
     if points:
         if align_traces:
-            with open("../auxiliary/point.txt", "w") as file:
+            with open(analyse.point_file, "w") as file:
                 file.write(f"video file: {input_video})\n")
                 file.write(f"frame: {frame_range[0]}\n")
                 file.write(f"points assigned: {points}\n")
         if align_arena_boundaries:
-            with open("../auxiliary/arena.txt", "w") as file:
+            with open(analyse.arena_file, "w") as file:
                 file.write(f"video file: {input_video})\n")
                 file.write(f"frame: {frame_range[0]}\n")
                 file.write(f"points assigned: {points}\n")
@@ -736,7 +736,7 @@ def align_the_video(traces, video_file, csv_file_path):
                points=points, video_params=True, align_traces=True)
 
     # READ THE OUTPUT FILE
-    with open("../auxiliary/point.txt", "r") as file:
+    with open(analyse.point_file, "r") as file:
         lines = file.readlines()
 
     for line in lines:
@@ -809,7 +809,7 @@ def obtain_arena_boundaries(video_file, csv_file_path, center, diameter):
                points=points, video_params=True, align_arena=True)
 
     # READ THE OUTPUT FILE
-    with open("../auxiliary/arena.txt", "r") as file:
+    with open(analyse.arena_file, "r") as file:
         lines = file.readlines()
 
     for line in lines:
@@ -832,13 +832,13 @@ def obtain_arena_boundaries(video_file, csv_file_path, center, diameter):
 
     ## STORE THE ALIGNMENT
     try:
-        if os.stat("../auxiliary/arena_boundaries.txt").st_size == 0:
+        if os.stat(analyse.arena_boundaries_file).st_size == 0:
             transpositions = {}
         else:
-            with open("../auxiliary/arena_boundaries.txt") as file:
+            with open(analyse.arena_boundaries_file) as file:
                 transpositions = json.load(file)
     except FileNotFoundError as err:
-        file = open("../auxiliary/arena_boundaries.txt", "a")
+        file = open(analyse.arena_boundaries_file, "a")
         file.close()
         transpositions = {}
 
@@ -847,7 +847,7 @@ def obtain_arena_boundaries(video_file, csv_file_path, center, diameter):
 
     transpositions[video_file] = [new_center, new_diameter]
 
-    with open("../auxiliary/arena_boundaries.txt", 'w') as file:
+    with open(analyse.arena_boundaries_file, 'w') as file:
         file.write(json.dumps(transpositions))
 
     return new_center, new_diameter

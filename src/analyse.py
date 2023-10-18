@@ -30,12 +30,15 @@ global whole_frame_range
 global video_file
 global video_params
 global deleted_traces
+
+## I/O
 global crop_offset
 global trim_offset
-
 global curr_csv_file_path
 global is_video_original
-
+global point_file
+global arena_file
+global arena_boundaries_file
 
 ## FALSE POSITIVE/NEGATIVE checking only
 global check_multiplicative_boundary  # multiplicative boundary alternation in False positive/negative checks
@@ -168,6 +171,11 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     global crop_offset
     global trim_offset
     global is_video_original
+
+    global point_file
+    global arena_file
+    global arena_boundaries_file
+
     deleted_traces = {}
 
     set_curr_csv_file_path(csv_file_path)
@@ -244,6 +252,14 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     # I/O stuff
     ############
     video_file, output_video_file, is_video_original = get_video_path(csv_file_path)
+
+    # this is not necessary
+    point_file = "../auxiliary/point.txt" if is_video_original else "../auxiliary/point_not_original_video.txt"
+    # this is not necessary
+    arena_file = "../auxiliary/arena.txt" if is_video_original else "../auxiliary/arena_not_original_video.txt"
+    # this IS
+    arena_boundaries_file = "../auxiliary/arena_boundaries.txt" if is_video_original else "../auxiliary/arena_boundaries_not_original_video.txt"
+
     has_video = True if output_video_file else False
     # print(output_video_file)
 
