@@ -6,8 +6,8 @@ from interval import Interval
 from mpmath import mpi
 # import pandas as pd
 from itertools import islice
-from scipy import spatial
 from termcolor import colored
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def get_last_digit(number):
@@ -26,24 +26,13 @@ def modulo(a, b):
         return a % b
 
 
-def calculate_cosine_distance(vect1, vect2):
-    """ Calculates cosine distance of the two vectors
-
-        :arg vect1: (vect): first vector
-        :arg vect2: (vect): second vector
-    """
-    ## TODO have look on the warning
-    ## scipy\spatial\distance.py:620: RuntimeWarning: invalid value encountered in double_scalars
-    return float(spatial.distance.cosine(vect1, vect2))
-
-
-def calculate_cosine_similarity(vect1, vect2):
+def calculate_cosine_similarity(v, w):
     """ Calculates cosine similarity of the two vectors
 
-    :arg vect1: (vect): first vector
-    :arg vect2: (vect): second vector
+    :arg v: (vect): first vector
+    :arg w: (vect): second vector
     """
-    return 1 - calculate_cosine_distance(vect1, vect2)
+    return cosine_similarity([v], [w])[0][0]
 
 
 def to_vect(point1, point2):
