@@ -45,6 +45,8 @@ def get_video_path(file_path):
             if "movie_from_" in file:
                 is_video_original = False
                 del video_files[index]
+    else:
+        is_video_original = True
 
     if len(video_files) > 1:
         raise Exception(f"There are more input videos with given identifier: {video_files}. We do not know which to pick.")
