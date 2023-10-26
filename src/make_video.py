@@ -2,6 +2,8 @@ import json
 import os
 import threading
 import warnings
+from multiprocessing import Process
+
 from _socket import gethostname
 # from multiprocessing import Process
 from os.path import exists
@@ -158,12 +160,13 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     cv2.destroyAllWindows()
     if points:
         if align_traces:
-            with open(analyse.point_file, "w") as file:
+            with open(align_traces, "w") as file:
                 file.write(f"video file: {input_video})\n")
                 file.write(f"frame: {frame_range[0]}\n")
                 file.write(f"points assigned: {points}\n")
         if align_arena_boundaries:
-            with open(analyse.arena_file, "w") as file:
+            print(f"Saving arena location in: {align_arena_boundaries}")
+            with open(align_arena_boundaries, "w") as file:
                 file.write(f"video file: {input_video})\n")
                 file.write(f"frame: {frame_range[0]}\n")
                 file.write(f"points assigned: {points}\n")
@@ -206,10 +209,10 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
 
     if align_traces or align_arena:
         # to show points
-        # p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena_boundaries))
-        # p.start()
-        thread = threading.Thread(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena))
-        thread.start()
+        p = Process(target=play_opencv, args=(input_video, frame_range, video_speed, points, analyse.point_file if align_traces else False, analyse.arena_file if align_arena else False))
+        p.start()
+        # thread = threading.Thread(target=play_opencv, args=(input_video, frame_range, video_speed, points, align_traces, align_arena))
+        # thread.start()
     else:
         try:
             assert isinstance(video_params, tuple) or isinstance(video_params, list)
@@ -221,6 +224,12 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         # annotate_video(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True)
         thread = threading.Thread(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
         thread.start()
+
+    if wait:
+        try:
+            p.join()
+        except:
+            pass
 
 
 def show_all_traces():

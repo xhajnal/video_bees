@@ -256,7 +256,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     # this is not necessary
     point_file = "../auxiliary/point.txt" if is_video_original else "../auxiliary/point_not_original_video.txt"
     # this is not necessary
-    arena_file = "../auxiliary/arena.txt" if is_video_original else "../auxiliary/arena_not_original_video.txt"
+    arena_file = "../auxiliary/arena.txt"
     # this IS
     arena_boundaries_file = "../auxiliary/arena_boundaries.txt" if is_video_original else "../auxiliary/arena_boundaries_not_original_video.txt"
 
