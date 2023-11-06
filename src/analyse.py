@@ -131,6 +131,7 @@ def set_force_new_video(do_force_new_video):
     global force_new_video
     force_new_video = do_force_new_video
 
+
 def set_curr_csv_file_path(file_path):
     global curr_csv_file_path
     curr_csv_file_path = file_path

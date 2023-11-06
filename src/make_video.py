@@ -31,8 +31,8 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     :arg frame_range: (list or tuple): if set shows only given frame range of the video
     :arg speed: ratio of rate, hence default speed is 1
     :arg points: (tuple of points): points to be shown over the video (TO ALIGN THE VIDEO)
-    :arg align_traces: (bool): flag whether to align traces (one time alignment of the traces to the video)
-    :arg align_arena_boundaries: (bool): flag whether to align arena (one time alignment of the arena boundaries to the video)
+    :arg align_traces: (bool or Path): flag whether to align traces (one time alignment of the traces to the video), use path to the file instead of True
+    :arg align_arena_boundaries: (bool or Path): flag whether to align arena (one time alignment of the arena boundaries to the video), use path to the file instead of True
     :return: points: list of pairs - points obtained by alignment
     """
     global video
