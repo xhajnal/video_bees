@@ -3,16 +3,14 @@ import os
 import threading
 import warnings
 from multiprocessing import Process
-
 from _socket import gethostname
-# from multiprocessing import Process
 from os.path import exists
 from sys import platform
 import cv2
 from termcolor import colored
 
 import analyse
-import video_windows_tkinter
+import video_windows
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit, \
     modulo, get_colour
 from trace import Trace
@@ -222,16 +220,16 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
 
         # annotate_video(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True)
 
-        print("gonna initilise app")
+        # print("gonna initialise app")
         video_windows_tkinter.traces_to_show = traces
         video_windows_tkinter.trim_offset = analyse.trim_offset
         app = video_windows_tkinter.App()
 
-        print("gonna make a thread")
-        p = threading.Thread(target=dummy, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True, app,))
+        # print("gonna make a thread")
+        p = threading.Thread(target=call_annotate_video_and_quit_gui_afterwards, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True, app,))
         p.start()
 
-        print("gonna run app")
+        # print("gonna run the app")
         app.mainloop()
         # p1 = Process(target=video_windows_tkinter.gui, args=(traces, analyse.trim_offset, ))
         # p1.start()
@@ -257,12 +255,10 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         print("3", err)
         pass
 
-    # TODO delete
-    print("joha")
 
-
-def dummy(a, b, c, d, e, f, g, h, i, j, k, app):
-    print("dummy here")
+def call_annotate_video_and_quit_gui_afterwards(a, b, c, d, e, f, g, h, i, j, k, app):
+    """ Call annotate_video() and after it is closed it quits the gui interface. """
+    # print("call_annotate_video_and_quit_gui_afterwards here")
     annotate_video(a, b, c, d, e, f, g, h, i, j, k)
     app.quit()
 
@@ -393,8 +389,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
             cv2.createButton(f"UnDelete Trace {trace.trace_id}", undelete_trace_with_id, [trace.trace_id, indexx], cv2.QT_PUSH_BUTTON, 1)
             cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", go_to_trace_start, [video, spam, traces_to_show, trim_offset], cv2.QT_PUSH_BUTTON, 1, )
     else:
-        pass
-        # TODO  create those Buttons
+        pass  ## buttons created already elsewhere
 
     if str(gethostname()) == "Skadi":
         cv2.moveWindow("video", 0, 0)
@@ -462,7 +457,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         frame_number = int(video.get(1)) - trim_offset
         # print("frame_number to look at in locations", frame_number)
 
-        ## TODO uncomment this to annotate only first 50 frames - for development purpose
+        ## TODO uncomment this to annotate only first 50 frames - for development purpose only
         # if output_video and frame_number > 500 + trace_offset:
         #     # print("over")
         #     video.release()
@@ -614,7 +609,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
     # Release the objects
     video.release()
-    # thread1.quitt()
 
     if output_video:
         output.release()

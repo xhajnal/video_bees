@@ -221,6 +221,7 @@ def save_current_result(counts, file_name, population_size, is_guided, is_force_
     :arg purge_the_result: (bool): flag to delete this result
     :arg silent: (bool): if True minimal output is shown
     :arg debug: (bool): if True extensive output is shown
+    :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
     :returns is_new: (bool): flag whether this result is new
     """
     print(colored("SAVE SETTING AND COUNTS OF TRACES AS JSON", "blue"))

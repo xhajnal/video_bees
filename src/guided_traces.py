@@ -6,7 +6,7 @@ from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionar
 from primal_traces_logic import get_gaps_of_traces
 from traces_logic import ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap, \
     ask_to_merge_two_traces_and_save_decision
-from visualise import scatter_detection, show_plot_locations
+# from visualise import scatter_detection, show_plot_locations
 
 
 def full_guided(traces, input_video, show=True, silent=False, debug=False, video_params=False, to_skip_tuples=(), has_tracked_video=False):

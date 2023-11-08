@@ -27,7 +27,6 @@ def track_swapping_loop(traces, guided=False, silent=False, debug=False):
     """ Calls track_swapping until no swap is available
 
         :arg traces: (list): list of Traces
-        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
         :arg input_video: (str or bool): if set, path to the input video
         :arg silent: (bool): if True minimal output is shown
@@ -106,7 +105,7 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
 
         :arg traces: (list): list of Traces
         :arg pairs_to_skip: (list or tuple): pairs of trace ids, indicates to skip these pairs
-        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
+        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins) (now from analyse.whole_frame_range)
         :arg video_file: (str or bool): if set, path to the input video
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
         :arg silent: (bool): if True minimal output is shown
@@ -233,7 +232,7 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
         within the given partition.
 
         :arg traces: (list): list of traces
-        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
+        :arg whole_frame_range: [int, int]: frame range of the whole video (with margins) (now from analyse.whole_frame_range)
         :arg population_size: (int): expected number of agents
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
         :arg silent: (bool): if True minimal output is shown

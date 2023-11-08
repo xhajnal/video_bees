@@ -104,7 +104,6 @@ def set_this_file_allowed_overlaps_count(value):
     this_file_allowed_overlaps_count = value
 
 
-
 # cumulative number of all the overlaps in the file
 global cumulative_all_overlaps_count
 cumulative_all_overlaps_count = 0

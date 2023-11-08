@@ -20,7 +20,7 @@ def fix_ranges(file_path, autodelete=False, debug=False):
     file_path = file_path.replace("\\", "/")
     new_file_path = file_path.replace("original/", "")
     lowest_range = -9
-    header = []
+    # header = []
 
     if os.path.isfile(new_file_path):
         print(colored(f"file {new_file_path} already exists. We skip {file_path}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
@@ -29,7 +29,7 @@ def fix_ranges(file_path, autodelete=False, debug=False):
         with open(file_path, newline='') as input_csv_file:
             with open(new_file_path, "w", newline='') as output_csv_file:
                 # parse traces from csv file
-                traces = dict()
+                # traces = dict()
                 reader = csv.DictReader(input_csv_file)
                 for row in reader:
                     if debug:

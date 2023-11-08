@@ -57,18 +57,18 @@ def nice_range_print(interval):
     if len(a) != len(b):
         return f"{interval[0]} - {interval[1]}"
     else:
-        i = 0
+        numberr = 0
         # compute number of same digits from left
         for index in range(len(a)):
             if a[index] == b[index]:
-                i = i + 1
+                numberr = numberr + 1
             else:
                 break
 
-        if i == 0:
+        if numberr == 0:
             return f"{interval[0]} - {interval[1]}"
 
-        return f"{interval[0]}-{str(interval[1])[i:]}"
+        return f"{interval[0]}-{str(interval[1])[numberr:]}"
 
 
 def delete_indices(indices, iterable, debug=False):
@@ -150,9 +150,9 @@ def range_len(interval):
 def margin_range(interval, margin):
     """ Margins given range adding the margin to both sides
 
-    :param interval: tuple of numbers to margin
-    :param margin: margin to be added to both sides
-    :return:
+    :arg interval: (tuple of 2): tuple of numbers to margin
+    :arg margin: (int): margin to be added to both sides
+    :returns: (tuple of 2): margined interval
     """
     try:
         assert len(interval) == 2
@@ -230,7 +230,7 @@ def m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False):
         :arg intervals: (list): list of intervals
         :arg strict: (bool): if True point intervals are not used
         :arg debug: (bool): if True extensive output is shown
-        """
+    """
     dictionary = dict()
     matrix = matrix_of_m_overlaps_of_n_intervals(m, intervals, strict, debug)
 
@@ -564,7 +564,7 @@ def get_index_of_shortest_range(ranges):
 
     if shortest_range_len == second_shortest_range_len and shortest_index != second_shortest_index and len(ranges) >= 2:
         return (shortest_index, second_shortest_index, )
-        raise Exception("There is no shortest range!")
+        # raise Exception("There is no shortest range!")
 
     return shortest_index
 

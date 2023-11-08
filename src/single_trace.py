@@ -4,7 +4,6 @@ import math
 import os
 import warnings
 from time import time
-import numpy as np
 from _socket import gethostname
 from termcolor import colored
 
@@ -23,7 +22,7 @@ def remove_full_traces(traces, removed_traces, population_size, silent=False, de
 
         :arg traces: (list): a list of Traces
         :arg removed_traces: (list): a list of already removed Traces
-        :arg real_whole_frame_range: [int, int]: real frame range of the whole video (without margins)
+        :arg real_whole_frame_range: [int, int]: real frame range of the whole video (without margins) (now from analyse.real_whole_frame_range)
         :arg population_size: (int): population population_size of original traces
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
@@ -275,7 +274,7 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, guided=False
 
     :arg trace: (Trace): a Trace to check
     :arg trace_index: (int): print auxiliary information of index in list of traces of the trace
-    :arg whole_frame_range: [int, int]: frame range of the whole video (with margins)
+    :arg whole_frame_range: [int, int]: frame range of the whole video (with margins) (now from analyse.whole_frame_range)
     :arg show_plots: (bool): a flag whether to show the jump in a plot
     :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
     :arg silent: (bool): if True minimal output is shown
