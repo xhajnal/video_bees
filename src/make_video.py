@@ -219,17 +219,52 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         except AssertionError:
             video_params = (0, (0, 0))
         # show traces over
+
+        # annotate_video(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True)
+
+        print("gonna initilise app")
+        video_windows_tkinter.traces_to_show = traces
+        video_windows_tkinter.trim_offset = analyse.trim_offset
+        app = video_windows_tkinter.App()
+
+        print("gonna make a thread")
+        p = threading.Thread(target=dummy, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True, app,))
+        p.start()
+
+        print("gonna run app")
+        app.mainloop()
+        # p1 = Process(target=video_windows_tkinter.gui, args=(traces, analyse.trim_offset, ))
+        # p1.start()
+        # print("hello")
+        #
+
+        # thread.join()
+        # thread1.join()
         # p = Process(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
         # p.start()
-        # annotate_video(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True)
-        thread = threading.Thread(target=annotate_video, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True,))
-        thread.start()
-
     if wait:
         try:
             p.join()
-        except:
+        except Exception as err:
+            print("1", err)
             pass
+
+    try:
+        # p1.kill()
+        # p1.terminate()
+        app.quit()
+    except Exception as err:
+        print("3", err)
+        pass
+
+    # TODO delete
+    print("joha")
+
+
+def dummy(a, b, c, d, e, f, g, h, i, j, k, app):
+    print("dummy here")
+    annotate_video(a, b, c, d, e, f, g, h, i, j, k)
+    app.quit()
 
 
 def show_all_traces():
@@ -342,8 +377,11 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
         ## Following line creates the gui but the rest of the program is paused wil gui is running
         # video_windows_tkinter.create_main_window(traces_to_show, trim_offset)
-        thread1 = video_windows_tkinter.Gui_video_thread(traces_to_show, trim_offset)
-        thread1.start()
+        # thread = threading.Thread(target=video_windows_tkinter.runn)
+        # video_windows_tkinter.traces_to_show = traces_to_show
+        # thread.run()
+        # thread1 = video_windows_tkinter.Gui_video_thread(traces_to_show, trim_offset)
+        # thread1.start()
 
     if qt_working is True:
         for indexx, trace in enumerate(traces_to_show):
@@ -502,6 +540,9 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
                     go_to_trace_start(*goto)
                     goto = None
 
+                if key == ord('f') or key == ord('F'):
+                    print(goto)
+
                 if key == ord('q') or key == ord('Q'):
                     break
                 if key == ord('r') or key == ord('R'):
@@ -573,6 +614,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
     # Release the objects
     video.release()
+    # thread1.quitt()
 
     if output_video:
         output.release()
@@ -796,7 +838,7 @@ def align_the_video(traces, video_file, csv_file_path):
 
 # BEES SPECIFIC
 def obtain_arena_boundaries(video_file, csv_file_path, center, diameter):
-    """ User-guided alignment of the arena boundaries
+    """ User-guided alignment of the arena boundaries.
 
     :arg video_file: (Path or str): path to the input video
     :arg csv_file_path: (str or Path): path to the csv_file

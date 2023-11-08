@@ -893,9 +893,9 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
 
         :arg all_traces: (list): a list of all Traces (to be shown in the video)
         :arg selected_traces: (list): two selected traces
-        :arg video_file: (str or bool): if set, path to the input video
+        :arg video_file: (str or bool): if set, path to the input video (now from analyse.video_file)
         :arg trace_ids_to_skip: (list): list of ids to skip
-        :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+        :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)   (now from analyse.video_params)
         :arg silent: (bool): if True minimal output is shown
         :arg overlapping: (bool): if True selected traces have an overlap
         :arg gaping: (bool): if True selected traces have a gap
