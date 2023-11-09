@@ -158,9 +158,9 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
                 vector2 = to_vect(second_trace_locations[index-2], second_trace_locations[index-1])
                 vector1_next = to_vect(first_trace_locations[index-1], first_trace_locations[index])
                 vector2_next = to_vect(second_trace_locations[index-1], second_trace_locations[index])
-                if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) \
-                        and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next) \
-                        and math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]):
+                if math.dist(first_trace_locations[index-1], first_trace_locations[index]) > math.dist(first_trace_locations[index-1], second_trace_locations[index]) \
+                    and calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next) \
+                        and calculate_cosine_similarity(vector2, vector1_next) > calculate_cosine_similarity(vector2, vector2_next):
                     if not silent:
                         print(colored(f"It seems the traces ({trace1.trace_id}, {trace2.trace_id}) are swapped on frame {dictionary[overlapping_pair_of_traces][0] + index}", "yellow"))
                         print(f"first_trace_location {first_trace_locations[index]}")

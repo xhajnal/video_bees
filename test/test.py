@@ -6,8 +6,6 @@ import analyse
 from cross_traces import track_swapping_loop, \
     trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
     merge_alone_overlapping_traces_by_partition, merge_alone_overlapping_traces, merge_overlapping_traces_brutto
-from backup.backup import trim_out_additional_agents_over_long_traces_by_partition, \
-    trim_out_additional_agents_over_long_traces_with_dict
 from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
@@ -36,6 +34,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(get_last_digit(848745), 5)
 
         self.assertEqual(calculate_cosine_similarity([1, 0], [0, 1]), 0)
+        self.assertEqual(calculate_cosine_similarity([1, 0], [1, 1]), 0.5)
         self.assertEqual(calculate_cosine_similarity([1, 1], [1, 1]), 1)
         self.assertEqual(calculate_cosine_similarity([2, 2], [3, 3]), 1)
 
@@ -678,7 +677,7 @@ class MyTestCase(unittest.TestCase):
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
 
-        traces, spam, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_with_dict(traces, None, 1, silent=True, debug=False)
+        traces, spam, ids_of_traces_to_be_deleted = merge_alone_overlapping_traces(traces, None, 1, silent=True, debug=False)
         self.assertEqual(len(traces), 2)
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
@@ -689,8 +688,7 @@ class MyTestCase(unittest.TestCase):
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
-        traces, ids_of_traces_to_be_deleted = trim_out_additional_agents_over_long_traces_by_partition(traces, population_size=1,
-                                                                                                       silent=True, debug=False)
+        traces, ids_of_traces_to_be_deleted = merge_alone_overlapping_traces_by_partition(traces, silent=True, debug=False)
         self.assertEqual(len(traces), 2)
         self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 

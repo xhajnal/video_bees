@@ -221,9 +221,9 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         # annotate_video(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True)
 
         # print("gonna initialise app")
-        video_windows_tkinter.traces_to_show = traces
-        video_windows_tkinter.trim_offset = analyse.trim_offset
-        app = video_windows_tkinter.App()
+        video_windows.traces_to_show = traces
+        video_windows.trim_offset = analyse.trim_offset
+        app = video_windows.App()
 
         # print("gonna make a thread")
         p = threading.Thread(target=call_annotate_video_and_quit_gui_afterwards, args=(input_video, False, traces, frame_range, video_speed, 0, video_params[0], video_params[1], points, fix_x_first_colors, True, app,))

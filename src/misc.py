@@ -32,7 +32,11 @@ def calculate_cosine_similarity(v, w):
     :arg v: (vect): first vector
     :arg w: (vect): second vector
     """
-    return cosine_similarity([v], [w])[0][0]
+
+    if v == w:
+        return 1
+
+    return round(cosine_similarity([v], [w])[0][0], 2)
 
 
 def to_vect(point1, point2):
