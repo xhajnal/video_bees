@@ -141,7 +141,7 @@ It requires to have population size in the name of the `.csv` file and to have n
 Simply edit and run `help_write_dave.py` to obtain the text to paste into `dave.py`.
 
 ### (OPTIONAL) TWO RUNS DAVE
-In order to minimise the time the user needs to wait for the analysis of individual files, we created a 2-run version, where the first run executes only automatised decisions and creates a partial result file for each csv file. In the second run, user-guided analysis is done. 
+In order to minimise the time the user needs to wait for the analysis of individual files, we created a 2-run version, where the first run executes only automatised decisions and creates a partial result file for each csv file. In the second run, user-guided analysis is done (setting flag guided as True). 
 
 To run this version, please keep only the following line of the main of dave.py uncommented:
 
@@ -188,13 +188,13 @@ After the automatised part is finished and there are still unresolved traces (i.
 Here, a snippet of the video is being shown to you, where 2 traces are selected to be resolved - these two traces are highlighted with blue and orange colour respectively. 
 Your task is to decide whether to merge these two traces (more info in the merging part). 
 
-in the left upper corner current frame number is shown.
+in the left upper corner, the current frame number is shown.
 
-To work with the video following keys can be used:
+To work with the video, following keys can be used:
 - `+`/`-` to speed up / slow down video respectively
 - `a`/`d` to rewind / forward video respectively
-- `r` to restart the snipet
-- `q` to quit snipet
+- `r` to restart the snippet
+- `q` to quit snippet
 
 to open a table of the traces shown in the snippet, press `Ctrl+P`, 
 Here you have an option to:
@@ -216,6 +216,12 @@ After this, the process continues by moving to another problematic trace pair un
 
 Each user-guided decision is saved (in a pickled dictionary) and in the next run automatically used. 
 Currently, to change the saved decision, the only way is to find the auxiliary file of the respective csv file and manually edit/delete the item.
+
+### FULL-GUIDED 
+After the analysis is done, if there are still more traces than there should be, a part in which all gaps and overlaps are being shown in a guided setup are shown at this point - full-guided.
+In comparison with the guided version, here, there are no heuristics on which pair or triplet of traces to take, it simply starts at the start of the video and continues in a one-by-one fashion till the end of the video.
+
+Like in the previous guided decision, all the decisions made here are being stored and reused later if rerun.
 
 
 ## WHAT DAVE DOES
