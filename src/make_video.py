@@ -22,6 +22,13 @@ global goto
 goto = None
 
 
+def make_named_window():
+    if "lin" in platform:
+        cv2.namedWindow("video", cv2.WINDOW_NORMAL)
+    else:
+        cv2.namedWindow("video", cv2.WINDOW_NORMAL)
+
+
 def play_opencv(input_video, frame_range, speed, points, align_traces, align_arena_boundaries):
     """ Plays the given video in a new window.
 
@@ -38,10 +45,7 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     video = cv2.VideoCapture(input_video)
 
     # Window name and size
-    if "lin" in platform:
-        cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
-    else:
-        cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
+    make_named_window()
 
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
@@ -358,10 +362,8 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     # Create a video capture object, in this case we are reading the video from a file
     global video
     video = cv2.VideoCapture(input_video)
-    if "lin" in platform:
-        cv2.namedWindow("video", cv2.WINDOW_NORMAL)
-    else:
-        cv2.namedWindow("video", cv2.WINDOW_AUTOSIZE)
+
+    make_named_window()
 
     try:
         cv2.createButton(f"Show All Traces", show_all_traces, None, cv2.QT_PUSH_BUTTON, 1)
