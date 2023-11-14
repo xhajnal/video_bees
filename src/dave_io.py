@@ -720,6 +720,7 @@ def load_decisions():
 
     try:
         a = pickle_load(f"../output/partial/{csv_file}")
+        assert isinstance(a, dict)
         return a
     except OSError:
         return {}
