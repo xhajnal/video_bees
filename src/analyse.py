@@ -59,18 +59,18 @@ just_align = False
 # global force_new_video
 force_new_video = False
 
-# USER - please set up the following 10 flags
-batch_run = False               # sets 5 following flags: silent, not debug, not show_plots, not guided, rerun
-guided = False                  # human guided version - a video following
-silent = True                   # minimal print
-debug = False                   # maximal print
-show_plots = False               # showing plots
-show_all_plots = False          # showing all plots - also those in the loops
-allow_force_merge = False       # allows force merge gaps and overlaps - overpassing the threshold requirements by another condition - usually the proximity of other traces
-rerun = True                    # will execute also files with a setting which is already in the results
-save_parsed_as_pickle = True    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
-fast_run = True                 # will skip the least prominent parts - Second Gaping traces analysis
-do_full_guided = True          # full-guided regim on/off - when the analysis is finished but there are still more traces than it should be
+# USER - please set up the following 11 flags
+batch_run = True                                # sets 5 following flags: silent, not debug, not show_plots, not guided, rerun
+guided = False    #(set only in single run)     # human guided version - a video following
+silent = True                                   # minimal print
+debug = False                                   # maximal print
+show_plots = False                              # showing plots
+show_all_plots = False                          # showing all plots - also those in the loops
+allow_force_merge = False                       # allows force merge gaps and overlaps - overpassing the threshold requirements by another condition - usually the proximity of other traces
+rerun = True                                    # will execute also files with a setting which is already in the results
+save_parsed_as_pickle = True                    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
+fast_run = True                                 # will skip the least prominent parts - currently Second Gaping traces analysis
+is_full_guided = True  #(only if also guided)   # full-guided regim on/off - when the analysis is finished but there are still more traces than it should be, it goes from start in one-by-one manner
 
 # def get_traces():
 #     global traces
@@ -117,6 +117,11 @@ def set_guided(do_guided):
     guided = do_guided
 
 
+def set_full_guided(do_full_guided):
+    global is_full_guided
+    is_full_guided = do_full_guided
+
+
 def set_just_annotate(do_just_annotate):
     global just_annotate
     just_annotate = do_just_annotate
@@ -152,7 +157,7 @@ def set_is_video_original(is_original):
     is_video_original = is_original
 
 
-def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, to_purge=False, do_save_traces=True, do_full_guided=do_full_guided):
+def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, to_purge=False, do_save_traces=True):
     """ Runs the whole file analysis.
 
         :arg csv_file_path: (str): path to csv file
@@ -161,7 +166,6 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
         :arg to_purge: (bool): iff True, will only purge current results of respective file and config setting
         :arg do_save_traces: (bool): iff True will save the traces
-        :arg do_full_guided: (bool): iff True will run full_guided part
     """
     global just_annotate
     global just_align
@@ -202,20 +206,15 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         set_silent(True)
         set_debug(False)
         set_show_plots(False)
-        set_show_all_plots(False)
         set_rerun(False)
         set_guided(False)
         traces_file = str(os.path.join(os.path.dirname(csv_file_path), "parsed", os.path.basename(csv_file_path).replace(".csv", ".p")))
     elif is_first_run is False:
         traces_file = str(os.path.join(os.path.dirname(csv_file_path), "after_first_run", str(hash_config()), os.path.basename(csv_file_path).replace(".csv", ".p")))
-        set_show_all_plots(False)
         set_batch_run(False)
         set_guided(True)
     else:
         traces_file = str(os.path.join(os.path.dirname(csv_file_path), "parsed", os.path.basename(csv_file_path).replace(".csv", ".p")))
-        set_show_all_plots(False)
-        set_batch_run(False)
-        set_guided(True)
 
     if batch_run:  # sets silent, not debug, not show_plots, not guided, rerun
         set_silent(True)
@@ -229,13 +228,15 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         set_rerun(True)
         # set_show_plots(True)
         # set_silent(False)
+    else:
+        set_full_guided(False)
 
     if show_plots is False:
         set_show_all_plots(False)
 
     # set_show_plots(False)
 
-    set_rerun(True)
+    # set_rerun(True)
 
     # set_silent(True)
     # set_debug(True)
@@ -664,7 +665,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         ## FULL GUIDED
         ##############
         # video_windows_tkinter.create_main_window(traces, None, trim_offset)
-        if do_full_guided:
+        if is_full_guided:
             if len(traces)+len(removed_full_traces) > original_population_size and guided:
                 full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params, has_tracked_video=has_tracked_video)
 
@@ -691,6 +692,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
             convert_results_from_json_to_csv(silent=silent, debug=debug, is_first_run=is_first_run)
         else:
             overwrite_file = False
+
         if do_save_traces:
             if not is_first_run:
                 save_traces_as_csv(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug, is_first_run=is_first_run, overwrite_file=overwrite_file)
