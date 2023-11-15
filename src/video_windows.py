@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import TclError, ttk
 
 # My imports
+import analyse
 import make_video
 import traces_logic
 
@@ -31,6 +32,8 @@ class App(tk.Tk):
         button_frame.grid(column=1, row=0)
 
         self.bind("<KeyPress>", self.keydown)
+
+        self.check_to_quit()
 
     def create_button_frame(self, traces):
         frame = ttk.Frame(self)
@@ -71,13 +74,20 @@ class App(tk.Tk):
 
         return frame
 
+    def check_to_quit(self):
+        # print("kill gui rn")
+        if analyse.gonna_run is False:
+            self.destroy()
+        self.after(1, self.check_to_quit)
+        # print("killed gui rn")
+
+
     ## Key press handlers
     def keydown(self, event):
         char = event.char
         # print(char)
 
         if char == "q":
-            # TODO quit video and gui
             self.destroy()
             pass
         else:

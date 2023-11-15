@@ -40,6 +40,11 @@ global point_file
 global arena_file
 global arena_boundaries_file
 
+
+# Concurrency
+global gonna_run
+gonna_run = True
+
 ## FALSE POSITIVE/NEGATIVE checking only
 global check_multiplicative_boundary  # multiplicative boundary alternation in False positive/negative checks
 check_multiplicative_boundary = 1.2

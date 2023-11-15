@@ -235,6 +235,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
 
         # print("gonna run the app")
         app.mainloop()
+
         # p1 = Process(target=video_windows_tkinter.gui, args=(traces, analyse.trim_offset, ))
         # p1.start()
         # print("hello")
@@ -247,24 +248,28 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
     if wait:
         try:
             p.join()
+
         except Exception as err:
             print("1", err)
-            pass
-
-    try:
-        # p1.kill()
-        # p1.terminate()
-        app.quit()
-    except Exception as err:
-        print("3", err)
-        pass
+            raise err
 
 
 def call_annotate_video_and_quit_gui_afterwards(a, b, c, d, e, f, g, h, i, j, k, app):
     """ Call annotate_video() and after it is closed it quits the gui interface. """
     # print("call_annotate_video_and_quit_gui_afterwards here")
+    print("gonna annotate the video")
     annotate_video(a, b, c, d, e, f, g, h, i, j, k)
-    app.quit()
+    print("gonna kill the gui")
+    analyse.gonna_run = False
+    # app.destroy()
+    # print("gui destroyed")
+
+    # app.quit()
+    # app.destroy()
+    # app.quitt()
+    print("gui quited")
+
+    # del app
 
 
 def show_all_traces():
@@ -316,7 +321,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     from traces_logic import delete_trace_with_id, undelete_trace_with_id
     global show_single
     global show_number
-    global spamewqrt
+    # global spamewqrt
     global goto
     show_single = False
 
@@ -371,7 +376,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     except cv2.error as err:
         qt_working = False
 
-        spamewqrt = traces_to_show
+        # spamewqrt = traces_to_show
 
         ## Following line creates the gui but the rest of the program is paused wil gui is running
         # video_windows_tkinter.create_main_window(traces_to_show, trim_offset)
