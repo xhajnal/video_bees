@@ -1,4 +1,5 @@
 import csv
+import math
 import sys
 from copy import copy
 import numpy as np
@@ -26,21 +27,39 @@ def modulo(a, b):
         return a % b
 
 
-def calculate_cosine_similarity(v, w):
-    """ Calculates cosine similarity of the two vectors
+def calculate_cosine_similarity(v1, v2):
+    """ Compute cosine similarity of v1 to v2: (v1 dot v2)/{||v1||*||v2||) """
 
-    :arg v: (vect): first vector
-    :arg w: (vect): second vector
-    """
-
-    if v == w:
+    if v1 == v2:
         return 1
 
-    return round(cosine_similarity([v], [w])[0][0], 2)
+    if v1 == [0, 0] or v2 == [0, 0]:
+        return 1
+
+    sumxx, sumxy, sumyy = 0, 0, 0
+    for index in range(len(v1)):
+        x = v1[index]
+        y = v2[index]
+        sumxx += x*x
+        sumyy += y*y
+        sumxy += x*y
+
+    import warnings
+    warnings.filterwarnings("error")
+    try:
+        result = sumxy / math.sqrt(sumxx * sumyy)
+    except ZeroDivisionError as err:
+        warnings.filterwarnings("default")
+        return round(cosine_similarity([v1], [v2])[0][0], 2)
+    except RuntimeWarning as warn:
+        raise warn
+
+    warnings.filterwarnings("default")
+    return result
 
 
 def to_vect(point1, point2):
-    """ Returns a vector of two given points"""
+    """ Returns a vector of two given points. """
     return [y - x for x, y in zip(point1, point2)]
 
 
