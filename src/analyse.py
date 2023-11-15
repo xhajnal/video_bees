@@ -233,8 +233,6 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         set_rerun(True)
         # set_show_plots(True)
         # set_silent(False)
-    else:
-        set_full_guided(False)
 
     if show_plots is False:
         set_show_all_plots(False)
