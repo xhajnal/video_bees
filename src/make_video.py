@@ -17,7 +17,7 @@ from trace import Trace
 
 global show_single
 global show_number
-# global video
+global video
 global goto
 goto = None
 
@@ -40,7 +40,7 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     :arg align_arena_boundaries: (bool or Path): flag whether to align arena (one time alignment of the arena boundaries to the video), use path to the file instead of True
     :return: points: list of pairs - points obtained by alignment
     """
-    # global video
+    global video
     global goto
     video = cv2.VideoCapture(input_video)
 
@@ -229,6 +229,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         # print("gonna initialise app")
         video_windows.traces_to_show = traces
         video_windows.trim_offset = analyse.trim_offset
+        analyse.gonna_run = True
         app = video_windows.App()
 
         # print("gonna make a thread")
@@ -261,6 +262,9 @@ def call_annotate_video_and_quit_gui_afterwards(a, b, c, d, e, f, g, h, i, j, k,
     """ Call annotate_video() and after it is closed it quits the gui interface. """
     # print("call_annotate_video_and_quit_gui_afterwards here")
     # print("gonna annotate the video")
+    lock = threading.Lock()
+    lock.acquire()
+
     annotate_video(a, b, c, d, e, f, g, h, i, j, k)
     # print("gonna kill the gui")
     analyse.gonna_run = False
@@ -271,7 +275,7 @@ def call_annotate_video_and_quit_gui_afterwards(a, b, c, d, e, f, g, h, i, j, k,
     # app.destroy()
     # app.quitt()
     # print("gui quited")
-
+    lock.release()
     # del app
 
 
@@ -322,8 +326,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     :arg force_new_video: (bool): iff True, a new video will be created, even if video with the same amount of traces is there
     """
 
-    lock = threading.Lock()
-    lock.acquire()
+
     # print("lock acquired")
 
     from traces_logic import delete_trace_with_id, undelete_trace_with_id
@@ -373,7 +376,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     len_of_trace_shown_behind = 30  # number of frames the path is shown behind
 
     # Create a video capture object, in this case we are reading the video from a file
-    # global video
+    global video
     video = cv2.VideoCapture(input_video)
 
     make_named_window()
@@ -636,9 +639,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         output.release()
         # del output
         print(colored("Annotation done.", "yellow"))
-
-    lock.release()
-    # print("lock released")
 
 
 def make_help_video(debug=False):

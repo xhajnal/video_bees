@@ -910,17 +910,19 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
     overlap_range = get_overlap(trace1.frame_range, trace2.frame_range)
     gap_range = get_gap(trace1.frame_range, trace2.frame_range)
 
+    decisions = load_decisions()
+
     # Look whether there is not an answer already
     try:
         ## Decision to merge already made and found
         if overlapping:
-            decision = analyse.decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
+            decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
         elif gaping:
-            try:
-                decision = analyse.decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
-            except TypeError as err:
-                print()
-                raise err
+            # try:
+            decision = decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
+            # except Exception as err:
+            #     print()
+            #     raise err
         else:
             raise Exception("gaping/overlapping not chosen.")
         if not silent:

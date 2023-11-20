@@ -77,8 +77,10 @@ class App(tk.Tk):
     def check_to_quit(self):
         # print("kill gui rn")
         if analyse.gonna_run is False:
-            self.destroy()
-            analyse.gonna_run = True
+            try:
+                self.destroy()
+            except Exception as err:
+                pass
         self.after(1, self.check_to_quit)
         # print("killed gui rn")
 
