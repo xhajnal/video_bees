@@ -78,9 +78,9 @@ class App(tk.Tk):
         # print("kill gui rn")
         if analyse.gonna_run is False:
             self.destroy()
+            analyse.gonna_run = True
         self.after(1, self.check_to_quit)
         # print("killed gui rn")
-
 
     ## Key press handlers
     def keydown(self, event):

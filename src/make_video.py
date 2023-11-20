@@ -638,7 +638,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     # print("lock released")
 
 
-
 def make_help_video(debug=False):
     """ Annotates given video with the tracked position of individual bees.
 
