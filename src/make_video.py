@@ -63,6 +63,8 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
         # print("frame_range", frame_range)
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0])
 
+    cv2.setWindowProperty("video", cv2.WND_PROP_TOPMOST, 1)
+
     # while video.isOpened():
     while True:
         frame_number = int(video.get(1))
@@ -456,6 +458,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         locations_of_traces.append([])
 
     video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset)
+    cv2.setWindowProperty("video", cv2.WND_PROP_TOPMOST, 1)
 
     # while video.isOpened():
     while video.isOpened() or show:
