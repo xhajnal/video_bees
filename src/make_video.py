@@ -17,7 +17,7 @@ from trace import Trace
 
 global show_single
 global show_number
-global video
+# global video
 global goto
 goto = None
 
@@ -40,7 +40,7 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     :arg align_arena_boundaries: (bool or Path): flag whether to align arena (one time alignment of the arena boundaries to the video), use path to the file instead of True
     :return: points: list of pairs - points obtained by alignment
     """
-    global video
+    # global video
     global goto
     video = cv2.VideoCapture(input_video)
 
@@ -248,6 +248,7 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
     if wait:
         try:
             p.join()
+            # del p
 
         except Exception as err:
             print("1", err)
@@ -257,9 +258,9 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
 def call_annotate_video_and_quit_gui_afterwards(a, b, c, d, e, f, g, h, i, j, k, app):
     """ Call annotate_video() and after it is closed it quits the gui interface. """
     # print("call_annotate_video_and_quit_gui_afterwards here")
-    print("gonna annotate the video")
+    # print("gonna annotate the video")
     annotate_video(a, b, c, d, e, f, g, h, i, j, k)
-    print("gonna kill the gui")
+    # print("gonna kill the gui")
     analyse.gonna_run = False
     # app.destroy()
     # print("gui destroyed")
@@ -267,7 +268,7 @@ def call_annotate_video_and_quit_gui_afterwards(a, b, c, d, e, f, g, h, i, j, k,
     # app.quit()
     # app.destroy()
     # app.quitt()
-    print("gui quited")
+    # print("gui quited")
 
     # del app
 
@@ -318,6 +319,11 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     :arg show: (bool): if True showing the frames, used with False only to annotate the video at the end of analysis
     :arg force_new_video: (bool): iff True, a new video will be created, even if video with the same amount of traces is there
     """
+
+    lock = threading.Lock()
+    lock.acquire()
+    # print("lock acquired")
+
     from traces_logic import delete_trace_with_id, undelete_trace_with_id
     global show_single
     global show_number
@@ -365,7 +371,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     len_of_trace_shown_behind = 30  # number of frames the path is shown behind
 
     # Create a video capture object, in this case we are reading the video from a file
-    global video
+    # global video
     video = cv2.VideoCapture(input_video)
 
     make_named_window()
@@ -615,11 +621,22 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
             break
 
     # Release the objects
+    cv2.destroyAllWindows()
+    # print("all windows destroyed")
+
     video.release()
+    # print("video released")
+    # print(video.isOpened())
+    # del video
 
     if output_video:
         output.release()
+        # del output
         print(colored("Annotation done.", "yellow"))
+
+    lock.release()
+    # print("lock released")
+
 
 
 def make_help_video(debug=False):
