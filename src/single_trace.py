@@ -8,7 +8,7 @@ from _socket import gethostname
 from termcolor import colored
 
 import analyse
-from dave_io import load_decisions, save_decisions
+from dave_io import load_decisions, save_decisions, save_the_decisions
 from fake import get_real_whole_frame_range, get_whole_frame_range
 from config import get_bee_max_step_len, get_distance_from_calculated_arena
 from misc import delete_indices, has_strict_overlap, margin_range
@@ -137,12 +137,9 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
     start_time = time()
     number_of_traces = len(traces)
 
-    ## LOAD SAVED DECISIONS
-    decisions = load_decisions()
-
     ## FILTER OUT TRACES OUTSIDE ARENA DECISIONS
     outside_arena_decisions = {}
-    for key, value in decisions.items():
+    for key, value in analyse.decisions.items():
         if key[0] == 'outside_arena':
             outside_arena_decisions[key] = value
 
@@ -221,9 +218,9 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
                     to_delete_trace = input("Is this trace outside of arena in whole range? (yes or no):")
                     to_delete_trace = True if "y" in to_delete_trace.lower() else False
 
-                    # SAVE DECISIONS
-                    decisions[("outside_arena", trace.trace_id, trace.get_hash())] = to_delete_trace
-                    save_decisions(decisions, silent=silent)
+                    # UPDATE DECISIONS
+                    analyse.decisions[("outside_arena", trace.trace_id, trace.get_hash())] = to_delete_trace
+                    save_the_decisions()
 
                 if to_delete_trace:
                     traces_to_be_deleted.append(index)
@@ -337,7 +334,6 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, guided=False
                     to_smoothen = True
                     # Show the jump in video
                     if guided:
-                        decisions = load_decisions()
                         show_range = jump_range
                         print(f"Smoothening jump in trace {trace.trace_id}")
                         show_video(input_video=analyse.video_file, traces=[trace],
@@ -365,9 +361,9 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, guided=False
 
                         to_smoothen = True if "y" in to_smoothen.lower() else False
 
-                        # SAVE DECISIONS
-                        decisions[("smoothen_trace", trace.trace_id, (location_index, location_index2), trace.get_hash())] = to_smoothen
-                        save_decisions(decisions, silent=silent)
+                        # UPDATE DECISIONS
+                        analyse.decisions[("smoothen_trace", trace.trace_id, (location_index, location_index2), trace.get_hash())] = to_smoothen
+                        save_the_decisions()
 
                     # Smoothen the jump
                     if to_smoothen:

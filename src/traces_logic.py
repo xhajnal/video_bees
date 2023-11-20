@@ -12,7 +12,7 @@ from ast import literal_eval as make_tuple
 from config import get_max_trace_gap_to_interpolate_distance, get_max_step_distance_to_merge_overlapping_traces, \
     get_min_step_distance_to_merge_overlapping_traces, get_max_overlap_len_to_merge_traces, \
     get_minimal_movement_per_frame
-from dave_io import load_decisions, save_decisions
+from dave_io import load_decisions, save_decisions, save_the_decisions
 from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap, has_dot_overlap, margin_range, \
     delete_indices, range_len
 from primal_traces_logic import get_traces_from_range
@@ -889,7 +889,8 @@ def swap_two_overlapping_traces(trace1: Trace, trace2: Trace, frame_of_swap, sil
 
 # TODO make tests
 def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace_ids_to_skip=(), silent=False, overlapping=False, gaping=False, default_decision=None):
-    """ Creates a user dialogue to ask whether to merge selected pair of traces while showing video of the traces
+    """ Checks whether the decision does not exist already, if not
+        creates a user dialogue to ask whether to merge selected pair of traces while showing video of the traces
 
         :arg all_traces: (list): a list of all Traces (to be shown in the video)
         :arg selected_traces: (list): two selected traces
@@ -910,14 +911,13 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
     gap_range = get_gap(trace1.frame_range, trace2.frame_range)
 
     # Look whether there is not an answer already
-    decisions = load_decisions()
     try:
         ## Decision to merge already made and found
         if overlapping:
-            decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
+            decision = analyse.decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
         elif gaping:
             try:
-                decision = decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
+                decision = analyse.decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
             except TypeError as err:
                 print()
                 raise err
@@ -927,6 +927,7 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
             print(colored(f" Decision loaded: {decision} to merge {'overlapping' if overlapping else 'gaping'} pair of ids - {trace1.trace_id, trace2.trace_id}", "blue"))
         return decision, False
 
+    ## Decision not loaded, gonna ask user
     except KeyError:
         # MANAGE DEFAULT DECISION
         if default_decision is not None:
@@ -970,17 +971,19 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
 
         if "n" in to_merge_by_user.lower():
             if overlapping:
-                decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = False
+                analyse.decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = False
+                save_the_decisions(silent=silent)
             else:
-                decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))] = False
-            save_decisions(decisions, silent=silent)
+                analyse.decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))] = False
+                save_the_decisions(silent=silent)
             return False, True
         elif "y" in to_merge_by_user.lower():
             if overlapping:
-                decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = True
+                analyse.decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))] = True
+                save_the_decisions(silent=silent)
             else:
-                decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))] = True
-            save_decisions(decisions, silent=silent)
+                analyse.decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))] = True
+                save_the_decisions(silent=silent)
             return True, True
         else:
             if not silent:
@@ -1004,10 +1007,9 @@ def delete_trace_with_id(trace_id):
         if trace.trace_id == trace_id:
             print(f"Deleting trace with id {trace_id}.")
 
-            # Save the decisions
-            decisions = load_decisions()
-            decisions[("delete_trace", trace.trace_id, trace.get_hash())] = True
-            save_decisions(decisions, silent=True)
+            # Update decisions
+            analyse.decisions[("delete_trace", trace.trace_id, trace.get_hash())] = True
+            save_the_decisions()
 
             # Save deleted trace
             analyse.deleted_traces[trace_id] = analyse.traces[index]
@@ -1034,13 +1036,12 @@ def undelete_trace_with_id(trace_id, index):
     """
 
     # Remove trace from saved deleted traces
-    decisions = load_decisions()
-    for key in decisions.keys():
+    for key in analyse.decisions.keys():
         if key[0] == "delete_trace":
             if key[1] == trace_id:
-                del decisions[key]
+                del analyse.decisions[key]
                 break
-    save_decisions(decisions, silent=True)
+    save_the_decisions()
 
     # TODO UNCOMMENT THIS AFTER BEING FIXED
     # Add the trace to traces to be shown
@@ -1100,11 +1101,10 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
             to_delete = True
 
         if to_delete:
-            # SAVE DECISIONS
-            decisions = load_decisions()
+            # UPDATE DECISIONS
             for trace in traces_to_delete:
-                decisions[("delete_trace", trace.trace_id, trace.get_hash())] = True
-            save_decisions(decisions, silent=True)
+                analyse.decisions[("delete_trace", trace.trace_id, trace.get_hash())] = True
+            save_the_decisions()
 
             traces_indices_to_be_removed.extend(traces_to_delete)
 
@@ -1124,12 +1124,8 @@ def delete_traces_from_saved_decisions(traces, silent=False, debug=False):
 
     indices_to_delete = []
 
-    decisions = load_decisions()
-
-    # print(decisions)
-
     new_decisions = {}
-    for key, value in decisions.items():
+    for key, value in analyse.decisions.items():
         if key[0] == 'outside_arena':
             new_decisions[key] = value
         if key[0] == 'delete_trace':
@@ -1269,10 +1265,9 @@ def smoothen_traces_from_saved_decisions(traces, silent=False, debug=False):
     print(colored("SMOOTHEN TRACES FROM DECISIONS", "blue"))
 
     indices_to_smoothen = []
-    decisions = load_decisions()
 
     new_decisions = {}
-    for key, value in decisions.items():
+    for key, value in analyse.decisions.items():
         if key[0] == 'smoothen_trace':
             new_decisions[key] = value
 
@@ -1322,19 +1317,16 @@ def smoothen_traces_from_saved_decisions(traces, silent=False, debug=False):
 
 def fix_decisions():
     key_to_delete = []
-    decisions = load_decisions()
-
     new_decisions = {}
-    for key, value in decisions.items():
+    for key, value in analyse.decisions.items():
         if key[0] == 'smoothen_trace':
             key_to_delete.append(key)
             continue
 
     for key in key_to_delete:
-        del decisions[key]
+        del analyse.decisions[key]
 
-
-    save_decisions(decisions)
+    save_the_decisions()
 
 
 def compute_whole_frame_range(traces):

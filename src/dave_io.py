@@ -726,6 +726,16 @@ def load_decisions():
         return {}
 
 
+def save_the_decisions(silent=False):
+    """ Saves the analyse decisions as a pickled file.
+        Uses the name of the csv input file.
+
+
+    :arg silent: (bool): if True minimal output is shown
+    """
+    save_decisions(analyse.decisions, silent=silent)
+
+
 def save_decisions(content, silent=False):
     """ Saves decisions as a pickled file.
         Uses the name of the csv input file.

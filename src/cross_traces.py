@@ -10,7 +10,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import analyse
 from counts import *
 from config import *
-from dave_io import load_decisions, save_decisions
+from dave_io import load_decisions, save_decisions, save_the_decisions
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, to_vect, \
     calculate_cosine_similarity, flatten, has_strict_overlap, margin_range, has_dot_overlap, get_gap
 from trace import Trace
@@ -42,12 +42,9 @@ def track_swapping_loop(traces, guided=False, silent=False, debug=False):
     # PAIRS TO SKIP
     pairs_to_skip = []
 
-    # LOAD DECISIONS
-    decisions = load_decisions()
-
     ## FILTER OUTSIDE ARENA DECISIONS
     swap_decisions = {}
-    for key, value in decisions.items():
+    for key, value in analyse.decisions.items():
         if key[0] == 'swap_bees':
             swap_decisions[key] = value
 
@@ -114,9 +111,6 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
         :return: traces: (list): list of trimmed Traces
     """
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
-
-    # LOAD DECISIONS
-    decisions = load_decisions()
 
     # Check number of traces
     if len(traces) < 2:
@@ -198,9 +192,9 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
                             answer = input("Do you want to swap these traces? (yes or no).")
                         if any(answer.lower() == f for f in ["yes", 'y', '1', 'ye', '6']):
                             print(colored(f"Swapping the traces ({trace1.trace_id}, {trace2.trace_id}) on frame {dictionary[overlapping_pair_of_traces][0] + index}\n ", "blue"))
-                            # SAVE DECISION
-                            decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0] + index] = True
-                            save_decisions(decisions)
+                            # UPDATE DECISION
+                            analyse.decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0] + index] = True
+                            save_the_decisions()
 
                             # ACTUALLY SWAP THE TRACES
                             a, b = swap_two_overlapping_traces(trace1, trace2, dictionary[overlapping_pair_of_traces][0]+index, silent=silent, debug=debug)
@@ -208,8 +202,8 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
 
                             return True
                         elif "n" in answer.lower():
-                            decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0] + index] = False
-                            save_decisions(decisions)
+                            analyse.decisions["swap_bees", trace1.trace_id, trace1.get_hash(), trace2.trace_id, trace2.get_hash(), dictionary[overlapping_pair_of_traces][0] + index] = False
+                            save_the_decisions()
                 else:
                     if calculate_cosine_similarity(vector1, vector2_next) > calculate_cosine_similarity(vector1, vector1_next):
                         if debug:
@@ -363,12 +357,10 @@ def merge_gaping_traces(traces, population_size, allow_force_merge=True, guided=
         return traces
 
     # Look whether there is not an answer already
-    decisions = load_decisions()
     gapping_decisions = {}
-    for key, value in decisions.items():
+    for key, value in analyse.decisions.items():
         if key[0] == 'merge_gaping_pair':
             gapping_decisions[key] = value
-    del decisions
     # LATER CHECK FOR EXISTENCE OF
     # gapping_decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
 
@@ -747,14 +739,13 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
     overlaping_trace_pairs_to_be_merged = []
 
     # LOAD DECISIONS
-    decisions = load_decisions()
     gapping_decisions = {}
-    for key, value in decisions.items():
+    for key, value in analyse.decisions.items():
         if key[0] == 'merge_gaping_pair':
             gapping_decisions[key] = value
 
     overlapping_decisions = {}
-    for key, value in decisions.items():
+    for key, value in analyse.decisions.items():
         if key[0] == 'merge_overlapping_pair':
             overlapping_decisions[key] = value
 
