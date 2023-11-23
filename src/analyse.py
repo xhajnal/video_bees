@@ -24,10 +24,11 @@ from triplets import merge_overlapping_triplets_of_traces, merge_overlapping_tri
     merge_triplets_by_partition
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
 
+
+## Storage variables
 global traces
 global real_whole_frame_range
 global whole_frame_range
-global video_file
 global video_params
 global deleted_traces
 
@@ -36,10 +37,10 @@ global crop_offset
 global trim_offset
 global curr_csv_file_path
 global is_video_original
+global video_file
 global point_file
 global arena_file
 global arena_boundaries_file
-
 global decisions
 
 # Concurrency
@@ -50,23 +51,15 @@ gonna_run = True
 global check_multiplicative_boundary  # multiplicative boundary alternation in False positive/negative checks
 check_multiplicative_boundary = 1.2
 
-# global batch_run
-# global silent
-# global debug
-# global show_plots
-# global show_all_plots
-# global guided
-# global allow_force_merge
-# global rerun
-# global just_annotate
+# FLAGS
 just_annotate = False
-# global just_align
 just_align = False
-# global force_new_video
 force_new_video = False
-
-# USER - please set up the following 11 flags
 batch_run = False                                # sets 5 following flags: silent, not debug, not show_plots, not guided, rerun
+
+###############################################
+### USER - please set up the following 10 flags
+###############################################
 guided = True    #(set only in single run)     # human guided version - a video following
 silent = True                                   # minimal print
 debug = False                                   # maximal print
@@ -77,10 +70,6 @@ rerun = True                                    # will execute also files with a
 save_parsed_as_pickle = True                    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
 fast_run = True                                 # will skip the least prominent parts - currently Second Gaping traces analysis
 is_full_guided = True  #(only if also guided)   # full-guided regim on/off - when the analysis is finished but there are still more traces than it should be, it goes from start in one-by-one manner
-
-# def get_traces():
-#     global traces
-#     return traces
 
 
 def set_batch_run(do_batch_run):
@@ -238,13 +227,6 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     if show_plots is False:
         set_show_all_plots(False)
 
-    # set_show_plots(False)
-
-    # set_rerun(True)
-
-    # set_silent(True)
-    # set_debug(True)
-
     #################
     # Internal params
     #################
@@ -272,7 +254,6 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     ###################
     # PURGE THE RESULTS
     ###################
-
     if to_purge:
         save_current_result([0] * 7, file_name=csv_file_path, population_size=original_population_size,
                             is_first_run=is_first_run, is_guided=guided, is_force_merge_allowed=allow_force_merge,
@@ -330,7 +311,9 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         # Storing the number of loaded traces
         counts.append(len(traces) + len(removed_full_traces))
 
-
+        #################
+        ## LOAD DECISIONS
+        #################
         global decisions
         decisions = load_decisions()
 
@@ -430,6 +413,9 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         # Saving decisions
         save_decisions(decisions, silent=False)
 
+        ###################
+        # SHOW SINGLE TRACE
+        ###################
         # TODO uncomment the following lines to show selected trace
         # if population_size > 1:
         #     ## CHOSEN TRACE SHOW - choose i, index of trace

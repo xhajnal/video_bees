@@ -1,6 +1,5 @@
 import json
 import os
-import pickle
 import threading
 import warnings
 from multiprocessing import Process
@@ -354,7 +353,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     from traces_logic import delete_trace_with_id, undelete_trace_with_id
     global show_single
     global show_number
-    # global spamewqrt
     global goto
     show_single = False
 
@@ -409,16 +407,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     except cv2.error as err:
         qt_working = False
 
-        # spamewqrt = traces_to_show
-
-        ## Following line creates the gui but the rest of the program is paused wil gui is running
-        # video_windows_tkinter.create_main_window(traces_to_show, trim_offset)
-        # thread = threading.Thread(target=video_windows_tkinter.runn)
-        # video_windows_tkinter.traces_to_show = traces_to_show
-        # thread.run()
-        # thread1 = video_windows_tkinter.Gui_video_thread(traces_to_show, trim_offset)
-        # thread1.start()
-
     if qt_working is True:
         for indexx, trace in enumerate(traces_to_show):
             spam = indexx
@@ -430,10 +418,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
             cv2.createButton(f"[{trace.frame_range[0]},{trace.frame_range[1]}]", go_to_trace_start, [video, spam, traces_to_show, trim_offset], cv2.QT_PUSH_BUTTON, 1, )
     else:
         pass  ## buttons created already elsewhere
-
-    # if str(gethostname()) == "Skadi":
-    #     cv2.moveWindow("video", 0, 0)
-    #     cv2.resizeWindow("video", 1900, 800)
 
     set_resolution()
 
@@ -567,10 +551,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
                     cv2.putText(img=frame, text=str(frame_number), org=(15, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1.0, color=(125, 246, 55), thickness=4)
                     cv2.imshow("video", frame)
 
-                    # if str(gethostname()) == "Skadi":
-                    #     cv2.moveWindow("video", 0, 0)
-                    #     cv2.resizeWindow("video", 1900, 650)
-
                 key = cv2.waitKey(round(2 * (100 / fps) / speed))
 
                 if goto is not None:
@@ -639,14 +619,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
             # Write the frame to the output files
             if output_video:
                 output.write(frame)
-
-            # 20 is in milliseconds, try to increase the value, say 50 and observe
-            # make a queue of length 20
-            ## TODO MAYBE UNCOMMENT THIS
-            # key = cv2.waitKey(1)
-            #
-            # if key == ord('q') or key == ord('Q'):
-            #     break
         else:
             break
 
@@ -656,7 +628,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     # Release the objects
     cv2.destroyAllWindows()
     # print("all windows destroyed")
-
     video.release()
     # print("video released")
     # print(video.isOpened())
