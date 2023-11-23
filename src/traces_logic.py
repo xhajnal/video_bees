@@ -916,9 +916,13 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
     try:
         ## Decision to merge already made and found
         if overlapping:
+            if isinstance(decisions, bool):
+                raise Exception("why, god why?")
             decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
         elif gaping:
             # try:
+            if isinstance(decisions, bool):
+                raise Exception("why, god why?")
             decision = decisions[("merge_gaping_pair", trace1.trace_id, trace2.trace_id, tuple(gap_range))]
             # except Exception as err:
             #     print()
