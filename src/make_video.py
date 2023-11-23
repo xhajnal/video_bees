@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 import threading
 import warnings
 from multiprocessing import Process
@@ -11,6 +12,7 @@ from termcolor import colored
 
 import analyse
 import video_windows
+from dave_io import pickle_load, pickle_save
 from misc import convert_frame_number_back, is_in, get_leftmost_point, to_vect, get_colors, rgb_to_bgr, get_last_digit, \
     modulo, get_colour
 from trace import Trace
@@ -23,10 +25,27 @@ goto = None
 
 
 def make_named_window():
+    """ Makes a named opencv window"""
     if "lin" in platform:
         cv2.namedWindow("video", cv2.WINDOW_NORMAL)
     else:
         cv2.namedWindow("video", cv2.WINDOW_NORMAL)
+
+
+def set_resolution():
+    """ Sets resolution from last video."""
+    try:
+        resolution = pickle_load("../resolution.p")
+        cv2.moveWindow("video", resolution[0], resolution[1])
+        cv2.resizeWindow("video", resolution[2], resolution[3])
+    except FileNotFoundError:
+        pass
+
+
+def save_resolution():
+    """ Saves current resolution to a file to be loaded next time"""
+    resolution = cv2.getWindowImageRect("video")
+    pickle_save(resolution, "../resolution.p")
 
 
 def play_opencv(input_video, frame_range, speed, points, align_traces, align_arena_boundaries):
@@ -64,6 +83,8 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0])
 
     cv2.setWindowProperty("video", cv2.WND_PROP_TOPMOST, 1)
+
+    set_resolution()
 
     # while video.isOpened():
     while True:
@@ -159,9 +180,14 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
                 down = [down[0], down[1]+1]
                 points = [left, right, up, down]
 
-    video.release()
-    # Exit and destroy all windows
+    # Save video resolution
+    save_resolution()
+
+    # Release objects
     cv2.destroyAllWindows()
+    video.release()
+
+    # Record arena and bees locations
     if points:
         if align_traces:
             with open(align_traces, "w") as file:
@@ -325,10 +351,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     :arg show: (bool): if True showing the frames, used with False only to annotate the video at the end of analysis
     :arg force_new_video: (bool): iff True, a new video will be created, even if video with the same amount of traces is there
     """
-
-
-    # print("lock acquired")
-
     from traces_logic import delete_trace_with_id, undelete_trace_with_id
     global show_single
     global show_number
@@ -409,9 +431,11 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     else:
         pass  ## buttons created already elsewhere
 
-    if str(gethostname()) == "Skadi":
-        cv2.moveWindow("video", 0, 0)
-        cv2.resizeWindow("video", 1900, 800)
+    # if str(gethostname()) == "Skadi":
+    #     cv2.moveWindow("video", 0, 0)
+    #     cv2.resizeWindow("video", 1900, 800)
+
+    set_resolution()
 
     if video.isOpened() is False:
         print(colored("Error opening the video file", "red"))
@@ -625,6 +649,9 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
             #     break
         else:
             break
+
+    # Save video resolution
+    save_resolution()
 
     # Release the objects
     cv2.destroyAllWindows()

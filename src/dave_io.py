@@ -672,13 +672,30 @@ def pickle_load(file_path):
     file_path = Path(file_path)
 
     if file_extension == ".p":
-        with open(file_path, "rb") as f:
-            return pickle.load(f)
+        with open(file_path, "rb") as file:
+            return pickle.load(file)
     elif file_extension == "":
-        with open(str(file_path) + ".p", "rb") as f:
-            return pickle.load(f)
+        with open(str(file_path) + ".p", "rb") as file:
+            return pickle.load(file)
     else:
         raise Exception("File extension does not match", f"{file_path} does not seem to be pickle file!")
+
+
+def pickle_save(content, file_path):
+    """ Saves content as pickled file
+
+    Args:
+        content: (): object to be pickled
+        file_path (string or Path): filename/filepath of the file to be saved
+    """
+
+    filename, file_extension = os.path.splitext(file_path)
+    file_path = Path(file_path)
+
+    # if not os.path.isfile(file_path):
+    print(f"Saving {os.path.abspath(file_path)}")
+    with open(file_path, 'wb') as file:
+        pickle.dump(content, file)
 
 
 def load_result_traces(file_path):
