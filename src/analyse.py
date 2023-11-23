@@ -66,8 +66,8 @@ just_align = False
 force_new_video = False
 
 # USER - please set up the following 11 flags
-batch_run = True                                # sets 5 following flags: silent, not debug, not show_plots, not guided, rerun
-guided = False    #(set only in single run)     # human guided version - a video following
+batch_run = False                                # sets 5 following flags: silent, not debug, not show_plots, not guided, rerun
+guided = True    #(set only in single run)     # human guided version - a video following
 silent = True                                   # minimal print
 debug = False                                   # maximal print
 show_plots = False                              # showing plots
