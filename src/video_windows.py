@@ -68,6 +68,7 @@ class App(tk.Tk):
             button_4.grid(column=3, row=1 + index)
             button_4.index = index
             button_4.bind('<Button-1>', OnButton_Handler_go_to_frame)
+            button_4.bind('<Button-3>', OnButton_Handler_go_to_frame2)
 
         for widget in frame.winfo_children():
             widget.grid(padx=5, pady=5)
@@ -91,6 +92,8 @@ class App(tk.Tk):
 
         if char == "q":
             self.destroy()
+            pass
+        elif char == '':
             pass
         else:
             print("We are sorry that the buttons do not work here any more, please click on the video windows to operate with it this way.")
@@ -162,3 +165,11 @@ def OnButton_Handler_go_to_frame(event):
     global traces_to_show
     global trim_offset
     make_video.goto = (event.widget.index, traces_to_show, trim_offset)
+    make_video.go_outside = False
+
+
+def OnButton_Handler_go_to_frame2(event):
+    global traces_to_show
+    global trim_offset
+    make_video.goto = (event.widget.index, traces_to_show, trim_offset)
+    make_video.go_outside = True

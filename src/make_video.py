@@ -22,6 +22,8 @@ global video
 global goto
 goto = None
 
+global go_outside
+go_outside = False
 
 def make_named_window():
     """ Makes a named opencv window"""
@@ -62,11 +64,16 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     global goto
     video = cv2.VideoCapture(input_video)
 
+    global go_outside
+    go_outside = False
+
     # Window name and size
     make_named_window()
 
     if frame_range:
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0]-1)
+
+    cv2.setWindowProperty("video", cv2.WND_PROP_TOPMOST, 1)
 
     if points:
         print("Press WASD keys to move point(s) to respective direction, use +/- keys to enlarge/decrease the circle size and press q to save the alignment and close the window.")
@@ -80,8 +87,6 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
     if frame_range:
         # print("frame_range", frame_range)
         video.set(cv2.CAP_PROP_POS_FRAMES, frame_range[0])
-
-    cv2.setWindowProperty("video", cv2.WND_PROP_TOPMOST, 1)
 
     set_resolution()
 
@@ -108,7 +113,7 @@ def play_opencv(input_video, frame_range, speed, points, align_traces, align_are
         if str(gethostname()) == "Skadi":
             frame = cv2.resize(frame, [1736, 864], interpolation=cv2.INTER_AREA)
 
-        if frame_range:
+        if frame_range and not go_outside:
             if frame_range[0] <= frame_number <= frame_range[1]:
                 cv2.imshow("video", frame)
         else:
@@ -354,6 +359,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     global show_single
     global show_number
     global goto
+    global go_outside
     show_single = False
 
     qt_working = None  ## Flag whether qt support is working
@@ -476,7 +482,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
         # vid_capture.read() methods returns a tuple, first element is a bool and the second is frame
         ret, frame = video.read()
 
-        if frame_range:
+        if frame_range and not go_outside:
             if int(video.get(1)) < trim_offset + max(trace_offset, frame_range[0]):
                 video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + max(trace_offset, frame_range[0]))
 
@@ -555,15 +561,30 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
 
                 if goto is not None:
                     assert isinstance(goto, tuple)
+                    # print(goto)
+                    locations_of_traces = []
+                    for trace in traces_to_show:
+                        locations_of_traces.append([])
                     go_to_trace_start(*goto)
                     goto = None
 
-                if key == ord('f') or key == ord('F'):
-                    print(goto)
+
+                # if key == ord('f') or key == ord('F'):
+                #     if frame_range:
+                #         video.set(cv2.CAP_PROP_POS_FRAMES,
+                #                   max(trim_offset + frame_number + 100, trim_offset + frame_range[0]))
+                #     else:
+                #         video.set(cv2.CAP_PROP_POS_FRAMES, max(trim_offset + frame_number + 100, trim_offset + 0))
+                #     # locations_of_traces = [[]]*len(traces)
+                #     locations_of_traces = []
+                #     for trace in traces_to_show:
+                #         locations_of_traces.append([])
 
                 if key == ord('q') or key == ord('Q'):
+                    go_outside = False
                     break
                 if key == ord('r') or key == ord('R'):
+                    go_outside = False
                     if frame_range:
                         video.set(cv2.CAP_PROP_POS_FRAMES, trim_offset + frame_range[0])
                     else:
@@ -574,7 +595,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
                         locations_of_traces.append([])
 
                 if key == ord('a') or key == ord('A'):
-                    if frame_range:
+                    if frame_range and not go_outside:
                         video.set(cv2.CAP_PROP_POS_FRAMES, max(trim_offset + frame_number - 100, trim_offset + frame_range[0]))
                     else:
                         video.set(cv2.CAP_PROP_POS_FRAMES, max(trim_offset + frame_number - 100, trim_offset + 0))
@@ -584,7 +605,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
                         locations_of_traces.append([])
 
                 if key == ord('d') or key == ord('D'):
-                    if frame_range:
+                    if frame_range and not go_outside:
                         video.set(cv2.CAP_PROP_POS_FRAMES, min(trim_offset + frame_number + 100, trim_offset + frame_range[1]))
                     else:
                         video.set(cv2.CAP_PROP_POS_FRAMES, min(trim_offset + frame_number + 100, frame_count))
