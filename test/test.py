@@ -124,14 +124,24 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(get_overlap([1, 7], [1, 7]), [1, 7])
 
         self.assertEqual(get_gap([1, 7], [8, 9]), [7, 8])
-        self.assertEqual(get_gap([1, 7], [7, 9]), False)
+        self.assertEqual(get_gap([1, 7], [7, 9]), [7, 7])
         self.assertEqual(get_gap([8, 9], [1, 7]), [7, 8])
-        self.assertEqual(get_gap([7, 9], [1, 7]), False)
+        self.assertEqual(get_gap([7, 9], [1, 7]), [7, 7])
         self.assertEqual(get_gap([1, 7], [2, 6]), False)
         self.assertEqual(get_gap([4, 6], [3, 9]), False)
         self.assertEqual(get_gap([1, 7], [2, 7]), False)
         self.assertEqual(get_gap([3, 6], [3, 9]), False)
         self.assertEqual(get_gap([1, 7], [1, 7]), False)
+
+        self.assertEqual(get_strict_gap([1, 7], [8, 9]), [7, 8])
+        self.assertEqual(get_strict_gap([1, 7], [7, 9]), False)
+        self.assertEqual(get_strict_gap([8, 9], [1, 7]), [7, 8])
+        self.assertEqual(get_strict_gap([7, 9], [1, 7]), False)
+        self.assertEqual(get_strict_gap([1, 7], [2, 6]), False)
+        self.assertEqual(get_strict_gap([4, 6], [3, 9]), False)
+        self.assertEqual(get_strict_gap([1, 7], [2, 7]), False)
+        self.assertEqual(get_strict_gap([3, 6], [3, 9]), False)
+        self.assertEqual(get_strict_gap([1, 7], [1, 7]), False)
 
         self.assertTrue(get_strict_overlap([1, 7], [8, 9]) is False)
         self.assertTrue(get_strict_overlap([1, 7], [7, 9]) is False)
@@ -191,6 +201,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(get_leftmost_point([[1, 0], [4, 0], [0, 0]]), ([0, 0], 2))
 
         # m = 2
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [[41621, 41663], [41688, 41699]], strict=True), {})
+        self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [[41621, 41663], [41688, 41699]]), {})
+
         self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(6, 8), (9, 11), (7, 10)], strict=True), {(0, 2): [7, 8], (1, 2): [9, 10]})
         self.assertEqual(dictionary_of_m_overlaps_of_n_intervals(2, [(9, 11), (6, 8), (7, 10)], strict=True), {(1, 2): [7, 8], (0, 2): [9, 10]})
 

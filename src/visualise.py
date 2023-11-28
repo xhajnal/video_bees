@@ -7,7 +7,7 @@ from matplotlib.ticker import MaxNLocator
 
 from fake import get_whole_frame_range
 from trace import Trace
-from primal_traces_logic import get_gaps_of_traces, get_traces_from_range
+from primal_traces_logic import get_gaps_of_traces, get_traces_from_range, get_gaps_of_traces_old
 from misc import dictionary_of_m_overlaps_of_n_intervals, nice_range_print
 
 
@@ -282,7 +282,8 @@ def show_gaps(traces, whole_frame_range=False, show_all_gaps=False, subtitle=Fal
         # print(colored("There is only one/no trace, skipping this analysis.\n", "yellow"))
         return
 
-    dict_pairs_of_gaps = get_gaps_of_traces(traces, get_all_gaps=show_all_gaps)
+    ## TODO maybe error here
+    dict_pairs_of_gaps = get_gaps_of_traces_old(list(map(lambda a: a.frame_range, traces)), get_all_gaps=show_all_gaps, debug=debug)
 
     if debug:
         print("pairs_of_gaps", dict_pairs_of_gaps)

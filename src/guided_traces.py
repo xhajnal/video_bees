@@ -2,7 +2,7 @@ from termcolor import colored
 
 import analyse
 from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionaries, margin_range, delete_indices, \
-    range_len
+    range_len, get_overlap
 from primal_traces_logic import get_gaps_of_traces
 from traces_logic import ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap, \
     ask_to_merge_two_traces_and_save_decision
@@ -34,7 +34,8 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
 
     to_skip_tuples = list(to_skip_tuples)
 
-    gaps = get_gaps_of_traces(traces, get_all_gaps=False)
+    ## TODO probably a mistake here, too many in overlaps and none in gaps (20190922_121938174_2BEES_generated_20210913_085059_nn)
+    gaps = get_gaps_of_traces(list(map(lambda a: a.frame_range, traces)), debug=debug)
     overlaps = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda a: a.frame_range, traces)), strict=False, skip_whole_in=True)
 
     overlaps_and_gaps = merge_sorted_dictionaries(gaps, overlaps)
@@ -59,9 +60,11 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         min_range = min([trace1.frame_range[0], trace2.frame_range[0]])
         max_range = max([trace1.frame_range[1], trace2.frame_range[1]])
 
-        if key in overlaps.keys():
+        overlap = get_overlap(trace1.frame_range, trace2.frame_range)
+
+        if overlap:
             is_overlap = True
-            show_range = overlaps[key]
+            show_range = overlap
         else:
             is_overlap = False
             show_range = gaps[key]

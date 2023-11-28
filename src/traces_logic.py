@@ -13,7 +13,7 @@ from config import get_max_trace_gap_to_interpolate_distance, get_max_step_dista
     get_min_step_distance_to_merge_overlapping_traces, get_max_overlap_len_to_merge_traces, \
     get_minimal_movement_per_frame
 from dave_io import load_decisions, save_decisions, save_the_decisions
-from misc import get_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap, has_dot_overlap, margin_range, \
+from misc import get_strict_gap, is_in, has_overlap, is_before, merge_dictionary, get_overlap, has_dot_overlap, margin_range, \
     delete_indices, range_len
 from primal_traces_logic import get_traces_from_range
 from trace import Trace
@@ -908,7 +908,7 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
     trace1, trace2 = selected_traces
 
     overlap_range = get_overlap(trace1.frame_range, trace2.frame_range)
-    gap_range = get_gap(trace1.frame_range, trace2.frame_range)
+    gap_range = get_strict_gap(trace1.frame_range, trace2.frame_range)
 
     decisions = load_decisions()
 
@@ -918,7 +918,10 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
         if overlapping:
             if isinstance(decisions, bool):
                 raise Exception("why, god why?")
-            decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
+            try:
+                decision = decisions[("merge_overlapping_pair", trace1.trace_id, trace2.trace_id, tuple(overlap_range))]
+            except TypeError as err:
+                raise err
         elif gaping:
             # try:
             if isinstance(decisions, bool):

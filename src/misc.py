@@ -444,8 +444,22 @@ def matrix_of_m_overlaps_of_n_intervals(m, intervals, strict=False, debug=False)
     return matrix
 
 
+def get_dot_gap(range1, range2, strict):
+    """ Returns the gap of range1 and range2
+
+        :arg range1: (tuple or list): first interval
+        :arg range2: (tuple or list): second interval
+        :arg strict: (bool): if True point intervals are not used
+        :returns: (tuple): overlap of range1 and range2
+    """
+    if strict:
+        return get_strict_gap(range1, range2)
+    else:
+        return get_gap(range1, range2)
+
+
 def get_gap(range1, range2):
-    """ Returns the gap of range1 and range2.
+    """ Returns the gap of two intervals, range1 and range2, even of zero length.
 
     :arg range1: (tuple or list): first interval
     :arg range2: (tuple or list): second interval
@@ -457,6 +471,25 @@ def get_gap(range1, range2):
     if range2[0] < range1[0]:
         return get_gap(range2, range1)
     # if beginning of the range2 is inside of range1
+    if range1[1] <= range2[0]:
+        return [range1[1], range2[0]]
+    else:
+        return False
+
+
+def get_strict_gap(range1, range2):
+    """ Returns the gap of two intervals, range1 and range2, of nonzero length.
+
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (tuple): gap of range1 and range2
+    """
+    assert len(range1) == 2 or isinstance(range1, Interval)
+    assert len(range2) == 2 or isinstance(range2, Interval)
+    # if the range1 starts after range2 swap them
+    if range2[0] < range1[0]:
+        return get_strict_gap(range2, range1)
+    # if beginning of the range2 is inside of range1
     if range1[1] < range2[0]:
         return [range1[1], range2[0]]
     else:
@@ -464,7 +497,7 @@ def get_gap(range1, range2):
 
 
 def get_overlap(range1, range2):
-    """ Returns the overlap of two intervals, range1 and range2.
+    """ Returns the overlap of two intervals, range1 and range2, even of zero length.
 
     :arg range1: (tuple or list): first interval
     :arg range2: (tuple or list): second interval
@@ -499,7 +532,7 @@ def get_strict_overlap(range1, range2):
 
 
 def get_dot_overlap(range1, range2, strict):
-    """ Returns the overlap of range1 and range2 only if it is a range of nonzero length.
+    """ Returns the overlap of range1 and range2
 
     :arg range1: (tuple or list): first interval
     :arg range2: (tuple or list): second interval
@@ -551,6 +584,40 @@ def has_dot_overlap(range1, range2, strict):
         return has_strict_overlap(range1, range2)
     else:
         return has_overlap(range1, range2)
+
+
+def has_strict_gap(range1, range2):
+    """ Returns whether the range1 has a strict gap (gap of nonzero len) with range2.
+
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (bool): whether range1 has gap with range2
+    """
+    return get_strict_gap(range1, range2) is not False
+
+
+def has_gap(range1, range2):
+    """ Returns whether the range1 has an gap with range2.
+
+    :arg range1: (tuple or list): first interval
+    :arg range2: (tuple or list): second interval
+    :returns: (bool): whether range1 has gap with range2
+    """
+    return get_gap(range1, range2) is not False
+
+
+def has_dot_gap(range1, range2, strict):
+    """ Returns whether the range1 has an gap with range2.
+
+        :arg range1: (tuple or list): first interval
+        :arg range2: (tuple or list): second interval
+        :arg strict: (bool): if True point intervals are not used
+        :returns: (bool): whether range1 has gap with range2
+    """
+    if strict:
+        return has_strict_gap(range1, range2)
+    else:
+        return has_gap(range1, range2)
 
 
 def is_before(range1, range2):

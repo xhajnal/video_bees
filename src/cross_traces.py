@@ -12,7 +12,7 @@ from counts import *
 from config import *
 from dave_io import load_decisions, save_decisions, save_the_decisions
 from misc import is_in, delete_indices, dictionary_of_m_overlaps_of_n_intervals, get_overlap, to_vect, \
-    calculate_cosine_similarity, flatten, has_strict_overlap, margin_range, has_dot_overlap, get_gap
+    calculate_cosine_similarity, flatten, has_strict_overlap, margin_range, has_dot_overlap, get_strict_gap
 from trace import Trace
 from primal_traces_logic import get_traces_from_range
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, merge_two_overlapping_traces, \
@@ -757,7 +757,7 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
             if abs(trace1.frame_range[1] - trace2.frame_range[0]) < 100:
                 # print(traces[index][str(trace1.frame_range[1])][1])
                 # print(traces[index2][str(trace2.frame_range[0])][1])
-                gap_range = get_gap(trace1.frame_range, trace2.frame_range)
+                gap_range = get_strict_gap(trace1.frame_range, trace2.frame_range)
                 overlap_range = get_overlap(trace1.frame_range, trace2.frame_range)
 
                 point_distance = math.dist(list(map(float, (trace1.locations[-1]))),
