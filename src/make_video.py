@@ -553,7 +553,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
                     del locations_of_traces[trace_index][0]
 
             if show:
-                if not frame_range or int(video.get(1)) <= trim_offset + frame_range[1]:
+                if not frame_range or int(video.get(1)) <= trim_offset + frame_range[1] or go_outside:
                     cv2.putText(img=frame, text=str(frame_number), org=(15, 30), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1.0, color=(125, 246, 55), thickness=4)
                     cv2.imshow("video", frame)
 
@@ -567,7 +567,6 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
                         locations_of_traces.append([])
                     go_to_trace_start(*goto)
                     goto = None
-
 
                 # if key == ord('f') or key == ord('F'):
                 #     if frame_range:

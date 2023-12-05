@@ -34,7 +34,6 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
 
     to_skip_tuples = list(to_skip_tuples)
 
-    ## TODO probably a mistake here, too many in overlaps and none in gaps (20190922_121938174_2BEES_generated_20210913_085059_nn)
     gaps = get_gaps_of_traces(list(map(lambda a: a.frame_range, traces)), debug=debug)
     overlaps = dictionary_of_m_overlaps_of_n_intervals(2, list(map(lambda a: a.frame_range, traces)), strict=False, skip_whole_in=True)
 
@@ -60,16 +59,8 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         min_range = min([trace1.frame_range[0], trace2.frame_range[0]])
         max_range = max([trace1.frame_range[1], trace2.frame_range[1]])
 
-        overlap = get_overlap(trace1.frame_range, trace2.frame_range)
+        is_overlap = get_overlap(trace1.frame_range, trace2.frame_range)
 
-        if overlap:
-            is_overlap = True
-            show_range = overlap
-        else:
-            is_overlap = False
-            show_range = gaps[key]
-            show_range = margin_range(show_range, max(100, 0.2*range_len(show_range)))
-            show_range = list(map(round, show_range))
         print()
         print(colored(f"We have found a pair of {'overlapping' if is_overlap else 'gaping'} traces - {trace1.trace_id},{trace2.trace_id}.  {trace1.frame_range}; {trace2.frame_range}", "blue"))
 
@@ -84,8 +75,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         #                     silent=True)
 
         # to_merge = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], analyse.video_file, video_params=analyse.video_params, silent=silent, gaping=True)
-        to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], overlapping=is_overlap,
-                                                                              gaping=not is_overlap)
+        to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], overlapping=is_overlap, gaping=not is_overlap)
 
         if to_merge is True:
             if is_overlap:
