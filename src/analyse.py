@@ -19,7 +19,7 @@ from traces_logic import compute_whole_frame_range, get_video_whole_frame_range,
     smoothen_traces_from_saved_decisions, fix_decisions
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist, save_traces_as_csv, load_traces, \
-    load_decisions, purge_result, save_decisions
+    load_decisions, purge_result, save_decisions, check_folders_existence
 from triplets import merge_overlapping_triplets_of_traces, merge_overlapping_triplets_brutto, \
     merge_triplets_by_partition
 from visualise import scatter_detection, show_plot_locations, show_overlaps, show_gaps
@@ -250,6 +250,9 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
 
     has_video = True if output_video_file else False
     # print(output_video_file)
+
+    # make sure the folders exist
+    check_folders_existence()
 
     ###################
     # PURGE THE RESULTS

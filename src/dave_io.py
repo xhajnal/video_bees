@@ -17,6 +17,35 @@ from trace import Trace
 from config import *
 
 
+## FOLDERS CHECKING
+def check_folders_existence():
+    """ Validates the existence of required folders for I/O purposes"""
+    try:
+        os.mkdir("../output")
+    except OSError:
+        pass
+
+    try:
+        os.mkdir("../output/traces")
+    except OSError:
+        pass
+
+    try:
+        os.mkdir(f"../output/traces/{hash_config()}")
+    except OSError:
+        pass
+
+    try:
+        os.mkdir("../output/partial")
+    except OSError:
+        pass
+
+    try:
+        os.mkdir("../output/video")
+    except OSError:
+        pass
+
+
 ## TRIMMING AND CROPPING SPECIFIC
 def get_video_path(file_path):
     """ Obtain the path of the video files. This may be case specific.
@@ -229,11 +258,6 @@ def save_current_result(counts, file_name, population_size, is_guided, is_force_
 
     this_config_hash = hash_config()
 
-    ## CHECK
-    try:
-        os.mkdir("../output")
-    except OSError:
-        pass
     # check all counts are counted
     assert len(counts) == 7
 
@@ -507,16 +531,6 @@ def save_traces_as_csv(traces, file_name, silent=False, debug=False, is_first_ru
     print(colored("SAVE TRACES AS CSV", "blue"))
     start_time = time()
 
-    try:
-        os.mkdir("../output")
-    except OSError:
-        pass
-
-    try:
-        os.mkdir("../output/traces")
-    except OSError:
-        pass
-
     # digit = parse_population_size(file_name)
     # if digit is not False:
     #     try:
@@ -762,11 +776,6 @@ def save_decisions(content, silent=False):
     """
     csv_file_path = analyse.get_curr_csv_file_path()
     csv_file = Path(csv_file_path).stem
-
-    try:
-        os.mkdir("../output/partial")
-    except OSError:
-        pass
 
     path = f"../output/partial/{csv_file}.p"
     with open(path, 'wb') as file:
