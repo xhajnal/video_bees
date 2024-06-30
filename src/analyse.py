@@ -152,7 +152,7 @@ def set_is_video_original(is_original):
     is_video_original = is_original
 
 
-def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, to_purge=False, do_save_traces=True):
+def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_run=None, to_purge=False, do_save_traces=True, hard_rerun=False):
     """ Runs the whole file analysis.
 
         :arg csv_file_path: (str): path to csv file
@@ -161,6 +161,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         :arg is_first_run: (bool): iff True, all guided mechanics are hidden, csv is stored in this folder
         :arg to_purge: (bool): iff True, will only purge current results of respective file and config setting
         :arg do_save_traces: (bool): iff True will save the traces
+        :arg hard_rerun: (bool): iff True it wil always rerun, regardless the existence of the results
     """
     global just_annotate
     global just_align
@@ -227,6 +228,9 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     if show_plots is False:
         set_show_all_plots(False)
 
+    if hard_rerun:
+        set_rerun(True)
+
     #################
     # Internal params
     #################
@@ -273,7 +277,15 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         # LOAD PICKLE / PARSE CSV
         #########################
         if is_first_run is False:
-            traces = load_traces(traces_file)
+            try:
+                traces = load_traces(traces_file)
+            except FileNotFoundError:
+                print(colored("Pickle file of the first run not found, gonna rerun it now.", "yellow"))
+                # rerunning the first run to get the results back
+                analyse(csv_file_path, population_size, has_tracked_video=has_tracked_video, is_first_run=True,
+                        to_purge=to_purge, do_save_traces=do_save_traces, hard_rerun=True)
+                traces = load_traces(traces_file)
+
         ## First run and the pickled file already exists, we can skip this
         elif is_first_run is True and pickled_exist(csv_file_path, is_first_run=is_first_run):
             print(colored("This file already has saved pickled file, hence was successfully run", "green"))
