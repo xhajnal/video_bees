@@ -62,6 +62,7 @@ class Trace:
         self.overlap_frames = []
 
         # Compute trace_length(s)
+
         for index, frame in enumerate(frames):
             self.frames_list.append(frame)
             if debug:
@@ -95,6 +96,44 @@ class Trace:
                     # print(trace)
                     # print("Error:", str(err))
                     raise err
+
+    # ## TODO add tests
+    # def recompute_trace_length(self):
+    #     """ Recomputes all length dependant params from scratch. """
+    #
+    #     previous_max_step_len = self.max_step_len
+    #     previous_max_step_len_step_index = self.max_step_len_step_index
+    #     previous_max_step_len = self.max_step_len_step_index
+    #     previous_max_step_len_line = self.max_step_len_line
+    #
+    #     self.max_step_len = 0
+    #     self.max_step_len_step_index = None
+    #     self.max_step_len_line = None
+    #     self.max_step_len_frame_number = None
+    #
+    #     self.trace_lengths = dict()
+    #     self.trace_length = 0
+    #
+    #     for index, frame in enumerate(self.get_frame_list()):
+    #         self.frames_list.append(frame)
+    #         try:
+    #             step_len = math.dist(list(map(float, self.locations[index])),
+    #                                  list(map(float, self.locations[index+1])))
+    #             approx_step_len = round(step_len, 6)
+    #             if approx_step_len in self.trace_lengths.keys():  # count the number of lengths
+    #                 self.trace_lengths[approx_step_len] = self.trace_lengths[approx_step_len] + 1
+    #             else:
+    #                 self.trace_lengths[approx_step_len] = 1
+    #             if step_len > self.max_step_len:  # Set max step len
+    #                 self.max_step_len = step_len
+    #                 self.max_step_len_step_index = index
+    #                 if step_len == previous_max_step_len:
+    #                     self.max_step_len_line = previous_max_step_len_line
+    #                 self.max_step_len_frame_number = frame
+    #             self.trace_length = self.trace_length + step_len
+    #         except IndexError as err:
+    #             if not frame == self.frame_range[1]:
+    #                 raise err
 
     def get_hash(self):
         """ Returns a hash of the class."""

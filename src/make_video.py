@@ -329,7 +329,7 @@ def show_single_trace(index):
 
 
 def go_to_trace_start(index, traces_to_show, trim_offset):
-    """ In the video, goes to the beginning of the given trace.
+    """ In the video, go to the beginning frame of the given trace.
 
     :arg index: (int): index of the trace to be shown from traces_to_show
     :arg traces_to_show: (list): the list of traces to be shown in the video
@@ -432,6 +432,7 @@ def annotate_video(input_video, output_video, traces_to_show, frame_range, speed
     else:
         if show:
             print("Press q (while video window) to stop the video and continue to question. \nPress r to restart, a to rewind, d to forward, - to slow down, + to speed up.")
+            print("In the Window that pops up, use right(left) click on the last column to get to beginning of the respective trace (within the scope of this footage).")
             # print("Press 0-9 to show only respective trace, Enter to start the video when the trace starts, or . to show all traces")
             if qt_working:
                 print("Press Ctrl+P to show trace management - deleting, undeleting and showing the traces.")

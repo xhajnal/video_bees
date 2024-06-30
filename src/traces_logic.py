@@ -1004,6 +1004,42 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
 
 
 # TODO add tests
+def trim_trace_with_id(trace_id, start_frame, end_frame):
+    """ Trims a trace with a given trace_id.
+
+    :arg trace_id: (int): trace id of the trace to be deleted
+    :arg start_frame: (int): starting frame to be trimmed (including)
+    :arg end_frame: (int): end frame to be trimmed (including)
+    """
+    trim_len = end_frame - start_frame + 1
+
+    for index, trace in enumerate(analyse.traces):
+        # print(f"looking at index {index}")
+        if trace.trace_id == trace_id:
+            # trim from start
+            if trace.frame_range[0] == start_frame:
+                trace.frame_range = [end_frame+1, trace.frame_range[1]]
+                trace.frames_list = trace.frames_list[trim_len:]
+                trace.locations = trace.locations[trim_len:]
+                trace.recalculate_trace_lengths()
+            # trim from end
+            elif trace.frame_range[1] == end_frame:
+                trace.frame_range = [trace.frame_range[0], start_frame-1]
+                trace.frames_list = trace.frames_list[:-trim_len-1]
+                trace.locations = trace.locations[:-trim_len-1]
+                trace.recalculate_trace_lengths()
+            elif end_frame < start_frame:
+                print(colored("Could not trim as the selected range ends before it starts.", "red"))
+            elif start_frame < trace.frame_range[0] or end_frame > trace.frame_range[1]:
+                print(colored("Could not trim as the selected range is outside of the frame range of the trace.", "red"))
+            else:
+                raise NotImplemented("Trimming a trace in between not implemented yet.")
+
+            return
+    print(colored(f"Trace with id {trace_id} not found.", "red"))
+
+
+# TODO add tests
 def delete_trace_with_id(trace_id):
     """ Deletes a trace with a trace_id from the list of traces + save decisions.
 

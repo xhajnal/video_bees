@@ -53,22 +53,27 @@ class App(tk.Tk):
             button_1.trace_id = trace.trace_id
             button_1.bind('<Button-1>', onButton_Handler_highlight_trace)
 
-            button_2 = ttk.Button(frame, text=f"Delete Trace {trace.trace_id}")
+            button_2 = ttk.Button(frame, text=f"Trimm Trace {trace.trace_id}")
             button_2.grid(column=1, row=1 + index)
             button_2.trace_id = trace.trace_id
-            button_2.bind('<Button-1>', OnButton_Handler_delete_trace)
+            button_2.bind('<Button-1>', self.OnButton_Handler_trim_trace)
 
-            button_3 = ttk.Button(frame, text=f"UnDelete Trace {trace.trace_id}")
+            button_3 = ttk.Button(frame, text=f"Delete Trace {trace.trace_id}")
             button_3.grid(column=2, row=1 + index)
-            button_3.index = index
             button_3.trace_id = trace.trace_id
-            button_3.bind('<Button-1>', OnButton_Handler_undelete_trace)
+            button_3.bind('<Button-1>', OnButton_Handler_delete_trace)
 
-            button_4 = ttk.Button(frame, text=f"[{trace.frame_range[0]},{trace.frame_range[1]}]")
+            button_4 = ttk.Button(frame, text=f"UnDelete Trace {trace.trace_id}")
             button_4.grid(column=3, row=1 + index)
             button_4.index = index
-            button_4.bind('<Button-1>', OnButton_Handler_go_to_frame)
-            button_4.bind('<Button-3>', OnButton_Handler_go_to_frame2)
+            button_4.trace_id = trace.trace_id
+            button_4.bind('<Button-1>', OnButton_Handler_undelete_trace)
+
+            button_5 = ttk.Button(frame, text=f"[{trace.frame_range[0]},{trace.frame_range[1]}]")
+            button_5.grid(column=4, row=1 + index)
+            button_5.index = index
+            button_5.bind('<Button-1>', OnButton_Handler_go_to_frame)
+            button_5.bind('<Button-3>', OnButton_Handler_go_to_frame2)
 
         for widget in frame.winfo_children():
             widget.grid(padx=5, pady=5)
@@ -84,6 +89,45 @@ class App(tk.Tk):
                 pass
         self.after(1, self.check_to_quit)
         # print("killed gui rn")
+
+
+
+    def OnButton_Handler_trim_trace(self, event):
+
+        # Toplevel object which will
+        # be treated as a new window
+        newWindow = tk.Toplevel(self)
+
+        # sets the title of the
+        # Toplevel widget
+        newWindow.title("New Window")
+
+        # sets the geometry of toplevel
+        newWindow.geometry("200x200")
+
+
+
+        tk.Label(newWindow, text=f"Trimming a trace with id {event.widget.trace_id}").pack()
+
+
+        tk.Label(newWindow, text=f"Starting frame of trimming (including)").pack()
+        self.start_entry = tk.Entry(newWindow, width=10)
+        self.start_entry.pack()
+
+
+
+        tk.Label(newWindow, text=f"End frame of trimming (including)").pack()
+        self.end_entry = tk.Entry(newWindow, width=10)
+        self.end_entry.pack()
+
+        self.current_id = event.widget.trace_id
+
+        btn = ttk.Button(newWindow, text="Trim")
+        btn.bind('<Button-1>', self.OnButton_Handler_trim_trace2)
+        btn.pack(pady=10)
+
+    def OnButton_Handler_trim_trace2(self, event):
+        traces_logic.trim_trace_with_id(self.current_id, int(self.start_entry.get()), int(self.end_entry.get()))
 
     ## Key press handlers
     def keydown(self, event):
