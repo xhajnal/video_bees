@@ -103,22 +103,24 @@ class App(tk.Tk):
         newWindow.title("New Window")
 
         # sets the geometry of toplevel
-        newWindow.geometry("200x200")
+        newWindow.geometry("230x180")
 
-
+        frame_range = [0, 0]
+        for trace in analyse.traces:
+            if trace.trace_id == event.widget.trace_id:
+                frame_range = trace.frame_range
 
         tk.Label(newWindow, text=f"Trimming a trace with id {event.widget.trace_id}").pack()
-
 
         tk.Label(newWindow, text=f"Starting frame of trimming (including)").pack()
         self.start_entry = tk.Entry(newWindow, width=10)
         self.start_entry.pack()
-
-
+        self.start_entry.insert(0, str(frame_range[0]))
 
         tk.Label(newWindow, text=f"End frame of trimming (including)").pack()
         self.end_entry = tk.Entry(newWindow, width=10)
         self.end_entry.pack()
+        self.end_entry.insert(0, str(frame_range[1]))
 
         self.current_id = event.widget.trace_id
 
