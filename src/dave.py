@@ -30,7 +30,16 @@ def run(is_first_run=None):
     """
     a = is_first_run
     ############################################# SINGLE BEE #######################################################
-    ## 190822
+    ## 2024
+    # 1stRun  ->  ->
+    # finalRun  ->  ->
+    analyse('../data/Video_tracking/2024/140819567_1BEE_nn.csv', 1, is_first_run=a)
+
+    # 1stRun  ->  ->
+    # finalRun  ->  ->
+    analyse('../data/Video_tracking/2024/141243481_1BEE_nn.csv', 1, is_first_run=a)
+
+    # 190822
     # 1stRun 1 -> 1 -> 1 *
     #  ->  ->
     analyse('../data/Video_tracking/190822/20190822_111607344_1BEE_generated_20210430_080914_nn.csv', 1, is_first_run=a)
@@ -324,6 +333,11 @@ def run(is_first_run=None):
     analyse('../data/Video_tracking/191018/20191018_123336571_1BEE_generated_20220126_083927_nn.csv', 1, is_first_run=a)
 
     ############################################# 2 BEES #######################################################
+    ## 2024
+    # 1stRun  ->  ->
+    # finalRun  ->  ->
+    analyse('../data/Video_tracking/2024/141917542_2BEE_nn.csv', 2, is_first_run=a)
+
     ## 190822
     # 1stRun 65 -> 49 -> 33 *
     #  ->  ->
@@ -1580,9 +1594,9 @@ def run(is_first_run=None):
 
 if __name__ == "__main__":
     # align_first()
-    run(is_first_run=True)
+    # run(is_first_run=True)
     # print("get_all_overlaps_count()", get_all_overlaps_count())
     # print("get_all_allowed_overlaps_count()", get_all_allowed_overlaps_count())
     # print("get_all_seen_overlaps_deleted()", get_all_seen_overlaps_deleted())
-    # run_both()
+    run_both()
     # run_just_annotate()
