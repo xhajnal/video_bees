@@ -68,6 +68,7 @@ show_all_plots = False                          # showing all plots - also those
 allow_force_merge = False                       # allows force merge gaps and overlaps - overpassing the threshold requirements by another condition - usually the proximity of other traces
 rerun = True                                    # will execute also files with a setting which is already in the results
 save_parsed_as_pickle = True                    # will automatically store the parsed files as pickle - should speed up the load, but unnecessarily uses the disk space
+save_first_run_as_csv = False                   # will save result traces as csv as well besides pickled file
 fast_run = True                                 # will skip the least prominent parts - currently Second Gaping traces analysis
 is_full_guided = True  #(only if also guided)   # full-guided regim on/off - when the analysis is finished but there are still more traces than it should be, it goes from start in one-by-one manner
 
@@ -718,8 +719,8 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
             overwrite_file = False
 
         if do_save_traces:
-            if not is_first_run:
-                save_traces_as_csv(all_final_traces, os.path.basename(csv_file_path), silent=silent, debug=debug, is_first_run=is_first_run, overwrite_file=overwrite_file)
+            if save_first_run_as_csv or is_first_run is not True:
+                save_traces_as_csv(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run, overwrite_file=overwrite_file)
             pickle_traces(all_final_traces, csv_file_path, silent=silent, debug=debug, is_first_run=is_first_run, overwrite_file=overwrite_file)
     else:
         # Just_annotate

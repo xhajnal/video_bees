@@ -515,22 +515,24 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
     print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(results_csv_file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))
 
 
-def save_traces_as_csv(traces, file_name, silent=False, debug=False, is_first_run=None, overwrite_file=False):
+def save_traces_as_csv(traces, file_path, silent=False, debug=False, is_first_run=None, overwrite_file=False):
     """ Saves the traces as csv file in loopy manner.
 
         :arg traces (list) list of traces
-        :arg file_name: (string): name of the file to be saved in "output" folder
+        :arg file_path: (string): file_path to be stored the file, file name might be used only
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg is_first_run: (bool): iff True, does not store the traces
         :arg overwrite_file: (bool): whether to overwrite existing file
     """
-
-    if is_first_run is True:
-        return
+    #
+    # if is_first_run is True:
+    #     return
 
     print(colored("SAVE TRACES AS CSV", "blue"))
     start_time = time()
+
+    file_name = os.path.basename(file_path)
 
     # digit = parse_population_size(file_name)
     # if digit is not False:
@@ -562,7 +564,11 @@ def save_traces_as_csv(traces, file_name, silent=False, debug=False, is_first_ru
         print("frames_tracked", frames_tracked)
 
     # file_path = f"../output/traces/{'' if digit is False else str(digit)+'/'}{file_name}"
-    file_path = f"../output/traces/{hash_config()}/{file_name}"
+    if is_first_run:
+        # print(os.getcwd())
+        file_path = str(os.path.join(os.path.dirname(file_path), "after_first_run", hash_config(), file_name))
+    else:
+        file_path = f"../output/traces/{hash_config()}/{file_name}"
 
     if not os.path.isfile(file_path) or overwrite_file:
         with open(file_path, "w") as file:

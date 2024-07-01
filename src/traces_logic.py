@@ -442,6 +442,7 @@ def merge_two_traces_with_gap(trace1: Trace, trace2: Trace, interpolate_gap=None
         trace1.locations.extend(in_middle_points)
 
     else:
+        ## TODO check for these
         in_middle_point = [-1, -1]
 
         # fill the gap location as the chosen point
