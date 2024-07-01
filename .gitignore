@@ -139,7 +139,7 @@ test/test-sorted.csv
 test/help_video.mp4
 
 src/video2.py
-src/fix_folders2.py
+src/help/fix_folders2.py
 src/help/fix_aligment.py
 src/merge_result_dicts.py
 

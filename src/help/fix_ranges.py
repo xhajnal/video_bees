@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     # now using glob - all folders with original files
     from glob import glob
-    data_path = '../data/Video_tracking/'
+    data_path = '../../data/Video_tracking/'
     # get all folder names
     folders = list(os.walk(data_path))[0][1]
     if len(folders) == 0:

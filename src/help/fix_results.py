@@ -16,7 +16,7 @@ def check_setting():
     start_time = time()
 
     ## LOAD SAVED RESULTS TO UPDATE IT
-    with open("../output/results.txt") as file:
+    with open("../../output/results.txt") as file:
         results = json.load(file)
 
     for file in results.keys():
@@ -39,7 +39,7 @@ def check_setting():
             except KeyError:
                 results[file][timestamp]["population_size"] = int(population_size)
 
-    with open("../output/results.txt", 'w') as file:
+    with open("../../output/results.txt", 'w') as file:
         file.write(json.dumps(results))
 
 
@@ -158,7 +158,7 @@ def fix_order_setting():
     start_time = time()
 
     ## LOAD SAVED RESULTS TO UPDATE IT
-    with open("../output/results.txt") as file:
+    with open("../../output/results.txt") as file:
         results = json.load(file)
 
     results1 = {}
@@ -202,7 +202,7 @@ def fix_order_setting():
     for file in results15.keys():
         results1[file] = results15[file]
 
-    with open("../output/results.txt", 'w') as file:
+    with open("../../output/results.txt", 'w') as file:
         file.write(json.dumps(results1))
 
     convert_results_from_json_to_csv()
@@ -214,7 +214,7 @@ def fix_wrong_loaded():
     start_time = time()
 
     ## LOAD SAVED RESULTS TO UPDATE IT
-    with open("../output/results.txt") as file:
+    with open("../../output/results.txt") as file:
         results = json.load(file)
 
     for file in results.keys():
@@ -227,7 +227,7 @@ def fix_wrong_loaded():
                     if item["loaded"] not in all_loaded:
                         del results[file][my_hash][time_stamp]
 
-    with open("../output/results.txt", 'w') as file:
+    with open("../../output/results.txt", 'w') as file:
         file.write(json.dumps(results))
 
 

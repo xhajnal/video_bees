@@ -2,10 +2,10 @@ import glob
 import os
 import shutil
 
-os.chdir("../data/Video_tracking")
+os.chdir("../../data/Video_tracking")
 
 ## for each subfolder (day of tracking)
-for folder in next(os.walk('.'))[1]:
+for folder in next(os.walk('..'))[1]:
     print(folder)
     # make a folder original inside
     try:
@@ -33,5 +33,5 @@ for folder in next(os.walk('.'))[1]:
         # print("file", os.path.basename(file))
         shutil.move(f"{os.path.basename(file)}", f"original/{os.path.basename(file)}")
 
-    os.chdir("..")
+    os.chdir("../..")
     print()
