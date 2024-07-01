@@ -84,6 +84,7 @@ def get_video_path(file_path):
         output_video_file = ""
     else:
         video_file = video_files[0]
+        video_file = os.path.join(video_file).replace("\\", "/")
         try:
             os.mkdir("../output")
         except OSError:
@@ -92,7 +93,7 @@ def get_video_path(file_path):
             os.mkdir("../output/video")
         except OSError:
             pass
-        output_video_file = os.path.join("..", "output", "video", os.path.basename(video_file))
+        output_video_file = os.path.join("..", "output", "video", os.path.basename(video_file)).replace("\\", "/")
         # print("default output_video_file:", output_video_file)
 
     return video_file, output_video_file, is_video_original
