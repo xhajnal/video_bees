@@ -16,6 +16,8 @@ class App(tk.Tk):
         super().__init__()
         """ A Frame that shows GUI to edit the traces shown in the video """
 
+        newWindow = None
+
         self.title('Traces Editor')
         self.resizable(0, 0)
         try:
@@ -53,7 +55,7 @@ class App(tk.Tk):
             button_1.trace_id = trace.trace_id
             button_1.bind('<Button-1>', onButton_Handler_highlight_trace)
 
-            button_2 = ttk.Button(frame, text=f"Trimm Trace {trace.trace_id}")
+            button_2 = ttk.Button(frame, text=f"Trim Trace {trace.trace_id}")
             button_2.grid(column=1, row=1 + index)
             button_2.trace_id = trace.trace_id
             button_2.bind('<Button-1>', self.OnButton_Handler_trim_trace)
@@ -90,46 +92,40 @@ class App(tk.Tk):
         self.after(1, self.check_to_quit)
         # print("killed gui rn")
 
-
-
     def OnButton_Handler_trim_trace(self, event):
+        self.newWindow = tk.Toplevel(self)
 
-        # Toplevel object which will
-        # be treated as a new window
-        newWindow = tk.Toplevel(self)
-
-        # sets the title of the
-        # Toplevel widget
-        newWindow.title("New Window")
-
-        # sets the geometry of toplevel
-        newWindow.geometry("230x180")
+        self.newWindow.title("New Window")
+        self.newWindow.geometry("260x180")
 
         frame_range = [0, 0]
         for trace in analyse.traces:
             if trace.trace_id == event.widget.trace_id:
                 frame_range = trace.frame_range
 
-        tk.Label(newWindow, text=f"Trimming a trace with id {event.widget.trace_id}").pack()
+        tk.Label(self.newWindow, text=f"Trimming a trace with id {event.widget.trace_id}").pack()
+        tk.Label(self.newWindow, text=f"Select a part of the trace to be trimmed out.").pack()
 
-        tk.Label(newWindow, text=f"Starting frame of trimming (including)").pack()
-        self.start_entry = tk.Entry(newWindow, width=10)
+        tk.Label(self.newWindow, text=f"Starting frame of trimming (including)").pack()
+        self.start_entry = tk.Entry(self.newWindow, width=10)
         self.start_entry.pack()
         self.start_entry.insert(0, str(frame_range[0]))
 
-        tk.Label(newWindow, text=f"End frame of trimming (including)").pack()
-        self.end_entry = tk.Entry(newWindow, width=10)
+        tk.Label(self.newWindow, text=f"End frame of trimming (including)").pack()
+        self.end_entry = tk.Entry(self.newWindow, width=10)
         self.end_entry.pack()
         self.end_entry.insert(0, str(frame_range[1]))
 
         self.current_id = event.widget.trace_id
 
-        btn = ttk.Button(newWindow, text="Trim")
+        btn = ttk.Button(self.newWindow, text="Trim")
         btn.bind('<Button-1>', self.OnButton_Handler_trim_trace2)
         btn.pack(pady=10)
 
     def OnButton_Handler_trim_trace2(self, event):
         traces_logic.trim_trace_with_id(self.current_id, int(self.start_entry.get()), int(self.end_entry.get()))
+        self.newWindow.destroy()
+
 
     ## Key press handlers
     def keydown(self, event):
