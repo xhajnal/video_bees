@@ -702,6 +702,7 @@ def merge_two_overlapping_traces(trace1: Trace, trace2: Trace, trace1_index, tra
     assert isinstance(trace1, Trace)
     assert isinstance(trace2, Trace)
     if not has_overlap(trace1.frame_range, trace2.frame_range):
+        ## TODO call merge_two_traces_with_gap
         raise Exception("The two traces have no overlap. Try using function 'merge_two_traces_with_gap' instead.")
     else:
         overlap = get_overlap(trace1.frame_range, trace2.frame_range)
@@ -1005,30 +1006,36 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
 
 
 # TODO add tests
-def trim_trace_with_id(trace_id, start_frame, end_frame):
+def trim_trace_with_id(trace_id, start_frame, end_frame, debug=False):
     """ Trims a trace with a given trace_id.
 
     :arg trace_id: (int): trace id of the trace to be deleted
     :arg start_frame: (int): starting frame to be trimmed (including)
     :arg end_frame: (int): end frame to be trimmed (including)
+    :arg debug: (bool): if True extensive output is shown
     """
     trim_len = end_frame - start_frame + 1
 
     for index, trace in enumerate(analyse.traces):
         # print(f"looking at index {index}")
         if trace.trace_id == trace_id:
+            old_hash = trace.get_hash()
             # trim from start
             if trace.frame_range[0] == start_frame:
                 trace.frame_range = [end_frame+1, trace.frame_range[1]]
                 trace.frames_list = trace.frames_list[trim_len:]
                 trace.locations = trace.locations[trim_len:]
                 trace.recalculate_trace_lengths()
+                if debug:
+                    print("new trace", trace)
             # trim from end
             elif trace.frame_range[1] == end_frame:
                 trace.frame_range = [trace.frame_range[0], start_frame-1]
                 trace.frames_list = trace.frames_list[:-trim_len-1]
                 trace.locations = trace.locations[:-trim_len-1]
                 trace.recalculate_trace_lengths()
+                if debug:
+                    print("new trace", trace)
             elif end_frame < start_frame:
                 print(colored("Could not trim as the selected range ends before it starts.", "red"))
             elif start_frame < trace.frame_range[0] or end_frame > trace.frame_range[1]:
@@ -1036,6 +1043,8 @@ def trim_trace_with_id(trace_id, start_frame, end_frame):
             else:
                 raise NotImplemented("Trimming a trace in between not implemented yet.")
 
+            analyse.decisions[("trim_trace", trace.trace_id, old_hash), start_frame, end_frame] = True
+            save_the_decisions()
             return
     print(colored(f"Trace with id {trace_id} not found.", "red"))
 
