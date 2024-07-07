@@ -692,7 +692,13 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         # video_windows_tkinter.create_main_window(traces, None, trim_offset)
         if is_full_guided:
             if len(traces)+len(removed_full_traces) > original_population_size and guided:
-                full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params, has_tracked_video=has_tracked_video)
+                traces_count_before = len(traces) + 1
+                traces_count_now = len(traces)
+
+                while len(traces) > 1 and traces_count_before > traces_count_now:
+                    traces_count_before = len(traces)
+                    full_guided(traces, input_video=video_file, show=show_plots, silent=silent, debug=debug, video_params=video_params, has_tracked_video=has_tracked_video)
+                    traces_count_now = len(traces)
 
             ## VISUALISATIONS
             if show_all_plots:

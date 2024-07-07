@@ -47,8 +47,18 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             skip_this = False
             continue
 
-        trace1 = traces[key[0]]
-        trace2 = traces[key[1]]
+        try:
+            trace1 = traces[key[0]]
+        except IndexError as err:
+            print("key[0]", key[0])
+            raise err
+
+        try:
+            trace2 = traces[key[1]]
+        except IndexError as err:
+            print("key[1]", key[1])
+            raise err
+        
         # trace1_index = key[0]
         # trace2_index = key[1]
 
@@ -81,6 +91,6 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             removed_traces.append(traces[key[1]])
 
     # Actually delete the given traces now
-    delete_indices(traces_indices_to_be_removed, traces, debug=False)
+    delete_indices(traces_indices_to_be_removed, traces, debug=debug)
 
     return traces, removed_traces
