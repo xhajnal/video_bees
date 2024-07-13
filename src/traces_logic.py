@@ -967,18 +967,18 @@ def ask_to_merge_two_traces_and_save_decision(all_traces, selected_traces, trace
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=selected_range, trace_ids_to_skip=trace_ids_to_skip)
             show_video(input_video=analyse.video_file, traces=traces_to_show, frame_range=margin_range(show_range, 115),
                        video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=2)
-            to_merge_by_user = input("Merge these traces now? (yes or no)")
+            to_merge_by_user = input("Merge these traces now? (Yes or No or Dunno)")
         elif "f" in to_merge_by_user.lower():
             traces_to_show = order_traces(all_traces, [trace1, trace2])
             show_video(input_video=analyse.video_file, traces=traces_to_show,
                        video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=2)
-            to_merge_by_user = input("Merge these traces now? (yes or no)")
+            to_merge_by_user = input("Merge these traces now? (Yes or No or Dunno)")
         elif "b" in to_merge_by_user.lower():
             traces_to_show = order_traces(all_traces, [trace1, trace2], selected_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15))
             show_video(input_video=analyse.video_file, traces=traces_to_show,
                        frame_range=(trace1.frame_range[0] - 15, trace2.frame_range[1] + 15),
                        video_speed=0.02, wait=True, video_params=analyse.video_params, fix_x_first_colors=2)
-            to_merge_by_user = input("Merge these traces now? (yes or no)")
+            to_merge_by_user = input("Merge these traces now? (Yes or No or Dunno)")
 
         if "n" in to_merge_by_user.lower():
             if overlapping:

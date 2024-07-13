@@ -25,6 +25,9 @@ goto = None
 global go_outside
 go_outside = False
 
+
+da_frame = 5000
+
 def make_named_window():
     """ Makes a named opencv window"""
     if "lin" in platform:
@@ -810,7 +813,6 @@ def align_the_video(traces, video_file, csv_file_path):
     #             da_traces = list(dictionary.keys())[0]
     #             break
 
-    da_frame = 5000
     points = []
     for trace in traces:
         assert isinstance(trace, Trace)
@@ -885,8 +887,6 @@ def obtain_arena_boundaries(video_file, csv_file_path, center, diameter):
     :arg diameter: (int): diameter of the arena (in pixels)
     :return: new_center, new_diameter
     """
-
-    da_frame = 5000
 
     x, y = center
 
