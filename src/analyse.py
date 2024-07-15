@@ -31,6 +31,7 @@ global real_whole_frame_range
 global whole_frame_range
 global video_params
 global deleted_traces
+global new_trace_ids_to_be_deleted
 
 ## I/O
 global crop_offset
@@ -170,6 +171,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     global video_file
     global video_params
     global deleted_traces
+    global new_trace_ids_to_be_deleted
     global crop_offset
     global trim_offset
     global is_video_original
@@ -179,6 +181,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
     global arena_boundaries_file
 
     deleted_traces = {}
+    new_trace_ids_to_be_deleted = []
 
     set_curr_csv_file_path(csv_file_path)
 

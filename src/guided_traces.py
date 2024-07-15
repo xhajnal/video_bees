@@ -80,7 +80,29 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         #                     subtitle=f"Triplet {trace1_index}({trace1.trace_id}) blue, {trace2_index}({trace2.trace_id}) orange.",
         #                     silent=True)
 
+        ## Check all the traces have been processed
+        if len(analyse.new_trace_ids_to_be_deleted) > 0:
+            raise Exception("At some point we did not deal with new traces to be deleted.")
+
         to_merge, video_was_shown = ask_to_merge_two_traces_and_save_decision(traces, [trace1, trace2], overlapping=is_overlap, gaping=not is_overlap)
+
+        ## Check for new traces to be deleted while video was shown
+        for index, trace_id in analyse.new_trace_ids_to_be_deleted:
+            if traces[index].trace_id == trace_id:
+                traces_indices_to_be_removed.append(index)
+                removed_traces.append(traces[index])
+            else:
+                raise Exception("While trying to delete a trace the traces changed.")
+        analyse.new_trace_ids_to_be_deleted = []
+
+        # for trace_id in analyse.new_trace_ids_to_be_deleted:
+        #     for index, trace in enumerate(traces):
+        #         if trace.trace_id == trace_id:
+        #             traces_indices_to_be_removed.append(index)
+        #             removed_traces.append(trace)
+        #             break
+        #         raise Exception(f"trace id {trace_id} not found in traces to be deleted")
+        # analyse.new_trace_ids_to_be_deleted = []
 
         if to_merge is True:
             if is_overlap:

@@ -1069,8 +1069,10 @@ def delete_trace_with_id(trace_id):
             # Save deleted trace
             analyse.deleted_traces[trace_id] = analyse.traces[index]
 
+            analyse.new_trace_ids_to_be_deleted.append((index, trace_id))
+            ## TODO make this appropriate
             # Delete the trace
-            del analyse.traces[index]
+            # del analyse.traces[index]
 
             # TODO UNCOMMENT THIS AFTER BEING FIXED
             # for index2, trace2 in enumerate(traces_to_show):
