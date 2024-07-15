@@ -91,6 +91,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
             if traces[index].trace_id == trace_id:
                 traces_indices_to_be_removed.append(index)
                 removed_traces.append(traces[index])
+                traces[index] = None
             else:
                 raise Exception("While trying to delete a trace the traces changed.")
         analyse.new_trace_ids_to_be_deleted = []
