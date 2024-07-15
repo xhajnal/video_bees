@@ -46,6 +46,8 @@ class App(tk.Tk):
         show_all_traces_button.bind('<Button-1>', show_all_traces)
 
         for index, trace in enumerate(traces):
+            if trace is None:
+                continue
             if trace.trace_id != traces[index].trace_id:
                 raise Exception("internal indexing problem")
 
@@ -100,6 +102,9 @@ class App(tk.Tk):
 
         frame_range = [0, 0]
         for trace in analyse.traces:
+            if trace is None:
+                continue
+
             if trace.trace_id == event.widget.trace_id:
                 frame_range = trace.frame_range
 

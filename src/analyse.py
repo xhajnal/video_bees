@@ -423,6 +423,8 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         print(colored(f"TRACE JUMP BACK AND FORTH CHECKER", "blue"))
         number_of_jump_detected = 0
         for index, trace in enumerate(traces):
+            if trace is None:
+                continue
             number_of_jump_detected = number_of_jump_detected + track_jump_back_and_forth(trace, index, guided=False, show_plots=True, silent=silent, debug=debug)
         print(colored(f"We have found and fixed {number_of_jump_detected} jumps. "
                       f"It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "green"))
@@ -496,6 +498,8 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         if not silent:
             print(colored(f"After trimming overlapping redundant traces and putting gaping traces together there are {len(traces)} left:", "yellow"))
             for index, trace in enumerate(traces):
+                if trace is None:
+                    continue
                 print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
             print()
 
@@ -635,6 +639,8 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         if debug:
             print(colored(f"After merging overlapping traces together there are {len(traces)} left:", "yellow"))
             for index, trace in enumerate(traces):
+                if trace is None:
+                    continue
                 print(f"trace {trace.trace_id} of range {trace.frame_range} and length {trace.frame_range_len}")
             print()
 

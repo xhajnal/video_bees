@@ -298,6 +298,8 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
                     # if debug:
                     #     print(f"FALLBACK overlap {overlap}")
                     for index, trace in enumerate(traces_subset):
+                        if trace is None:
+                            continue
                         # if debug:
                         #     print(f"FALLBACK trace {traces_subset_indices[index]} of frame range {traces[traces_subset_indices[index]].frame_range}")
                         ## Skip trace already added to be deleted
@@ -751,7 +753,11 @@ def cross_trace_analyse(traces, guided=False, silent=False, debug=False):
 
     # CHECK THE TRACES PAIR BY PAIR
     for index, trace1 in enumerate(traces):
+        if trace1 is None:
+            continue
         for index2, trace2 in enumerate(traces):
+            if trace2 is None:
+                continue
             if index >= index2:
                 continue
             if abs(trace1.frame_range[1] - trace2.frame_range[0]) < 100:

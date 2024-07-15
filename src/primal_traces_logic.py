@@ -103,6 +103,9 @@ def get_traces_from_range(traces, interval, fully_inside=False, strict=True):
     traces_in_range = []
     trace_indices_in_range = []
     for index, trace in enumerate(traces):
+        if trace is None:
+            continue
+
         assert isinstance(trace, Trace)
         if fully_inside:
             if is_in(trace.frame_range, interval):

@@ -546,6 +546,8 @@ def save_traces_as_csv(traces, file_path, silent=False, debug=False, is_first_ru
     tracking_to_trace_index = {}
 
     for index, trace in enumerate(traces):
+        if trace is None:
+            continue
         assert isinstance(trace, Trace)
         frames = trace.frames_list
         trackings.extend(frames)

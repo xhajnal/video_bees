@@ -46,6 +46,8 @@ def show_plot_locations(traces, whole_frame_range=False, from_to_frame=False, sh
         print(colored("SHOW PLOT LOCATIONS", "blue"))
     start_time = time()
     for index, trace in enumerate(traces):
+        if trace is None:
+            continue
         if len(traces) == 1:
             figs = trace.show_trace_in_xy(whole_frame_range=whole_frame_range, from_to_frame=from_to_frame, show=True, show_middle_point=show_middle_point, subtitle=subtitle, silent=silent, debug=debug)
         elif index == 0:
@@ -87,6 +89,8 @@ def scatter_detection(traces, whole_frame_range=False, from_to_frame=False, subt
     vertical_margin = get_vertical_margin(len(traces))
 
     for index, trace in enumerate(traces_to_show):
+        if trace is None:
+            continue
         assert isinstance(trace, Trace)
 
         x = trace.frames_list

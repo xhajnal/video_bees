@@ -1017,6 +1017,8 @@ def trim_trace_with_id(trace_id, start_frame, end_frame, debug=False):
     trim_len = end_frame - start_frame + 1
 
     for index, trace in enumerate(analyse.traces):
+        if trace is None:
+            continue
         # print(f"looking at index {index}")
         if trace.trace_id == trace_id:
             old_hash = trace.get_hash()
@@ -1059,6 +1061,9 @@ def delete_trace_with_id(trace_id):
     ## BEES-SPECIFIC
     for index, trace in enumerate(analyse.traces[:trace_id+1]):
         # print(f"looking at index {index}")
+        if trace is None:
+            continue
+
         if trace.trace_id == trace_id:
             print(f"Deleting trace with id {trace_id}.")
 

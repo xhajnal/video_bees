@@ -41,6 +41,9 @@ def remove_full_traces(traces, removed_traces, population_size, silent=False, de
     print(colored("REMOVING TRACES OF FULL RANGE", "blue"))
     deleted = 0
     for index, trace in enumerate(traces):
+        if trace is None:
+            continue
+
         if trace.check_whether_is_done(real_whole_frame_range):
             print(colored(f"Removing trace {trace.trace_id})", "blue"))
             removed_traces.append(traces[index])
@@ -71,6 +74,8 @@ def single_trace_checker(traces, min_trace_range_len=False, vicinity=False, sile
     number_of_traces = len(traces)
 
     for index, trace in enumerate(traces):
+        if trace is None:
+            continue
         if not silent:
             print(colored(f"trace {trace}", "blue"))
         if trace.trace_length == 0:
@@ -190,6 +195,8 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
     ## CHECK FOR THE TRACES WITH BEES OUTSIDE OF THE COMPUTED ARENA
     traces_to_be_deleted = []
     for index, trace in enumerate(traces):
+        if trace is None:
+            continue
         ## CHECK FOR THE DECISIONS
         try:
             if outside_arena_decisions[("outside_arena", trace.trace_id, trace.get_hash())] is True:

@@ -97,6 +97,8 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
 
         # for trace_id in analyse.new_trace_ids_to_be_deleted:
         #     for index, trace in enumerate(traces):
+        #         if trace is None:
+        #             continue
         #         if trace.trace_id == trace_id:
         #             traces_indices_to_be_removed.append(index)
         #             removed_traces.append(trace)
@@ -111,7 +113,7 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
                 merge_two_traces_with_gap(traces[key[0]], traces[key[1]], silent=silent, debug=debug)
             traces_indices_to_be_removed.append(key[1])
             removed_traces.append(traces[key[1]])
-
+            traces[key[1]] = None
     # Actually delete the given traces now
     delete_indices(traces_indices_to_be_removed, traces, debug=debug)
 
