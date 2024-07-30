@@ -61,6 +61,8 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         
         # trace1_index = key[0]
         # trace2_index = key[1]
+        trace1_id = trace1.trace_id
+        trace2_id = trace2.trace_id
 
         # min_range = min([trace1.frame_range[0], trace2.frame_range[0]])
         # max_range = max([trace1.frame_range[1], trace2.frame_range[1]])

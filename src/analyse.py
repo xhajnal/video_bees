@@ -43,6 +43,7 @@ global point_file
 global arena_file
 global arena_boundaries_file
 global decisions
+global has_video
 
 # Concurrency
 global gonna_run
@@ -198,6 +199,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
 
     global force_new_video
     global guided
+    global has_video
 
     #################
     # Set run setting

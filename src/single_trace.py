@@ -216,7 +216,7 @@ def check_inside_of_arena(traces, csv_file_path, guided=False, silent=False, deb
             if (location[0] - mid_x)**2 + (location[1] - mid_y)**2 > (diam/2 + get_distance_from_calculated_arena())**2:
 
                 to_delete_trace = True
-                if guided:
+                if guided and analyse.has_video:
                     print(f"At {location_index}th location, this trace is {round(math.sqrt((location[0] - mid_x) ** 2 + (location[1] - mid_y) ** 2), 2)} > {round((diam/2 + get_distance_from_calculated_arena()), 2)} far from center [{mid_x}, {mid_y}]")
                     print("The white dot represents the center of the arena.")
                     show_video(input_video=analyse.video_file, traces=[trace], frame_range=margin_range(trace.frame_range, 15),
@@ -353,18 +353,18 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, guided=False
                                        frame_range=margin_range(show_range, 15),
                                        video_speed=0.02, wait=True, video_params=analyse.video_params,
                                        fix_x_first_colors=1)
-                            to_smoothen = input("Should we smoothen this trace? (yes or no):")
+                            to_smoothen = input("Should we smoothen_by_lin_space this trace? (yes or no):")
                         if "b" in to_smoothen.lower():
                             show_video(input_video=analyse.video_file, traces=[trace],
                                        frame_range=margin_range(trace.frame_range, 15),
                                        video_speed=0.02, wait=True, video_params=analyse.video_params,
                                        fix_x_first_colors=1)
-                            to_smoothen = input("Should we smoothen this trace? (yes or no):")
+                            to_smoothen = input("Should we smoothen_by_lin_space this trace? (yes or no):")
                         if "f" in to_smoothen.lower():
                             show_video(input_video=analyse.video_file, traces=[trace],
                                        video_speed=0.02, wait=True, video_params=analyse.video_params,
                                        fix_x_first_colors=1)
-                            to_smoothen = input("Should we smoothen this trace? (yes or no):")
+                            to_smoothen = input("Should we smoothen_by_lin_space this trace? (yes or no):")
 
                         to_smoothen = True if "y" in to_smoothen.lower() else False
 
@@ -374,7 +374,7 @@ def track_jump_back_and_forth(trace, trace_index, show_plots=False, guided=False
 
                     # Smoothen the jump
                     if to_smoothen:
-                        trace.smoothen(location_index, location_index2)
+                        trace.smoothen_by_lin_space(location_index, location_index2)
 
                     # if show_plots:
                     #     trace.show_trace_in_xy(whole_frame_range, from_to_frame=[trace.frames_list[index]-2, trace.frames_list[index2]+2], show=True, subtitle=f" Smoothened jump to {trace.frames_list[jump_to_index]}")
