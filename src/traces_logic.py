@@ -1014,41 +1014,22 @@ def trim_trace_with_id(trace_id, start_frame, end_frame, debug=False):
     :arg end_frame: (int): end frame to be trimmed (including)
     :arg debug: (bool): if True extensive output is shown
     """
-    trim_len = end_frame - start_frame + 1
 
     for index, trace in enumerate(analyse.traces):
         if trace is None:
             continue
-        # print(f"looking at index {index}")
+
         if trace.trace_id == trace_id:
+            print(f"Trimming trace with id {trace_id}.")
             old_hash = trace.get_hash()
-            # trim from start
-            if trace.frame_range[0] == start_frame:
-                trace.frame_range = [end_frame+1, trace.frame_range[1]]
-                trace.frames_list = trace.frames_list[trim_len:]
-                trace.locations = trace.locations[trim_len:]
-                trace.recalculate_trace_lengths()
-                if debug:
-                    print("new trace", trace)
-            # trim from end
-            elif trace.frame_range[1] == end_frame:
-                trace.frame_range = [trace.frame_range[0], start_frame-1]
-                trace.frames_list = trace.frames_list[:-trim_len-1]
-                trace.locations = trace.locations[:-trim_len-1]
-                trace.recalculate_trace_lengths()
-                if debug:
-                    print("new trace", trace)
-            elif end_frame < start_frame:
-                print(colored("Could not trim as the selected range ends before it starts.", "red"))
-            elif start_frame < trace.frame_range[0] or end_frame > trace.frame_range[1]:
-                print(colored("Could not trim as the selected range is outside of the frame range of the trace.", "red"))
-            else:
-                raise NotImplemented("Trimming a trace in between not implemented yet.")
+
+            ## ACTUALLY TRIM THE TRACE
+            trace.trim(start_frame, end_frame, debug)
 
             analyse.decisions[("trim_trace", trace.trace_id, old_hash), start_frame, end_frame] = True
             save_the_decisions()
             return
-    print(colored(f"Trace with id {trace_id} not found.", "red"))
+    print(colored(f"Trace with id {trace_id} not found to be trimmed.", "red"))
 
 
 # TODO add tests
@@ -1090,6 +1071,7 @@ def delete_trace_with_id(trace_id):
     print(colored(f"Trace with id {trace_id} not found.", "red"))
 
 
+## TODO make tests
 def undelete_trace_with_id(trace_id, index):
     """ Undeletes a trace with a trace_id from the list of traces + unsave decision.
 
@@ -1173,7 +1155,7 @@ def ask_to_delete_a_trace(traces, input_video, possible_options, video_params=Fa
     return traces_indices_to_be_removed
 
 
-# TODO make test
+## TODO make test
 def delete_traces_from_saved_decisions(traces, silent=False, debug=False):
     """ Deletes the traces which have been previously selected to be deleted.
 
@@ -1265,6 +1247,133 @@ def delete_traces_from_saved_decisions(traces, silent=False, debug=False):
     return traces
 
 
+## TODO make tests
+def smoothen_traces_from_saved_decisions(traces, silent=False, debug=False):
+    """ Smoothens the traces which have been previously selected to be smoothened.
+
+    :arg traces: (list): a list of all Traces
+    :arg silent: (bool): if True minimal output is shown
+    :arg debug: (bool): if True extensive output is shown
+    """
+    print(colored("SMOOTHEN TRACES FROM DECISIONS", "blue"))
+
+    indices_to_smoothen = []
+
+    new_decisions = {}
+    for key, value in analyse.decisions.items():
+        if key[0] == 'smoothen_trace':
+            new_decisions[key] = value
+
+    new_decisions = list(sorted(new_decisions))
+    # print(new_decisions)
+
+    i = 0
+    j = 0
+
+    while i < len(new_decisions):
+        if debug:
+            print("i", i)
+        while j < len(traces):
+            if debug:
+                print("j", j)
+            # if the trace.id to be deleted is further, move the traces index
+            try:
+                if new_decisions[i][1] > traces[j].trace_id:
+                    j = j + 1
+                if new_decisions[i][1] < traces[j].trace_id:
+                    i = i + 1
+                # if the trace.id is equal to the one to be deleted
+                elif new_decisions[i][1] == traces[j].trace_id:
+                    if new_decisions[i][3] == traces[j].get_hash():
+                        indices_to_smoothen.append(j)
+                        traces[j].smoothen_by_lin_space(new_decisions[i][2][0], new_decisions[i][2][1])
+                    elif debug:
+                        print(f"decision hash {new_decisions[i][3]}")
+                        print(f"trace hash {traces[j].get_hash()}")
+
+                    i = i + 1
+                # else:
+                #     i = i + 1
+            except IndexError as err:
+                print(f"Could not find trace to be smoothened in saved decisions.")
+                # raise err
+                break
+
+    if indices_to_smoothen:
+        ## TODO is this really what we wanna do?
+        delete_indices(indices_to_smoothen, traces)
+
+        print(f"Just smoothened the traces with the following indices {indices_to_smoothen} by loading the saved decisions.")
+        print()
+
+    # print(f"Could not find deleted trace in saved decisions.")
+    return traces
+
+
+## TODO make tests
+def trim_traces_from_saved_decisions(traces, silent=False, debug=False):
+    """ Trims the traces which have been previously selected to be trimmed.
+
+    :arg traces: (list): a list of all Traces
+    :arg silent: (bool): if True minimal output is shown
+    :arg debug: (bool): if True extensive output is shown
+    """
+    print(colored("TRIM TRACES FROM DECISIONS", "blue"))
+
+    indices_to_trim = []
+
+    new_decisions = {}
+    for key, value in analyse.decisions.items():
+        if key[0] == 'trim_trace':
+            new_decisions[key] = value
+
+    new_decisions = list(sorted(new_decisions))
+    # print(new_decisions)
+
+    i = 0
+    j = 0
+
+    while i < len(new_decisions):
+        if debug:
+            print("i", i)
+        while j < len(traces):
+            if debug:
+                print("j", j)
+            # if the trace.id to be trimmed is further, move the traces index
+            try:
+                if new_decisions[i][1] > traces[j].trace_id:
+                    j = j + 1
+                if new_decisions[i][1] < traces[j].trace_id:
+                    i = i + 1
+                # if the trace.id is equal to the one to be trimmed
+                elif new_decisions[i][1] == traces[j].trace_id:
+                    if new_decisions[i][3] == traces[j].get_hash():
+                        indices_to_trim.append(j)
+
+                        trim_trace_with_id(trace_id, start_frame, end_frame, debug=debug)
+                        ## TODO check how to do this
+                        traces[j].trim(new_decisions[i][2][0], new_decisions[i][2][1])
+                    elif debug:
+                        print(f"decision hash {new_decisions[i][3]}")
+                        print(f"trace hash {traces[j].get_hash()}")
+
+                    i = i + 1
+                # else:
+                #     i = i + 1
+            except IndexError as err:
+                print(f"Could not find trace to be smoothened in saved decisions.")
+                # raise err
+                break
+
+    if indices_to_trim:
+        delete_indices(indices_to_smoothen, traces)
+        print(f"Just trimmed the traces with the following indices {indices_to_trim} by loading the saved decisions.")
+        print()
+
+    # print(f"Could not find deleted trace in saved decisions.")
+    return traces
+
+
 def compute_arena(traces, debug=False):
     """ Computes the arena population_size - center and diameter from traces
 
@@ -1317,66 +1426,7 @@ def compute_arena(traces, debug=False):
     return center, diam
 
 
-def smoothen_traces_from_saved_decisions(traces, silent=False, debug=False):
-    """ Smoothens the traces which have been previously selected to be smoothened.
-
-    :arg traces: (list): a list of all Traces
-    :arg silent: (bool): if True minimal output is shown
-    :arg debug: (bool): if True extensive output is shown
-    """
-    print(colored("SMOOTHEN TRACES FROM DECISIONS", "blue"))
-
-    indices_to_smoothen = []
-
-    new_decisions = {}
-    for key, value in analyse.decisions.items():
-        if key[0] == 'smoothen_trace':
-            new_decisions[key] = value
-
-    new_decisions = list(sorted(new_decisions))
-    # print(new_decisions)
-
-    i = 0
-    j = 0
-
-    while i < len(new_decisions):
-        if debug:
-            print("i", i)
-        while j < len(traces):
-            if debug:
-                print("j", j)
-            # if the trace.id to be deleted is further, move the traces index
-            try:
-                if new_decisions[i][1] > traces[j].trace_id:
-                    j = j + 1
-                if new_decisions[i][1] < traces[j].trace_id:
-                    i = i + 1
-                # if the trace.id is equal to the one to be deleted
-                elif new_decisions[i][1] == traces[j].trace_id:
-                    if new_decisions[i][3] == traces[j].get_hash():
-                        indices_to_smoothen.append(j)
-                        traces[j].smoothen(new_decisions[i][2][0], new_decisions[i][2][1])
-                    elif debug:
-                        print(f"decision hash {new_decisions[i][3]}")
-                        print(f"trace hash {traces[j].get_hash()}")
-
-                    i = i + 1
-                # else:
-                #     i = i + 1
-            except IndexError as err:
-                print(f"Could not find trace to be smoothened in saved decisions.")
-                # raise err
-                break
-
-    if indices_to_smoothen:
-        delete_indices(indices_to_smoothen, traces)
-        print(f"Just smoothened the traces with the following indices {indices_to_smoothen} by loading the saved decisions.")
-        print()
-
-    # print(f"Could not find deleted trace in saved decisions.")
-    return traces
-
-
+## TODO not used now
 def fix_decisions():
     key_to_delete = []
     new_decisions = {}

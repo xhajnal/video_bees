@@ -2,6 +2,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams
+from termcolor import colored
 
 from config import *
 from fake import get_whole_frame_range
@@ -231,8 +232,8 @@ class Trace:
             path_len = path_len + math.dist(locations[index-1], location)
         return path_len
 
-    def smoothen(self, location_index, location_index2):
-        ## TODO make more tests
+    ## TODO make tests
+    def smoothen_by_lin_space(self, location_index, location_index2):
         """ Smoothens the trace using linspace between two points
 
         :arg location_index: (int): beginning of the smoothening
@@ -242,6 +243,40 @@ class Trace:
                            num=location_index2 - location_index + 1, endpoint=True)
         for index_index, location_index in enumerate(range(location_index, location_index2 + 1)):
             self.locations[location_index] = spam[index_index]
+
+    def trim(self, start_frame, end_frame, debug=False):
+        """ Trims this trace.
+        (Deletes the part of the trace from start_frame to end_frame including, recomputes the trace attributes)
+
+        :arg start_frame: (int): starting frame to be trimmed (including)
+        :arg end_frame: (int): end frame to be trimmed (including)
+        :arg debug: (bool): if True extensive output is shown
+        """
+        trim_len = end_frame - start_frame + 1
+
+        # trim from start
+        if self.frame_range[0] == start_frame:
+            self.frame_range = [end_frame + 1, self.frame_range[1]]
+            self.frames_list = self.frames_list[trim_len:]
+            self.locations = self.locations[trim_len:]
+            self.recalculate_trace_lengths()
+            if debug:
+                print("new trace", self)
+
+        # trim from end
+        elif self.frame_range[1] == end_frame:
+            self.frame_range = [self.frame_range[0], start_frame - 1]
+            self.frames_list = self.frames_list[:-trim_len - 1]
+            self.locations = self.locations[:-trim_len - 1]
+            self.recalculate_trace_lengths()
+            if debug:
+                print("new trace", self)
+        elif end_frame < start_frame:
+            print(colored("Could not trim as the selected range ends before it starts.", "red"))
+        elif start_frame < self.frame_range[0] or end_frame > self.frame_range[1]:
+            print(colored("Could not trim as the selected range is outside of the frame range of the self.", "red"))
+        else:
+            raise NotImplemented("Trimming a trace in between not implemented yet.")
 
     def recalculate_trace_lengths(self, recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True):
         ## TODO make more tests
