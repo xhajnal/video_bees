@@ -110,13 +110,19 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         # analyse.new_trace_ids_to_be_deleted = []
 
         if to_merge is True:
-            if is_overlap:
-                merge_two_overlapping_traces(traces[key[0]], traces[key[1]], key[0], key[1], silent=silent, debug=debug)
+            if traces[key[0]] is None or traces[key[1]] is None:
+                if traces[key[0]] is None:
+                    raise Warning(f"Trying to merge already deleted trace of id {trace1_id}, it won't be merged in this run, but both decisions are already saved.")
+                if traces[key[1]] is None:
+                    raise Warning(f"Trying to merge already deleted trace of id {trace2_id}, it won't be merged in this run, but both decisions are already saved.")
             else:
-                merge_two_traces_with_gap(traces[key[0]], traces[key[1]], silent=silent, debug=debug)
-            traces_indices_to_be_removed.append(key[1])
-            removed_traces.append(traces[key[1]])
-            traces[key[1]] = None
+                if is_overlap:
+                    merge_two_overlapping_traces(traces[key[0]], traces[key[1]], key[0], key[1], silent=silent, debug=debug)
+                else:
+                    merge_two_traces_with_gap(traces[key[0]], traces[key[1]], silent=silent, debug=debug)
+                traces_indices_to_be_removed.append(key[1])
+                removed_traces.append(traces[key[1]])
+                traces[key[1]] = None
     # Actually delete the given traces now
     delete_indices(traces_indices_to_be_removed, traces, debug=debug)
 
