@@ -1,3 +1,5 @@
+import warnings
+
 from termcolor import colored
 
 import analyse
@@ -5,7 +7,9 @@ from misc import dictionary_of_m_overlaps_of_n_intervals, merge_sorted_dictionar
     range_len, get_overlap
 from primal_traces_logic import get_gaps_of_traces
 from traces_logic import ask_to_delete_a_trace, merge_two_overlapping_traces, merge_two_traces_with_gap, \
-    ask_to_merge_two_traces_and_save_decision
+    ask_to_merge_two_traces_and_save_decision, trim_traces_from_saved_decisions, smoothen_traces_from_saved_decisions
+
+
 # from visualise import scatter_detection, show_plot_locations
 
 
@@ -26,6 +30,10 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
     if not input_video:
         print(colored("No video given, skipping this analysis. \n", "red"))
         return
+
+    ## RERUN THE DECISIONS TO TRIM, SMOOTHEN
+    smoothen_traces_from_saved_decisions(traces, silent=silent, debug=debug)
+    trim_traces_from_saved_decisions(traces, silent=silent, debug=debug)
 
     traces_indices_to_be_removed = []    # indices of traces to be deleted
     removed_traces = []                  # traces removed
@@ -112,9 +120,9 @@ def full_guided(traces, input_video, show=True, silent=False, debug=False, video
         if to_merge is True:
             if traces[key[0]] is None or traces[key[1]] is None:
                 if traces[key[0]] is None:
-                    raise Warning(f"Trying to merge already deleted trace of id {trace1_id}, it won't be merged in this run, but both decisions are already saved.")
+                    warnings.warn(f"Trying to merge already deleted trace of id {trace1_id}, it won't be merged in this run, but both decisions are already saved.")
                 if traces[key[1]] is None:
-                    raise Warning(f"Trying to merge already deleted trace of id {trace2_id}, it won't be merged in this run, but both decisions are already saved.")
+                    warnings.warn(f"Trying to merge already deleted trace of id {trace2_id}, it won't be merged in this run, but both decisions are already saved.")
             else:
                 if is_overlap:
                     merge_two_overlapping_traces(traces[key[0]], traces[key[1]], key[0], key[1], silent=silent, debug=debug)

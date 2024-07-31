@@ -1,3 +1,4 @@
+import warnings
 from json import JSONDecodeError
 
 import analyse
@@ -509,7 +510,7 @@ def convert_results_from_json_to_csv(silent=False, debug=False, is_first_run=Non
                                    f" {record['after merging overlapping traces']}; {population_size}; ;{index+1} \n")
                 file.write(f"{index+1}\n")
     except OSError:
-        print(colored(f"Could not write into csv file! Try to close it first.", "red"))
+        warnings.warn(f"Could not write into csv file! Try to close it first.")
         return
 
     print(colored(f"Converting the json into a csv file. Saved in {os.path.abspath(results_csv_file)}. It took {gethostname()} {round(time() - start_time, 3)} seconds. \n", "yellow"))

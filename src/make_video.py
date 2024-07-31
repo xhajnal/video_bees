@@ -229,12 +229,12 @@ def show_video(input_video, traces=(), frame_range=(), video_speed=0.1, wait=Fal
         return
 
     if not exists(input_video):
-        print(colored(f"Could not find the video file: {input_video} \n", "red"))
+        warnings.warn(f"Could not find the video file: {input_video} \n")
         return
 
     vid_capture = cv2.VideoCapture(input_video)
     if vid_capture.isOpened() is False:
-        print(colored(f"Error opening the video file: {input_video} \n", "red"))
+        warnings.warn(f"Error opening the video file: {input_video} \n")
         return
     # fps = vid_capture.get(5)
     vid_capture.release()

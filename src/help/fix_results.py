@@ -1,10 +1,14 @@
+import glob
 import json
+import os
+import pickle
+from copy import copy
 from time import time
 from termcolor import colored
 
 import analyse
 from config import hash_config
-from dave_io import convert_results_from_json_to_csv
+from dave_io import convert_results_from_json_to_csv, pickle_load
 
 
 # DEPRECATED
@@ -148,8 +152,6 @@ def add_this_config_hash_to_results(after_first_run=False, debug=False):
         file.write(json.dumps(new_results))
 
 
-add_this_config_hash_to_results(after_first_run=True, debug=True)
-
 
 ## BEE SPECIFIC
 def fix_order_setting():
@@ -231,8 +233,32 @@ def fix_wrong_loaded():
         file.write(json.dumps(results))
 
 
+def fix_wrong_trim_in_decisions():
+    """ Fixes wrongly saved trimming """
+    os.chdir("../../output/partial")
+    print(os.getcwd())
+
+    files = glob.glob("./*.p")
+    print(files)
+
+    for file in files:
+        a = pickle_load(file)
+        b = copy(a)
+        for key, value in a.items():
+            if key[0][0] == 'trim_trace':
+                spam = (key[0][0], key[0][1], key[0][2], (key[1], key[2]))
+                del b[key]
+                b[spam] = value
+        # print(b)
+
+        with open(file, 'wb') as filee:
+            pickle.dump(b, filee)
+
+
 if __name__ == "__main__":
     pass
-    fix_wrong_loaded()
+    fix_wrong_trim_in_decisions()
+    # add_this_config_hash_to_results(after_first_run=True, debug=True)
+    # fix_wrong_loaded()
     # check_setting()
     # fix_order_setting()

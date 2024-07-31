@@ -1,4 +1,6 @@
 import math
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams
@@ -272,9 +274,9 @@ class Trace:
             if debug:
                 print("new trace", self)
         elif end_frame < start_frame:
-            print(colored("Could not trim as the selected range ends before it starts.", "red"))
+            warnings.warn("Could not trim trace as the selected range ends before it starts.")
         elif start_frame < self.frame_range[0] or end_frame > self.frame_range[1]:
-            print(colored("Could not trim as the selected range is outside of the frame range of the self.", "red"))
+            warnings.warn("Could not trim trace as the selected range is outside of the frame range of the self.")
         else:
             raise NotImplemented("Trimming a trace in between not implemented yet.")
 

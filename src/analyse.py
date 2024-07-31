@@ -16,7 +16,7 @@ from single_trace import single_trace_checker, check_inside_of_arena, track_jump
 from cross_traces import merge_gaping_traces, track_reappearance, cross_trace_analyse, \
     merge_alone_overlapping_traces, track_swapping_loop
 from traces_logic import compute_whole_frame_range, get_video_whole_frame_range, delete_traces_from_saved_decisions, \
-    smoothen_traces_from_saved_decisions, fix_decisions
+    smoothen_traces_from_saved_decisions, fix_decisions, trim_traces_from_saved_decisions
 from dave_io import pickle_traces, save_current_result, convert_results_from_json_to_csv, is_new_config, \
     parse_traces, get_video_path, pickle_load, load_result_traces, pickled_exist, save_traces_as_csv, load_traces, \
     load_decisions, purge_result, save_decisions, check_folders_existence
@@ -362,13 +362,15 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
         if just_align:
             return
 
-        ####################################
-        # DELETE TRACES FROM SAVED DECISIONS
-        ####################################
+        ########################################################
+        # DELETE, SMOOTHEN, AND TRIM TRACES FROM SAVED DECISIONS
+        ########################################################
         traces = delete_traces_from_saved_decisions(traces, silent=silent, debug=debug)
 
         # fix_decisions()
         traces = smoothen_traces_from_saved_decisions(traces, silent=silent, debug=debug)
+
+        traces = trim_traces_from_saved_decisions(traces, silent=silent, debug=debug)
 
         #################
         ## SHOW THE VIDEO

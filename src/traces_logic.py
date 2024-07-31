@@ -1026,7 +1026,7 @@ def trim_trace_with_id(trace_id, start_frame, end_frame, debug=False):
             ## ACTUALLY TRIM THE TRACE
             trace.trim(start_frame, end_frame, debug)
 
-            analyse.decisions[("trim_trace", trace.trace_id, old_hash), start_frame, end_frame] = True
+            analyse.decisions[("trim_trace", trace.trace_id, old_hash, (start_frame, end_frame))] = True
             save_the_decisions()
             return
     print(colored(f"Trace with id {trace_id} not found to be trimmed.", "red"))
@@ -1300,9 +1300,6 @@ def smoothen_traces_from_saved_decisions(traces, silent=False, debug=False):
                 break
 
     if indices_to_smoothen:
-        ## TODO is this really what we wanna do?
-        delete_indices(indices_to_smoothen, traces)
-
         print(f"Just smoothened the traces with the following indices {indices_to_smoothen} by loading the saved decisions.")
         print()
 
@@ -1347,12 +1344,15 @@ def trim_traces_from_saved_decisions(traces, silent=False, debug=False):
                     i = i + 1
                 # if the trace.id is equal to the one to be trimmed
                 elif new_decisions[i][1] == traces[j].trace_id:
-                    if new_decisions[i][3] == traces[j].get_hash():
+                    if new_decisions[i][2] == traces[j].get_hash():
                         indices_to_trim.append(j)
 
-                        trim_trace_with_id(trace_id, start_frame, end_frame, debug=debug)
-                        ## TODO check how to do this
-                        traces[j].trim(new_decisions[i][2][0], new_decisions[i][2][1])
+                        ## ACTUALLY TRIM THE TRACE
+                        assert isinstance(traces[j], Trace)
+                        start_frame = new_decisions[i][3][0]
+                        end_frame = new_decisions[i][3][1]
+                        traces[j].trim(start_frame, end_frame, debug=debug)
+
                     elif debug:
                         print(f"decision hash {new_decisions[i][3]}")
                         print(f"trace hash {traces[j].get_hash()}")
@@ -1366,7 +1366,6 @@ def trim_traces_from_saved_decisions(traces, silent=False, debug=False):
                 break
 
     if indices_to_trim:
-        delete_indices(indices_to_smoothen, traces)
         print(f"Just trimmed the traces with the following indices {indices_to_trim} by loading the saved decisions.")
         print()
 
