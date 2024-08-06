@@ -139,6 +139,7 @@ class Trace:
     #                 raise err
 
     def get_hash(self):
+        ## TODO make tests
         """ Returns a hash of the class."""
         return hash((self.trace_id, tuple(map(lambda x: tuple(x), self.locations))))
 
@@ -146,16 +147,18 @@ class Trace:
         """ Return the whole frame list - frame range as list from beginning to the end."""
         return list(range(self.frame_range[0], self.frame_range[1]+1))
 
+    ## TODO unused
     def get_gap_frame_range(self):
-        ## TODO make more tests
+        ## TODO make more tests (needs a trace with a gap)
         """ Returns the range of gaps."""
         if self.gap_frames:
             return (self.gap_frames[0], self.gap_frames[-1])
         else:
             return ()
 
+    ## TODO unused
     def get_gap_locations(self):
-        ## TODO make more tests
+        ## TODO make more tests (needs a trace with a gap)
         """ Returns a list of locations of gaps."""
         gap_locations = []
         for frame in self.gap_frames:
@@ -164,16 +167,18 @@ class Trace:
 
         return gap_locations
 
+    ## TODO unused
     def get_overlap_frame_range(self):
-        ## TODO make more tests
+        ## TODO make more tests (needs a trace with an overlap)
         """ Returns the range of overlaps."""
         if self.overlap_frames:
             return (self.overlap_frames[0], self.overlap_frames[-1])
         else:
             return ()
 
+    ## TODO unused
     def get_overlap_locations(self):
-        ## TODO make more tests
+        ## TODO make more tests (needs a trace with an overlap)
         """ Returns a list of locations of overlaps."""
         overlap_locations = []
         for frame in self.overlap_frames:
@@ -182,14 +187,15 @@ class Trace:
 
         return overlap_locations
 
+    ## TODO unused
     def get_location_from_frame(self, frame_number):
-        ## TODO make more tests
+        ## TODO make more tests (after all alterations)
         """ For a given frame range it results locations of the given range."""
         start_index = self.frames_list.index(frame_number)
         return self.locations[start_index]
 
     def get_locations_from_frame_range(self, interval):
-        ## TODO make more tests
+        ## TODO make more tests (after all alterations)
         """ For a given frame range it results locations of the given range.
 
         :arg interval: (pair): given frame range
@@ -200,16 +206,18 @@ class Trace:
         # print(end_index)
         return self.locations[start_index:end_index + 1]
 
+    ## TODO unused
     def get_number_of_frames_tracked(self):
-        ## TODO make more tests
+        ## TODO make more tests (needs a trace with an overlap)
         """ Returns number of tracked frames."""
         return len(self.frames_list) - len(self.gap_frames)
 
-    def check_trace_consistency(self):
-        ## TODO make more tests
-        """ Verifies the consistency of the trace."""
+    ## TODO unused
+    def assert_trace_consistency(self):
+        """ Asserts the consistency of the trace."""
         assert self.frame_range[0] <= self.frame_range[1]
 
+    ## TODO unused
     def check_whether_is_done(self, real_whole_frame_range):
         ## TODO make more tests
         """ Checks and stores whether this trace has its full length."""
@@ -221,7 +229,6 @@ class Trace:
             return False
 
     def calculate_path_len_from_range(self, interval):
-        ## TODO make more tests
         """ For a given frame range it calculate the length of the path
 
         :arg interval: (pair): given frame range
@@ -234,8 +241,9 @@ class Trace:
             path_len = path_len + math.dist(locations[index-1], location)
         return path_len
 
-    ## TODO make tests
+
     def smoothen_by_lin_space(self, location_index, location_index2):
+        ## TODO make tests
         """ Smoothens the trace using linspace between two points
 
         :arg location_index: (int): beginning of the smoothening
@@ -247,6 +255,7 @@ class Trace:
             self.locations[location_index] = spam[index_index]
 
     def trim(self, start_frame, end_frame, debug=False):
+        ## TODO make tests
         """ Trims this trace.
         (Deletes the part of the trace from start_frame to end_frame including, recomputes the trace attributes)
 
@@ -281,7 +290,7 @@ class Trace:
             raise NotImplemented("Trimming a trace in between not implemented yet.")
 
     def recalculate_trace_lengths(self, recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True):
-        ## TODO make more tests
+        ## TODO make more tests (TODO why)
         """ Recalculates trace length(s) based on locations."""
         # reset values
         if recalculate_length:

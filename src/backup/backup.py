@@ -113,7 +113,7 @@ def trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictio
     ranges = []
     for index1, trace in enumerate(traces):
         assert isinstance(trace, Trace)
-        trace.check_trace_consistency()
+        trace.assert_trace_consistency()
         ranges.append(trace.frame_range)
     # rangees = copy(ranges)
     # ranges = sorted(ranges)
@@ -229,7 +229,7 @@ def trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictio
 #     ranges = []
 #     for index1, trace in enumerate(traces):
 #         assert isinstance(trace, Trace)
-#         trace.check_trace_consistency()
+#         trace.assert_trace_consistency()
 #         ranges.append(trace.frame_range)
 #     ranges = sorted(ranges)
 #     dictionary = dictionary_of_m_overlaps_of_n_intervals(population_size + 1, ranges, skip_whole_in=False, debug=debug)
@@ -282,7 +282,7 @@ def trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictio
 #     ranges = []
 #     for index1, trace in enumerate(traces):
 #         assert isinstance(trace, Trace)
-#         trace.check_trace_consistency()
+#         trace.assert_trace_consistency()
 #         ranges.append(trace.frame_range)
 #     ranges = sorted(ranges)
 #
@@ -379,7 +379,7 @@ def trim_out_additional_agents_over_long_traces_with_dict(traces, overlap_dictio
 #         del traces[index]
 #
 #     for trace in traces:
-#         trace.check_trace_consistency()
+#         trace.assert_trace_consistency()
 #
 #     print(colored(
 #         f"trim_out_additional_agents_over_long_traces analysis done. It took {gethostname()} {round(time() - start_time, 3)} seconds.",
