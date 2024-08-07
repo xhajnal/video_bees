@@ -1,13 +1,5 @@
 import unittest
-import matplotlib.pyplot as plt
-
-from dave_io import parse_traces
-from single_trace import remove_full_traces
-from trace import Trace
-from traces_logic import merge_two_traces_with_gap, compute_whole_frame_range
 from misc import *
-from visualise import scatter_detection
-
 
 class MyTestCase(unittest.TestCase):
     ## NO TRACE TESTS

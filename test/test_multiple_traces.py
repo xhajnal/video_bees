@@ -1,6 +1,4 @@
-import math
 import unittest
-import matplotlib.pyplot as plt
 
 import analyse
 from cross_traces import track_swapping_loop, \
@@ -9,7 +7,6 @@ from cross_traces import track_swapping_loop, \
 from dave_io import parse_traces
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
-from primal_traces_logic import get_traces_from_range
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range, \
     partition_frame_range_by_number_of_traces, reverse_partition_frame_range_by_number_of_traces, compare_two_traces, \
     compare_two_traces_with_shift, merge_multiple_pairs_of_overlapping_traces, check_to_merge_two_overlapping_traces, \

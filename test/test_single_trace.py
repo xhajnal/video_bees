@@ -1,6 +1,9 @@
 import unittest
+from math import sqrt
+
 import matplotlib.pyplot as plt
 
+import analyse
 from dave_io import parse_traces
 from single_trace import remove_full_traces
 from trace import Trace
@@ -222,6 +225,56 @@ class MyTestCase(unittest.TestCase):
             spam.extend([[-1, -1]] * 502)
             spam.extend([[0.0, 0.0], [2.0, 5.0], [3.0, 7.0]])
             self.assertEqual(merged_trace.locations, spam)
+
+    def testTrimTrace(self):
+        with open('../test/test.csv', newline='') as csv_file:
+            traces = parse_traces(csv_file)
+
+            print(traces[0])
+            trace0 = Trace(traces[0], 0)
+            print(trace0)
+
+            ## Try to trim outside of range
+            with self.assertWarns(UserWarning):
+                trace0.trim(0, 0)
+
+            trace0 = Trace(traces[0], 0)
+            ## Try to trim inside
+            with self.assertRaises(NotImplementedError):
+                trace0.trim(1621, 1621)
+
+            ## Trim from end
+            trace0.trim(1622, 1622)
+
+            self.assertEqual(trace0.trace_id, 0)
+            self.assertEqual(trace0.frame_range, [1620, 1621])
+            self.assertEqual(trace0.frames_list, [1620, 1621])
+            self.assertEqual(trace0.get_number_of_frames_tracked(), 2)
+            self.assertEqual(trace0.frame_range_len, 2)
+            # self.assertAlmostEqual(trace0.trace_length, sqrt(2))
+            self.assertAlmostEqual(trace0.max_step_len, sqrt(2))
+            self.assertEqual(trace0.max_step_len_step_index, 0)
+            self.assertEqual(trace0.max_step_len_line, 0)
+            self.assertEqual(trace0.max_step_len_frame_number, 1620)
+            self.assertEqual(trace0.trace_lengths, {1.414214: 1})
+            self.assertEqual(trace0.locations, [[0.0, 0.0], [1.0, 1.0]])
+            self.assertEqual(trace0.get_frame_list(), [1620, 1621])
+
+            self.assertEqual(trace0.get_gap_frame_range(), ())
+            self.assertEqual(trace0.get_gap_locations(), [])
+            self.assertEqual(trace0.get_overlap_frame_range(), ())
+            self.assertEqual(trace0.get_overlap_locations(), [])
+            self.assertEqual(trace0.get_location_from_frame(1620), [0.0, 0.0])
+            self.assertEqual(trace0.get_location_from_frame(1621), [1.0, 1.0])
+            self.assertEqual(trace0.get_locations_from_frame_range((1620, 1621)), [[0.0, 0.0], [1.0, 1.0]])
+            self.assertEqual(trace0.get_number_of_frames_tracked(), 2)
+            trace0.assert_trace_consistency()
+            self.assertEqual(trace0.check_whether_is_done([1620, 1635]), False)
+            self.assertEqual(trace0.check_whether_is_done([1620, 1621]), True)
+            trace0.recalculate_trace_lengths()
+            self.assertAlmostEqual(trace0.trace_length, sqrt(2))
+            self.assertEqual(trace0.trace_lengths, {1.414214: 1})
+            self.assertAlmostEqual(trace0.max_step_len, sqrt(2))
 
     def testRemoveFullTraces(self):
         with open('../test/test.csv', newline='') as csv_file:

@@ -544,7 +544,7 @@ def check_to_merge_two_overlapping_traces(traces, trace1: Trace, trace2: Trace, 
     if not overlap_len_check:
         reason = reason + f"overlap too long {len(distances)} > {get_max_overlap_len_to_merge_traces()}"
     if not overlap_movement_check:
-        reason = f"both traces during the overlap too stationary ({trace1_avg_distance_per_frame_in_overlap}, {trace2_avg_distance_per_frame_in_overlap} > {get_minimal_movement_per_frame()})"
+        reason = f"both traces during the overlap too stationary: average distance per frame in overlap for the two traces respectively {trace1_avg_distance_per_frame_in_overlap}, {trace2_avg_distance_per_frame_in_overlap} while minimum is {get_minimal_movement_per_frame()}"
 
     # if maximal_dist_check and minimal_dist_check and overlap_len_check and overlap_movement_check:
     #     pass
