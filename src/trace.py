@@ -40,32 +40,27 @@ class Trace:
         :arg trace_id: (int): id of the trace
         :arg debug: (bool): if True extensive output is shown
         """
-        self.trace_id = trace_id
-
+        self.trace_id = trace_id                                                # id of the trace (does not change)
         frames = sorted(list(map(int, parsed_trace.keys())))
-        # print("frames", frames)
 
-        self.frame_range = [frames[0], frames[-1]]
-        self.is_done = False
-        # print(frame_range)
-        self.frame_range_len = int(float(frames[-1]) - float(frames[0])) + 1
-        self.max_step_len = 0
-        self.max_step_len_step_index = None
-        self.max_step_len_line = None
-        self.max_step_len_frame_number = None
+        self.frame_range = [frames[0], frames[-1]]                              # range of frames
+        self.frame_range_len = int(float(frames[-1]) - float(frames[0])) + 1    # length of the range of frames
+        self.max_step_len = 0                                                   # max distance of a single step from frame to frame
+        self.max_step_len_step_index = None                                     # index of max step
+        self.max_step_len_line = None                                           # line of the step in the csv file
+        self.max_step_len_frame_number = None                                   # frame number of the max step
 
-        self.trace_lengths = dict()
-        self.frames_list = []
+        self.trace_lengths = dict()                                             # dict of lengths of steps
+        self.frames_list = []                                                   # list of frames
 
-        self.locations = []
+        self.locations = []                                                     # list of locations
 
-        self.trace_length = 0
+        self.trace_length = 0                                                   # total length of the trace
 
-        self.gap_frames = []
-        self.overlap_frames = []
+        self.gap_frames = []                                                    # list of gaping frames (as result of merging)
+        self.overlap_frames = []                                                # list of overlapping frames (as result of merging)
 
         # Compute trace_length(s)
-
         for index, frame in enumerate(frames):
             self.frames_list.append(frame)
             if debug:
@@ -222,10 +217,8 @@ class Trace:
         ## TODO make more tests
         """ Checks and stores whether this trace has its full length."""
         if self.frame_range == real_whole_frame_range:
-            self.is_done = True
             return True
         else:
-            self.is_done = False
             return False
 
     def calculate_path_len_from_range(self, interval):
@@ -269,6 +262,7 @@ class Trace:
         if self.frame_range[0] == start_frame:
             self.frame_range = [end_frame + 1, self.frame_range[1]]
             self.frames_list = self.frames_list[trim_len:]
+            self.frame_range_len = self.frame_range_len - trim_len
             self.locations = self.locations[trim_len:]
             self.recalculate_trace_lengths()
             if debug:
@@ -276,9 +270,11 @@ class Trace:
 
         # trim from end
         elif self.frame_range[1] == end_frame:
+
             self.frame_range = [self.frame_range[0], start_frame - 1]
-            self.frames_list = self.frames_list[:-trim_len - 1]
-            self.locations = self.locations[:-trim_len - 1]
+            self.frames_list = self.frames_list[:-trim_len]
+            self.frame_range_len = self.frame_range_len - trim_len
+            self.locations = self.locations[:-trim_len]
             self.recalculate_trace_lengths()
             if debug:
                 print("new trace", self)
@@ -287,10 +283,9 @@ class Trace:
         elif start_frame < self.frame_range[0] or end_frame > self.frame_range[1]:
             warnings.warn("Could not trim trace as the selected range is outside of the frame range of the self.")
         else:
-            raise NotImplemented("Trimming a trace in between not implemented yet.")
+            raise NotImplementedError("Trimming a trace in between not implemented yet.")
 
     def recalculate_trace_lengths(self, recalculate_length=True, recalculate_lengths=True, recalculate_max_step_len=True):
-        ## TODO make more tests (TODO why)
         """ Recalculates trace length(s) based on locations."""
         # reset values
         if recalculate_length:
@@ -323,9 +318,9 @@ class Trace:
             if recalculate_length:
                 self.trace_length = self.trace_length + step_len
         if recalculate_max_step_len:
+            self.max_step_len_step_index = max_step_index - 1  # because it was step to this index
             if not old_max_step == max_step_len:
                 self.max_step_len = max_step_len
-                self.max_step_len_step_index = max_step_index - 1  # because it was step to this index
                 self.max_step_len_line = None
                 self.max_step_len_frame_number = self.frames_list[max_step_index - 1]
 
