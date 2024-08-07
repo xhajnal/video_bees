@@ -4,7 +4,7 @@ import analyse
 from cross_traces import track_swapping_loop, \
     trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback, \
     merge_alone_overlapping_traces_by_partition, merge_alone_overlapping_traces, merge_overlapping_traces_brutto
-from dave_io import parse_traces
+from dave_io import parse_traces, load_decisions
 from single_trace import single_trace_checker, remove_full_traces
 from trace import Trace
 from traces_logic import swap_two_overlapping_traces, merge_two_traces_with_gap, compute_whole_frame_range, \
@@ -54,9 +54,8 @@ class MyTestCase(unittest.TestCase):
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
 
-        traces, spam, ids_of_traces_to_be_deleted = merge_alone_overlapping_traces(traces, None, 1, silent=True, debug=False)
+        merge_alone_overlapping_traces(traces, None, 1, silent=False, debug=True)
         self.assertEqual(len(traces), 2)
-        self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
 
         csv_file_path = '../test/test2.csv'
@@ -65,9 +64,8 @@ class MyTestCase(unittest.TestCase):
         traces = []
         for index, trace in enumerate(scraped_traces.keys()):
             traces.append(Trace(scraped_traces[trace], index))
-        traces, ids_of_traces_to_be_deleted = merge_alone_overlapping_traces_by_partition(traces, silent=True, debug=False)
+        pairs_of_traces_indices_to_merge, ids_of_traces_to_be_merged = merge_alone_overlapping_traces_by_partition(traces, silent=True, debug=False)
         self.assertEqual(len(traces), 2)
-        self.assertEqual(ids_of_traces_to_be_deleted, [2, 3])
 
 
         csv_file_path= '../test/test2.csv'
@@ -346,6 +344,7 @@ class MyTestCase(unittest.TestCase):
     def testSwaps(self):
         csv_file_path = '../test/test2.csv'
         analyse.set_curr_csv_file_path(csv_file_path)
+        analyse.decisions = load_decisions()
         with open(csv_file_path, newline='') as csv_file:
             scraped_traces = parse_traces(csv_file)
             traces = []

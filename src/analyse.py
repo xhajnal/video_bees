@@ -548,6 +548,7 @@ def analyse(csv_file_path, population_size, has_tracked_video=False, is_first_ru
 
         if algorithm == "mixed":
             a, b = merge_alone_overlapping_traces_by_partition(traces, shift=get_max_shift(), guided=guided, silent=silent, debug=debug, do_count=do_count)
+            ## TODO check why we dont do anything here
             trace_indices_to_merge, ids_of_traces_to_be_merged = a, b
             if do_count:
                 update_this_file_counts()

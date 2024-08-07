@@ -32,6 +32,8 @@ def track_swapping_loop(traces, guided=False, silent=False, debug=False):
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg video_params: (bool or tuple): i if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
+
+        :returns number_of_swaps: (int): number of swaps performed
     """
     # whole_frame_range = get_whole_frame_range()
 
@@ -108,7 +110,6 @@ def track_swapping(traces, pairs_to_skip=(), guided=False, silent=False, debug=F
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
         :arg video_params: (bool or tuple): i if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
-        :return: traces: (list): list of trimmed Traces
     """
     print(colored("TRACE SWAPPING OF TWO BEES", "blue"))
 
@@ -231,7 +232,9 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
         :arg guided: (bool): if True, user guided version would be run, this stops the whole analysis until a response is given
         :arg silent: (bool): if True minimal output is shown
         :arg debug: (bool): if True extensive output is shown
+
         :returns: traces: (list): list of concatenated Traces
+        :returns: ids_of_traces_to_be_deleted: (list of tuples): list of trace ids - these pairs (of traces) were ALREADY deleted
     """
     print(colored("TRIM OUT ADDITIONAL AGENTS OVER A LONG TRACES (partition with fallback - iterative build of overlaps)", "blue"))
     start_time = time()
@@ -277,9 +280,6 @@ def trim_out_additional_agents_over_long_traces_by_partition_with_build_fallback
                     to_delete_in_this_segment.append(trace_index)
                     if debug:
                         print(colored(f"Adding trace n. {trace_index} id {traces[trace_index].trace_id} of frame range {traces[trace_index].frame_range} to be deleted.", "yellow"))
-                    # # TODO can delete this after test
-                    # if tuple(traces[trace_index].frame_range) != tuple(interval):
-                    #     raise Exception(f"A trace is {traces[trace_index].trace_id} of range {traces[trace_index].frame_range} which is supposed to have frame range {interval} has only its subinterval.")
 
             to_fix = True
             if len(to_delete_in_this_segment) > count-population_size:
@@ -819,7 +819,9 @@ def merge_alone_overlapping_traces_by_partition(traces, shift=False, guided=Fals
         :arg do_count: (bool): flag whether to count the numbers of events occurring
         :arg video_file: (str or bool): if set, path to the input video
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
-        :returns: traces: (list): list of concatenated Traces
+
+        :returns: pairs_of_traces_indices_to_merge: (list of tuples): list of pairs of indices of traces - these pairs (of traces) were merged
+        :returns: ids_of_traces_to_be_merged: (list of tuples): list of pairs of trace ids - these pairs (of traces) were merged
     """
     print(colored("MERGE ALONE OVERLAPPING TRACES - using partitioning", "blue"))
     start_time = time()
@@ -931,8 +933,6 @@ def merge_alone_overlapping_traces(traces, shift=False, allow_force_merge=True, 
         :arg video_params: (bool or tuple): if False a video with old tracking is used, otherwise (trim_offset, crop_offset)
         :arg do_count: (bool): flag whether to count the numbers of events occurring
         :arg is_first_call: (bool): flag whether it is the first run of analysis
-
-        :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE OVERLAPPING TRACES - using build", "blue"))
     # Initiation
@@ -1123,7 +1123,6 @@ def merge_overlapping_traces_brutto(traces, shift=False, allow_force_merge=True,
         :arg do_count: (bool): flag whether to count the numbers of events occurring
         :arg is_first_call: (bool): flag whether it is the first run of analysis
         :arg alg: (string): algorithm name to merge overlapping traces: "mixed" / "" / TBD
-        :returns: traces: (list): list of concatenated Traces
     """
     print(colored("MERGE OVERLAPPING TRACES - using brutto - using build", "blue"))
     start_time = time()
