@@ -7,7 +7,7 @@ import glob
 import json
 import os
 import pickle
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from time import time
 from _socket import gethostname
 from termcolor import colored
@@ -96,6 +96,9 @@ def get_video_path(file_path):
             pass
         output_video_file = os.path.join("..", "output", "video", os.path.basename(video_file)).replace("\\", "/")
         # print("default output_video_file:", output_video_file)
+
+    video_file = str(PureWindowsPath(video_file).as_posix())
+    output_video_file = str(PureWindowsPath(output_video_file).as_posix())
 
     return video_file, output_video_file, is_video_original
 
